@@ -27,6 +27,9 @@ from app.routers.notifications import (
     router as notifications_router,
 )
 
+from app.routers.admin_lawyers import (
+    router as admin_lawyers_router,
+)
 app = FastAPI(
     title="AdvocaNote API",
     description="AI Smart Legal Diary Backend",
@@ -105,6 +108,9 @@ app.include_router(profile_router)
 
 # ADMIN SUBSCRIPTION MANAGEMENT
 app.include_router(admin_subscriptions_router)
+
+# ADMIN LAWYER MANAGEMENT
+app.include_router(admin_lawyers_router)
 
 # LAWYER SUBSCRIPTION MANAGEMENT
 app.include_router(lawyer_subscriptions_router)

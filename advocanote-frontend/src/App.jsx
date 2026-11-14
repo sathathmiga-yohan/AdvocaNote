@@ -52,7 +52,6 @@ import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminLawyers from "./admin/AdminLawyers";
 import AdminSubscriptions from "./admin/AdminSubscriptions";
-import AdminCourtSettings from "./admin/AdminCourtSettings";
 import AdminNotifications from "./admin/AdminNotifications";
 import AdminSupport from "./admin/AdminSupport";
 import AdminSecurity from "./admin/AdminSecurity";
@@ -209,11 +208,6 @@ function App() {
           <Route
             path="subscriptions"
             element={<AdminSubscriptions />}
-          />
-
-          <Route
-            path="court-settings"
-            element={<AdminCourtSettings />}
           />
 
           <Route

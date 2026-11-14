@@ -546,7 +546,7 @@ function adaptSubscriptionOverview(overview, period) {
     plan_breakdown,
 
     recent_payments: payments
-      .slice(0, 10)
+      .slice(0, 6)
       .map((payment) => {
         const lawyer = lawyerMap.get(
           Number(payment.user_id)
@@ -791,10 +791,6 @@ export default function AdminDashboard() {
 
       <section className="adash-welcome">
         <div>
-          <div className="adash-eyebrow">
-            <span className="adash-live-dot" />
-            ADVOCANOTE ADMIN OVERVIEW
-          </div>
 
           <h1>
             Welcome back, <span>Admin.</span>

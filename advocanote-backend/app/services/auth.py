@@ -101,7 +101,12 @@ def hash_token(token: str):
 
 
 def create_login_session(db: Session, user: User):
-
+  # Prevent suspended users from creating sessions
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been suspended"
+        ) 
     now = utc_now()
 
     refresh_token = secrets.token_urlsafe(48)

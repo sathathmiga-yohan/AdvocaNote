@@ -561,6 +561,13 @@ def get_admin_subscriptions_overview(
             "created_at": getattr(lawyer, "created_at", None),
             "is_verified": getattr(lawyer, "is_email_verified", False),
             "is_active": getattr(lawyer, "is_active", None),
+
+                "bar_number": lawyer.bar_number,
+                "phone_number": lawyer.phone_number,
+                "city": lawyer.city,
+                "law_firm": lawyer.law_firm,
+                "professional_title": lawyer.professional_title,
+
             "subscription": (
                 {
                     "id": sub.id,

@@ -33,11 +33,6 @@ const ADMIN_MENU_ITEMS = [
     to: "/admin/subscriptions",
   },
   {
-    label: "Court & Case Settings",
-    icon: Landmark,
-    to: "/admin/court-settings",
-  },
-  {
     label: "Notifications",
     icon: Bell,
     to: "/admin/notifications",
