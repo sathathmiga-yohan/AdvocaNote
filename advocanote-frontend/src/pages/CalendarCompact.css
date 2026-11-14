@@ -1,0 +1,432 @@
+
+/* ========================================
+   ADVOCANOTE CALENDAR - COMPACT SIZE
+======================================== */
+
+/* Overall page */
+.ac-page {
+  padding: 18px 18px 30px;
+}
+
+/* Two-column layout */
+.ac-grid-layout {
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 15px;
+}
+
+.ac-main-column,
+.ac-side {
+  gap: 13px;
+}
+
+/* Heading */
+.ac-heading {
+  min-height: 80px;
+  padding: 15px 18px;
+}
+
+.ac-heading h1 {
+  font-size: 24px;
+}
+
+.ac-heading p {
+  font-size: 11px;
+}
+
+/* Filters and add button */
+.ac-filter-row {
+  gap: 8px;
+}
+
+.ac-filters {
+  gap: 6px;
+}
+
+.ac-filter {
+  min-height: 35px;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+.ac-filter svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ac-primary {
+  min-height: 36px;
+  padding: 8px 13px;
+  font-size: 11px;
+}
+
+/* Main calendar */
+.ac-calendar-header {
+  min-height: 65px;
+  padding: 12px 14px;
+}
+
+.ac-month-title h2 {
+  font-size: 20px;
+}
+
+.ac-month-title small {
+  font-size: 10px;
+}
+
+.ac-calendar-actions {
+  gap: 5px;
+}
+
+.ac-outline,
+.ac-icon-button {
+  height: 32px;
+  font-size: 11px;
+}
+
+.ac-icon-button {
+  width: 32px;
+}
+
+.ac-view-switch button {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+/* Calendar dates */
+.ac-weekday {
+  padding: 9px 3px;
+  font-size: 10px;
+}
+
+.ac-day {
+  height: 78px;
+  padding: 6px 5px;
+}
+
+.ac-day-number {
+  width: 23px;
+  height: 23px;
+  font-size: 11px;
+}
+
+.ac-day-items {
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.ac-chip {
+  padding: 3px 5px;
+  font-size: 9px;
+}
+
+.ac-more {
+  font-size: 9px;
+}
+
+/* Right side cards */
+.ac-side-card {
+  padding: 15px 14px;
+}
+
+.ac-side-title h3 {
+  font-size: 17px;
+}
+
+.ac-selected-date,
+.ac-empty {
+  font-size: 11px;
+}
+
+.ac-event-row {
+  padding: 9px;
+  gap: 8px;
+}
+
+.ac-type-icon {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+
+.ac-event-info strong,
+.ac-upcoming strong {
+  font-size: 11px;
+}
+
+.ac-event-info small,
+.ac-upcoming small {
+  font-size: 10px;
+}
+
+.ac-upcoming {
+  padding: 10px 0;
+}
+
+/* Legend */
+.ac-legend {
+  padding: 10px 14px;
+  gap: 14px;
+}
+
+.ac-legend span {
+  font-size: 10px;
+}
+
+/* Topbar */
+.ac-topbar-content {
+  height: 76px;
+}
+
+.ac-topbar-search {
+  height: 43px;
+}
+
+.ac-avatar {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+}
+
+/* Preserve responsive layout */
+@media (max-width: 1100px) {
+  .ac-grid-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ac-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .ac-page {
+    padding: 12px 10px 25px;
+  }
+
+  .ac-side {
+    grid-template-columns: 1fr;
+  }
+
+  .ac-day {
+    height: 65px;
+    padding: 4px 3px;
+  }
+
+  .ac-topbar-content {
+    height: 68px;
+  }
+}
+
+
+/* =========================================
+   ADVOCANOTE CALENDAR - CLEAN COMPACT DESIGN
+========================================= */
+
+/* Main layout */
+
+.ac-page {
+  padding: 18px 20px 32px;
+}
+
+.ac-grid-layout {
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+}
+
+.ac-main-column,
+.ac-side {
+  gap: 14px;
+}
+
+/* Header */
+
+.ac-heading {
+  min-height: 88px;
+  padding: 17px 22px;
+  border-radius: 14px;
+}
+
+.ac-heading h1 {
+  font-size: 25px;
+}
+
+.ac-heading p {
+  font-size: 12px;
+}
+
+/* Keep filters neat on desktop */
+
+.ac-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.ac-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+
+.ac-filter {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  font-size: 11px;
+  gap: 6px;
+  border-radius: 9px;
+}
+
+.ac-filter svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ac-filter-row > .ac-primary {
+  flex-shrink: 0;
+  min-height: 39px;
+  padding: 0 15px;
+  font-size: 12px;
+}
+
+/* Calendar card */
+
+.ac-calendar-card,
+.ac-side-card {
+  border-radius: 14px;
+}
+
+.ac-calendar-header {
+  min-height: 70px;
+  padding: 13px 17px;
+}
+
+.ac-month-title h2 {
+  font-size: 22px;
+}
+
+.ac-month-title small {
+  font-size: 11px;
+}
+
+.ac-calendar-actions {
+  gap: 6px;
+}
+
+.ac-outline,
+.ac-icon-button {
+  height: 34px;
+}
+
+.ac-icon-button {
+  width: 34px;
+}
+
+.ac-view-switch button {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+/* Smaller calendar cells */
+
+.ac-weekday {
+  padding: 10px 3px;
+  font-size: 11px;
+}
+
+.ac-day {
+  height: 78px;
+  padding: 7px 6px;
+}
+
+.ac-day-number {
+  width: 25px;
+  height: 25px;
+  font-size: 11px;
+}
+
+.ac-chip {
+  font-size: 10px;
+  padding: 4px 5px;
+}
+
+/* Right-side cards */
+
+.ac-side-card {
+  padding: 18px 17px;
+}
+
+.ac-side-title h3 {
+  font-size: 19px;
+}
+
+.ac-selected-date {
+  font-size: 12px;
+  margin: 7px 0 12px;
+}
+
+.ac-empty {
+  font-size: 12px;
+  margin: 12px 0;
+}
+
+/* Responsive */
+
+@media (max-width: 1200px) {
+  .ac-grid-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ac-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ac-filter-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 720px) {
+  .ac-page {
+    padding: 12px 10px 25px;
+  }
+
+  .ac-grid-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ac-side {
+    grid-template-columns: 1fr;
+  }
+
+  .ac-filter-row {
+    flex-wrap: wrap;
+  }
+
+  .ac-filter {
+    height: 35px;
+    min-height: 35px;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+
+  .ac-calendar-header {
+    padding: 12px;
+  }
+
+  .ac-day {
+    height: 65px;
+    padding: 5px 3px;
+  }
+
+  .ac-day-number {
+    width: 22px;
+    height: 22px;
+  }
+}

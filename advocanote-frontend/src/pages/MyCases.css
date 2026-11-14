@@ -1,0 +1,1951 @@
+
+/* My Cases - matches My Legal Diary */
+/* Shared Sidebar and Topbar unchanged */
+
+/* MAIN CONTENT */
+
+.mc-app .mc-main {
+  min-width: 0;
+  padding: 22px 24px 34px;
+}
+
+.mc-app .mc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.mc-app .mc-primary {
+  min-width: 0;
+}
+
+/* PAGE TITLE */
+
+.mc-app .mc-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 21px;
+}
+
+.mc-app .mc-title-row h1 {
+  margin: 0;
+  color: #101416;
+  font: 700 clamp(28px, 2.8vw, 37px)/1.18 Georgia,
+    "Times New Roman", serif;
+  letter-spacing: -.6px;
+}
+
+.mc-app .mc-title-row p {
+  margin: 6px 0 0;
+  color: #526277;
+  font-size: 13px;
+}
+
+.mc-app .mc-title-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* BUTTONS */
+
+.mc-app .mc-outline,
+.mc-app .mc-primary-btn {
+  min-height: 40px;
+  padding: 9px 13px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.mc-app .mc-outline {
+  color: #003a2c;
+  border: 1px solid #e1e2e6;
+  background: #fff;
+}
+
+.mc-app .mc-primary-btn {
+  border: 1px solid #003e2e;
+  background: #003e2e;
+  color: #fff;
+  box-shadow: 0 3px 9px rgba(0, 55, 38, .12);
+}
+
+.mc-app .mc-primary-btn:hover {
+  background: #00533e;
+}
+
+.mc-app .mc-outline:hover {
+  background: #f1f7f3;
+}
+
+.mc-app button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+/* FOUR STATISTICS CARDS */
+
+.mc-app .mc-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mc-app .mc-stat {
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  min-width: 0;
+  min-height: 94px;
+  padding: 15px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 10px rgba(43, 40, 27, .025);
+}
+
+.mc-app .mc-stat > span {
+  width: 49px;
+  height: 49px;
+  flex: 0 0 49px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.mc-app .mc-stat strong {
+  display: block;
+  color: #111b21;
+  font: 700 28px/1 Georgia, "Times New Roman", serif;
+}
+
+.mc-app .mc-stat small {
+  display: block;
+  color: #526277;
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.3;
+}
+
+/* Statistic icon colors */
+
+.mc-app .mc-stat-green > span {
+  color: #078049;
+  background: #e3f5e9;
+}
+
+.mc-app .mc-stat-mint {
+  background: #fff;
+}
+
+.mc-app .mc-stat-mint > span {
+  color: #008752;
+  background: #dcf6e7;
+}
+
+.mc-app .mc-stat-gold {
+  background: #fff;
+}
+
+.mc-app .mc-stat-gold > span {
+  color: #d49000;
+  background: #fff1cf;
+}
+
+.mc-app .mc-stat-red {
+  background: #fff;
+}
+
+.mc-app .mc-stat-red > span {
+  color: #d44949;
+  background: #ffebeb;
+}
+
+/* SEARCH AND FILTER TOOLBAR */
+
+.mc-app .mc-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(195px, 2fr)
+    repeat(4, minmax(96px, .8fr));
+  gap: 8px;
+  padding: 11px;
+  margin-bottom: 9px;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+}
+
+.mc-app .mc-toolbar input,
+.mc-app .mc-toolbar select {
+  min-width: 0;
+  width: 100%;
+  height: 39px;
+  color: #182b3e;
+  background: #fff;
+  border: 1px solid #e1e2e6;
+  border-radius: 7px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.mc-app .mc-toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e1e2e6;
+  border-radius: 7px;
+  background: #fff;
+  padding: 0 9px;
+  min-width: 0;
+}
+
+.mc-app .mc-toolbar-search input {
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+.mc-app .mc-toolbar-search svg {
+  flex: 0 0 auto;
+  color: #27475b;
+}
+
+/* CASES TABLE */
+
+.mc-app .mc-table-card {
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 14px rgba(30, 31, 22, .035);
+}
+
+.mc-app .mc-table-scroll {
+  overflow-x: auto;
+}
+
+.mc-app .mc-table {
+  width: 100%;
+  min-width: 840px;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.mc-app .mc-table thead {
+  background: #fbfaf8;
+}
+
+.mc-app .mc-table th {
+  padding: 14px 12px;
+  color: #0d171e;
+  text-align: left;
+  font: 700 13px/1.3 Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+  border-bottom: 1px solid #e9e9e8;
+}
+
+.mc-app .mc-table th:first-child,
+.mc-app .mc-table td:first-child {
+  width: 30px;
+  text-align: center;
+}
+
+.mc-app .mc-table tbody tr {
+  border-top: 1px solid #edece8;
+}
+
+.mc-app .mc-table tbody tr:hover td {
+  background: #f7fbf9;
+}
+
+.mc-app .mc-table td {
+  padding: 15px 12px;
+  color: #354c66;
+  background: #fff;
+  vertical-align: middle;
+  font: 400 13px/1.5 Arial, Helvetica, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.mc-app .mc-table td strong {
+  display: block;
+  color: #15202c;
+  font: 700 14px/1.35 Arial, Helvetica, sans-serif;
+}
+
+.mc-app .mc-table td small {
+  display: block;
+  color: #5b6f88;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.mc-app .mc-case-no {
+  font: 700 14px/1.35 Arial, Helvetica, sans-serif !important;
+  white-space: nowrap;
+}
+
+/* HEARING DATE */
+
+.mc-app .mc-date {
+  display: inline-block;
+  min-width: 76px;
+  padding: 8px 9px;
+  border-radius: 10px;
+  background: #e3f4e9;
+  color: #143729;
+  text-align: center;
+  font: 600 12px/1.35 Arial, Helvetica, sans-serif;
+}
+
+.mc-app .mc-dash {
+  color: #6e7d7b;
+}
+
+/* CASE STATUS */
+
+.mc-app .mc-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  padding: 7px 9px;
+  border-radius: 11px;
+  background: #eff0ee;
+  color: #435459;
+  font: 600 12px Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+}
+
+.mc-app .mc-active {
+  color: #145739;
+  background: #dff5e6;
+}
+
+.mc-app .mc-closed {
+  color: #434957;
+  background: #e9e9ec;
+}
+
+.mc-app .mc-pending {
+  color: #88550a;
+  background: #fff0d3;
+}
+
+/* ACTION ICONS */
+
+.mc-app .mc-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mc-app .mc-actions button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #0e2635;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+}
+
+.mc-app .mc-actions button:hover {
+  color: #005540;
+  background: #e7f3eb;
+}
+
+.mc-app .mc-empty {
+  text-align: center;
+  padding: 32px !important;
+  color: #62737c !important;
+}
+
+/* PAGINATION */
+
+.mc-app .mc-table-footer {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #526277;
+  font-size: 13px;
+  border-top: 1px solid #e6e4dc;
+}
+
+.mc-app .mc-pages {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.mc-app .mc-pages button {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  background: #fff;
+  border: 1px solid #d8e2e4;
+  border-radius: 7px;
+  color: #173a30;
+}
+
+.mc-app .mc-pages span {
+  background: #003e2e;
+  color: white;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+/* ERROR MESSAGE */
+
+.mc-app .mc-alert {
+  padding: 11px 13px;
+  margin: 11px;
+  color: #a22b2b;
+  background: #fff3f1;
+  border: 1px solid #f3d6d6;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+/* CASE DETAILS AND DIARY HISTORY */
+
+.mc-app .mc-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  align-items: start;
+  gap: 16px;
+}
+
+.mc-app .mc-detail-body {
+  min-width: 0;
+}
+
+.mc-app .mc-details-head {
+  align-items: end;
+}
+
+.mc-app .mc-details-head .mc-outline {
+  margin-bottom: 14px;
+}
+
+.mc-app .mc-detail-card,
+.mc-app .mc-history-card {
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 11px;
+  padding: 18px;
+  margin-bottom: 13px;
+}
+
+.mc-app .mc-detail-card h2,
+.mc-app .mc-history-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #111b21;
+  font: 700 20px Georgia, "Times New Roman", serif;
+  margin: 0 0 16px;
+}
+
+.mc-app .mc-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.mc-app .mc-info-grid > div {
+  padding: 12px;
+  border: 1px solid #ecebe6;
+  border-radius: 8px;
+  background: #fcfdfb;
+}
+
+.mc-app .mc-info-grid small {
+  display: block;
+  color: #596978;
+  margin-bottom: 7px;
+  font-size: 11px;
+}
+
+.mc-app .mc-info-grid strong {
+  display: block;
+  color: #1a2737;
+  font: 600 14px Arial, Helvetica, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.mc-app .mc-proceedings {
+  background: #fcfdfb;
+  border: 1px solid #e9ece8;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.mc-app .mc-proceedings small {
+  color: #617769;
+}
+
+.mc-app .mc-proceedings p {
+  white-space: pre-wrap;
+  color: #132139;
+  font: 15px/1.75 Arial, Helvetica, sans-serif;
+}
+
+.mc-app .mc-detail-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.mc-app .mc-history-card > p {
+  color: #526477;
+  font-size: 12px;
+  margin: -9px 0 17px;
+}
+
+.mc-app .mc-history-list {
+  border-left: 2px solid #d6ddd5;
+  margin-left: 7px;
+}
+
+.mc-app .mc-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: transparent;
+  border: 0;
+  padding: 13px 11px 13px 17px;
+  width: 100%;
+  text-align: left;
+  color: #1b2c40;
+  position: relative;
+  border-radius: 7px;
+}
+
+.mc-app .mc-history-item:before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: -7px;
+  width: 11px;
+  height: 11px;
+  background: #afb9b5;
+  border-radius: 50%;
+}
+
+.mc-app .mc-history-item.mc-history-active {
+  background: #eef8f0;
+}
+
+.mc-app .mc-history-item.mc-history-active:before {
+  background: #138c4a;
+}
+
+.mc-app .mc-history-item strong {
+  font: 700 13px Arial, Helvetica, sans-serif;
+}
+
+.mc-app .mc-history-item span {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mc-app .mc-history-item small {
+  font-size: 11px;
+  color: #556b7b;
+}
+
+.mc-app .mc-history-add {
+  margin-top: 17px;
+  width: 100%;
+}
+
+/* ADD NEW CASE / IMPORT CASE POPUPS */
+
+.mc-app .mc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(11, 31, 27, .62);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.mc-app .mc-dialog {
+  width: min(720px, 100%);
+  max-height: min(92vh, 900px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 13px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .2);
+}
+
+.mc-app .mc-dialog header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 17px;
+}
+
+.mc-app .mc-dialog header small {
+  color: #587064;
+  font-size: 12px;
+}
+
+.mc-app .mc-dialog header h2 {
+  margin: 4px 0 0;
+  font: 700 25px Georgia, "Times New Roman", serif;
+}
+
+.mc-app .mc-dialog header button {
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #f1f6f2;
+  border: 0;
+  color: #243c35;
+}
+
+.mc-app .mc-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.mc-app .mc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #153c30;
+}
+
+.mc-app .mc-field input,
+.mc-app .mc-field select {
+  height: 40px;
+  background: #fff;
+  border: 1px solid #d6dfdf;
+  border-radius: 8px;
+  color: #18363f;
+  padding: 0 11px;
+  font-size: 12px;
+  width: 100%;
+}
+
+.mc-app .mc-helper {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #526b65;
+}
+
+.mc-app .mc-dialog footer {
+  display: flex;
+  gap: 9px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.mc-app .mc-import-dialog {
+  max-width: 590px;
+}
+
+.mc-app .mc-import-dialog > input {
+  width: 100%;
+  margin: 13px 0;
+}
+
+/* =========================================
+   RESPONSIVE - MEDIUM DESKTOP
+   ========================================= */
+
+@media (max-width: 1500px) {
+  .mc-app .mc-stat {
+    padding: 11px 9px;
+    gap: 8px;
+  }
+
+  .mc-app .mc-stat > span {
+    width: 41px;
+    height: 41px;
+    flex-basis: 41px;
+  }
+
+  .mc-app .mc-stat strong {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 1250px) {
+  .mc-app .mc-toolbar {
+    grid-template-columns:
+      minmax(0, 1.5fr)
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .mc-app .mc-detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1120px) {
+  .mc-app .mc-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mc-app .mc-main {
+    padding: 18px 16px 28px;
+  }
+
+  .mc-app .mc-title-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* PRINT VIEW - PRESERVED */
+
+@media print {
+  .mc-app .ald-sidebar,
+  .mc-app .ald-topbar,
+  .mc-app .mc-detail-buttons,
+  .mc-app .mc-history-add,
+  .mc-app .mc-details-head .mc-outline {
+    display: none !important;
+  }
+
+  .mc-app .mc-main,
+  .mc-app .ald-workspace {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .mc-app .mc-detail-layout {
+    display: block;
+  }
+}
+
+
+/* ==========================================
+   MY CASES - COMPACT SIZE ADJUSTMENT
+   Only My Cases page content
+   ========================================== */
+
+/* Main content spacing */
+.mc-app .mc-main {
+  padding: 18px 20px 28px;
+}
+
+/* Page heading */
+.mc-app .mc-title-row {
+  margin-bottom: 16px;
+}
+
+.mc-app .mc-title-row h1 {
+  font-size: clamp(23px, 2.1vw, 31px);
+}
+
+.mc-app .mc-title-row p {
+  font-size: 12px;
+}
+
+/* Import Case and Add New Case buttons */
+.mc-app .mc-outline,
+.mc-app .mc-primary-btn {
+  min-height: 37px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+/* Statistics cards */
+.mc-app .mc-stats {
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.mc-app .mc-stat {
+  min-height: 82px;
+  padding: 11px 12px;
+  gap: 11px;
+}
+
+.mc-app .mc-stat > span {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+}
+
+.mc-app .mc-stat > span svg {
+  width: 24px;
+  height: 24px;
+}
+
+.mc-app .mc-stat strong {
+  font-size: 23px;
+}
+
+.mc-app .mc-stat small {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Search and filter toolbar */
+.mc-app .mc-toolbar {
+  padding: 9px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mc-app .mc-toolbar input,
+.mc-app .mc-toolbar select {
+  height: 36px;
+  font-size: 12px;
+}
+
+/* Table headers */
+.mc-app .mc-table th {
+  padding: 12px 10px;
+  font-size: 12px;
+}
+
+/* Table rows */
+.mc-app .mc-table td {
+  padding: 12px 10px;
+  font-size: 12px;
+}
+
+.mc-app .mc-table td strong {
+  font-size: 13px;
+}
+
+.mc-app .mc-table td small {
+  font-size: 11px;
+}
+
+.mc-app .mc-case-no {
+  font-size: 13px !important;
+}
+
+/* Hearing date and status */
+.mc-app .mc-date,
+.mc-app .mc-status {
+  font-size: 11px;
+  padding: 6px 8px;
+}
+
+/* Table action icons */
+.mc-app .mc-actions button {
+  width: 28px;
+  height: 28px;
+}
+
+.mc-app .mc-actions button svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Pagination */
+.mc-app .mc-table-footer {
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.mc-app .mc-pages button {
+  width: 29px;
+  height: 29px;
+}
+
+/* Case details */
+.mc-app .mc-detail-card h2,
+.mc-app .mc-history-card h2 {
+  font-size: 18px;
+}
+
+.mc-app .mc-info-grid strong {
+  font-size: 13px;
+}
+
+.mc-app .mc-proceedings p {
+  font-size: 13px;
+}
+
+/* Popups */
+.mc-app .mc-dialog header h2 {
+  font-size: 22px;
+}
+
+/* Preserve compact sizing on smaller screens */
+@media (max-width: 780px) {
+  .mc-app .mc-main {
+    padding: 14px;
+  }
+
+  .mc-app .mc-title-row h1 {
+    font-size: 24px;
+  }
+
+  .mc-app .mc-stat strong {
+    font-size: 21px;
+  }
+
+  .mc-app .mc-stat small {
+    font-size: 11px;
+  }
+}
+
+
+/* =========================================
+   MY CASES - RESPONSIVE (TABLET AND MOBILE)
+   Desktop layout and colors remain unchanged.
+   ========================================= */
+
+/* Tablet: preserve the desktop table, allow horizontal scrolling. */
+@media (max-width: 1000px) {
+  .mc-app .mc-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mc-app .mc-table {
+    width: 100%;
+    min-width: 900px;
+    table-layout: auto;
+  }
+}
+
+@media (max-width: 850px) {
+  .mc-app .mc-title-row h1 {
+    font-size: 26px;
+  }
+
+  .mc-app .mc-title-row p {
+    font-size: 12px;
+  }
+
+  .mc-app .mc-stat strong {
+    font-size: 23px;
+  }
+
+  .mc-app .mc-stat small,
+  .mc-app .mc-table td {
+    font-size: 12px;
+  }
+
+  .mc-app .mc-table td strong,
+  .mc-app .mc-case-no {
+    font-size: 13px !important;
+  }
+
+  .mc-app .mc-toolbar input,
+  .mc-app .mc-toolbar select {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 780px) {
+  .mc-app .mc-main {
+    padding: 15px;
+  }
+
+  .mc-app .mc-title-row {
+    flex-direction: column;
+  }
+
+  .mc-app .mc-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mc-app .mc-toolbar-search {
+    grid-column: 1 / -1;
+  }
+
+  .mc-app .mc-form-grid,
+  .mc-app .mc-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mc-app .mc-dialog {
+    box-sizing: border-box;
+    width: min(720px, 100%);
+    max-height: calc(100dvh - 30px);
+    padding: 17px;
+  }
+}
+
+/* Mobile: show only the most useful fields in short, readable case cards. */
+@media (max-width: 600px) {
+  .mc-app .mc-main {
+    padding: 13px 10px 24px;
+  }
+
+  .mc-app .mc-title-row h1 {
+    font-size: 24px;
+  }
+
+  .mc-app .mc-title-actions {
+    width: 100%;
+  }
+
+  .mc-app .mc-title-actions button {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .mc-app .mc-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mc-app .mc-stat {
+    min-height: 74px;
+    padding: 9px 8px;
+    gap: 8px;
+  }
+
+  .mc-app .mc-stat > span {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
+
+  .mc-app .mc-stat > span svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .mc-app .mc-stat strong {
+    font-size: 20px;
+  }
+
+  .mc-app .mc-stat small {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  /* Search full width; the four filters in two rows. */
+  .mc-app .mc-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .mc-app .mc-toolbar-search {
+    grid-column: 1 / -1;
+  }
+
+  .mc-app .mc-toolbar input,
+  .mc-app .mc-toolbar select {
+    height: 35px;
+    font-size: 12px;
+  }
+
+  /* Case cards instead of a tall field-by-field mobile form. */
+  .mc-app .mc-table-scroll {
+    overflow-x: hidden;
+    padding: 8px;
+  }
+
+  .mc-app .mc-table,
+  .mc-app .mc-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mc-app .mc-table thead {
+    display: none;
+  }
+
+  .mc-app .mc-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "case status"
+      "title title"
+      "court hearing"
+      "court actions";
+    gap: 4px 10px;
+    min-width: 0;
+    padding: 10px 11px;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid #e6e4dc;
+    border-radius: 9px;
+  }
+
+  .mc-app .mc-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .mc-app .mc-table tbody td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    white-space: normal;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  /* Row index and case type remain available in the desktop table/details. */
+  .mc-app .mc-table tbody td:nth-child(1),
+  .mc-app .mc-table tbody td:nth-child(5) {
+    display: none;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(2) {
+    grid-area: case;
+    align-self: center;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(2)::before {
+    content: "Case # ";
+    color: #526277;
+    font: 400 11px Arial, Helvetica, sans-serif;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(3) {
+    grid-area: title;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(3) strong {
+    font-size: 13px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) {
+    grid-area: court;
+    align-self: start;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(6) {
+    grid-area: hearing;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(6)::before {
+    content: "Next hearing";
+    display: block;
+    margin-bottom: 3px;
+    color: #526277;
+    font: 400 10px Arial, Helvetica, sans-serif;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(7) {
+    grid-area: status;
+    justify-self: end;
+    align-self: center;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(8) {
+    grid-area: actions;
+    justify-self: end;
+    align-self: end;
+  }
+
+  .mc-app .mc-date,
+  .mc-app .mc-status {
+    min-width: 0;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .mc-app .mc-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  .mc-app .mc-actions button {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Empty search results remain a simple message. */
+  .mc-app .mc-table tbody tr:has(.mc-empty) {
+    display: block;
+  }
+
+  .mc-app .mc-table .mc-empty {
+    display: block;
+    width: 100%;
+    padding: 22px 10px !important;
+    text-align: center;
+  }
+
+  .mc-app .mc-table-footer {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    text-align: left;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .mc-app .mc-detail-buttons {
+    flex-wrap: wrap;
+  }
+
+  .mc-app .mc-backdrop {
+    padding: 10px;
+  }
+
+  .mc-app .mc-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    padding: 16px 13px;
+  }
+}
+
+/* Very small phones: keep the same compact two-column cards. */
+@media (max-width: 420px) {
+  .mc-app .mc-main {
+    padding: 11px 8px 22px;
+  }
+
+  .mc-app .mc-title-row h1 {
+    font-size: 22px;
+  }
+
+  .mc-app .mc-title-actions {
+    flex-direction: column;
+  }
+
+  .mc-app .mc-title-actions button {
+    width: 100%;
+  }
+
+  .mc-app .mc-stat {
+    padding: 8px 7px;
+    gap: 6px;
+  }
+
+  .mc-app .mc-stat > span {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .mc-app .mc-stat strong {
+    font-size: 19px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================
+   MY CASES - REMOVE HORIZONTAL SCROLL
+   FIT ALL TABLE COLUMNS IN PAGE
+========================================== */
+
+@media (min-width: 601px) {
+
+  .mc-app .mc-table-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mc-app .mc-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  .mc-app .mc-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+  }
+
+  /* Column widths */
+  .mc-app .mc-table th:nth-child(1),
+  .mc-app .mc-table td:nth-child(1) {
+    width: 4%;
+  }
+
+  .mc-app .mc-table th:nth-child(2),
+  .mc-app .mc-table td:nth-child(2) {
+    width: 9%;
+  }
+
+  .mc-app .mc-table th:nth-child(3),
+  .mc-app .mc-table td:nth-child(3) {
+    width: 21%;
+  }
+
+  .mc-app .mc-table th:nth-child(4),
+  .mc-app .mc-table td:nth-child(4) {
+    width: 19%;
+  }
+
+  .mc-app .mc-table th:nth-child(5),
+  .mc-app .mc-table td:nth-child(5) {
+    width: 11%;
+  }
+
+  .mc-app .mc-table th:nth-child(6),
+  .mc-app .mc-table td:nth-child(6) {
+    width: 14%;
+  }
+
+  .mc-app .mc-table th:nth-child(7),
+  .mc-app .mc-table td:nth-child(7) {
+    width: 11%;
+  }
+
+  .mc-app .mc-table th:nth-child(8),
+  .mc-app .mc-table td:nth-child(8) {
+    width: 11%;
+  }
+
+  /* Allow text to wrap */
+  .mc-app .mc-table th,
+  .mc-app .mc-table td {
+    padding: 12px 7px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+  }
+
+  .mc-app .mc-table th {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .mc-app .mc-table td {
+    font-size: 12px;
+  }
+
+  /* Status and date */
+  .mc-app .mc-date,
+  .mc-app .mc-status {
+    min-width: 0;
+    max-width: 100%;
+    padding: 6px 5px;
+    font-size: 10px;
+    white-space: normal;
+  }
+
+  /* Action buttons */
+  .mc-app .mc-actions {
+    gap: 2px;
+    flex-wrap: nowrap;
+  }
+
+  .mc-app .mc-actions button {
+    width: 26px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+}
+
+/* Smaller tablet screens */
+@media (min-width: 601px) and (max-width: 850px) {
+
+  .mc-app .mc-table th,
+  .mc-app .mc-table td {
+    padding: 10px 4px;
+    font-size: 11px;
+  }
+
+  .mc-app .mc-table td strong,
+  .mc-app .mc-case-no {
+    font-size: 12px !important;
+  }
+
+  .mc-app .mc-table td small {
+    font-size: 10px;
+  }
+}
+
+
+/* ==========================================
+   MY CASES - CLEAN MOBILE CARD DESIGN
+   Mobile Only
+========================================== */
+
+@media (max-width: 600px) {
+
+  /* Cards container */
+
+  .mc-app .mc-table-scroll {
+    padding: 9px;
+    overflow-x: hidden;
+  }
+
+  /* Compact case cards */
+
+  .mc-app .mc-table tbody tr {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr) auto;
+
+    grid-template-areas:
+      "case status"
+      "title title"
+      "court hearing"
+      "actions actions";
+
+    grid-template-rows: auto;
+
+    gap: 8px 12px;
+
+    padding: 14px;
+    margin-bottom: 10px;
+
+    background: #ffffff;
+    border: 1px solid #e7e5dc;
+    border-radius: 12px;
+
+    box-shadow:
+      0 2px 8px rgba(0, 45, 32, 0.035);
+  }
+
+  /* Remove default cell spacing */
+
+  .mc-app .mc-table tbody td {
+    padding: 0;
+    height: auto;
+    min-height: 0;
+    background: transparent;
+  }
+
+  /* Case number */
+
+  .mc-app .mc-table tbody td:nth-child(2) {
+    grid-area: case;
+    align-self: center;
+    color: #004535;
+    font-size: 12px;
+  }
+
+  /* Case title */
+
+  .mc-app .mc-table tbody td:nth-child(3) {
+    grid-area: title;
+    padding: 2px 0 4px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(3) strong {
+    color: #102b23;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* Court details */
+
+  .mc-app .mc-table tbody td:nth-child(4) {
+    grid-area: court;
+    align-self: start;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4)::before {
+    content: "Court";
+    display: block;
+    margin-bottom: 4px;
+    color: #82908b;
+    font-size: 10px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small {
+    margin-top: 3px;
+    font-size: 11px;
+  }
+
+  /* Hearing date */
+
+  .mc-app .mc-table tbody td:nth-child(6) {
+    grid-area: hearing;
+    align-self: start;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(6)::before {
+    margin-bottom: 5px;
+  }
+
+  .mc-app .mc-date {
+    display: inline-block;
+    padding: 6px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  /* Status */
+
+  .mc-app .mc-table tbody td:nth-child(7) {
+    grid-area: status;
+    align-self: center;
+    justify-self: end;
+  }
+
+  .mc-app .mc-status {
+    border-radius: 20px;
+    padding: 5px 11px;
+    font-size: 11px;
+  }
+
+  /* Bottom actions */
+
+  .mc-app .mc-table tbody td:nth-child(8) {
+    grid-area: actions;
+    justify-self: stretch;
+    align-self: center;
+
+    padding-top: 9px;
+    margin-top: 3px;
+
+    border-top: 1px solid #eef0eb;
+  }
+
+  .mc-app .mc-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .mc-app .mc-actions button {
+    width: 34px;
+    height: 32px;
+    border-radius: 8px;
+    color: #004535;
+    background: #f3f8f5;
+  }
+
+  .mc-app .mc-actions button:hover {
+    background: #e2f1e8;
+  }
+
+  /* Empty table state */
+
+  .mc-app .mc-table tbody tr:has(.mc-empty) {
+    display: block;
+  }
+
+}
+
+
+/* =========================================
+   MY CASES - MOBILE COMPACT LIST DESIGN
+   No individual cards, no horizontal scroll
+========================================= */
+
+@media (max-width: 600px) {
+
+  /* Main table container */
+  .mc-app .mc-table-card {
+    width: 100%;
+    min-width: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .mc-app .mc-table-scroll {
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .mc-app .mc-table,
+  .mc-app .mc-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .mc-app .mc-table thead {
+    display: none;
+  }
+
+  /* Each case is one compact list item */
+  .mc-app .mc-table tbody tr {
+    display: grid !important;
+
+    grid-template-columns:
+      44px minmax(0, 1fr) auto !important;
+
+    grid-template-areas:
+      "number title status"
+      "number court court"
+      "number hearing actions" !important;
+
+    gap: 6px 10px;
+
+    align-items: center;
+
+    padding: 13px 12px !important;
+    margin: 0 !important;
+
+    background: #fff !important;
+
+    border: 0 !important;
+    border-bottom: 1px solid #e9ebe6 !important;
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+  }
+
+  .mc-app .mc-table tbody tr:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .mc-app .mc-table tbody td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  /* Hide index and case type on mobile */
+  .mc-app .mc-table tbody td:nth-child(1),
+  .mc-app .mc-table tbody td:nth-child(5) {
+    display: none !important;
+  }
+
+  /* Case number badge */
+  .mc-app .mc-table tbody td:nth-child(2) {
+    grid-area: number;
+    align-self: start;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+    padding: 5px 3px !important;
+
+    background: #eaf5ee !important;
+    border-radius: 9px;
+
+    color: #004535;
+    font-size: 14px !important;
+    font-weight: 700;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(2)::before {
+    content: "CASE" !important;
+    display: block;
+
+    margin-bottom: 3px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #628274;
+  }
+
+  /* Case title */
+  .mc-app .mc-table tbody td:nth-child(3) {
+    grid-area: title;
+    align-self: center;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(3) strong {
+    font-size: 14px !important;
+    font-weight: 600;
+    color: #102d27;
+    line-height: 1.4;
+  }
+
+  /* Court + location in one line */
+  .mc-app .mc-table tbody td:nth-child(4) {
+    grid-area: court;
+    font-size: 12px;
+    color: #526577;
+    line-height: 1.4;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small {
+    display: inline;
+    margin: 0;
+    font-size: 11px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small::before {
+    content: " · ";
+  }
+
+  /* Next hearing */
+  .mc-app .mc-table tbody td:nth-child(6) {
+    grid-area: hearing;
+    justify-self: start;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(6)::before {
+    content: "Next: " !important;
+    display: inline !important;
+    margin: 0 5px 0 0;
+    color: #788b86;
+    font-size: 11px;
+  }
+
+  .mc-app .mc-date {
+    display: inline-block;
+    min-width: 0;
+    padding: 4px 7px;
+    font-size: 10px;
+    border-radius: 7px;
+  }
+
+  /* Status at top right */
+  .mc-app .mc-table tbody td:nth-child(7) {
+    grid-area: status;
+    justify-self: end;
+    align-self: center;
+  }
+
+  .mc-app .mc-status {
+    min-width: 0;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+  }
+
+  /* Action icons at bottom right */
+  .mc-app .mc-table tbody td:nth-child(8) {
+    grid-area: actions;
+    justify-self: end;
+    align-self: center;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .mc-app .mc-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .mc-app .mc-actions button {
+    width: 30px;
+    height: 30px;
+    background: #f1f7f3;
+    color: #004535;
+    border-radius: 7px;
+  }
+
+  /* Empty results */
+  .mc-app .mc-table tbody tr:has(.mc-empty) {
+    display: block !important;
+  }
+
+  .mc-app .mc-table .mc-empty {
+    width: 100%;
+    padding: 22px 10px !important;
+    text-align: center;
+  }
+}
+
+
+/* MY CASES - EXTRA COMPACT MOBILE FIX */
+
+@media (max-width: 600px) {
+
+  .mc-app .mc-table tbody tr {
+    grid-template-columns:
+      43px minmax(0, 1fr) auto !important;
+
+    grid-template-areas:
+      "number title status"
+      "number court court"
+      "number hearing actions" !important;
+
+    gap: 5px 10px !important;
+    padding: 11px 12px !important;
+    min-height: 0 !important;
+    align-items: center !important;
+  }
+
+  /* Remove extra Court label */
+  .mc-app .mc-table tbody td:nth-child(4)::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* Court and location single line */
+  .mc-app .mc-table tbody td:nth-child(4) {
+    grid-area: court !important;
+    line-height: 1.35 !important;
+    font-size: 12px !important;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small {
+    display: inline !important;
+    margin: 0 !important;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(4) small::before {
+    content: " · " !important;
+  }
+
+  /* Smaller case number badge */
+  .mc-app .mc-table tbody td:nth-child(2) {
+    align-self: start !important;
+    min-height: 42px !important;
+  }
+
+  /* Compact title */
+  .mc-app .mc-table tbody td:nth-child(3) strong {
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Hearing text inline */
+  .mc-app .mc-table tbody td:nth-child(6) {
+    grid-area: hearing !important;
+    align-self: center !important;
+  }
+
+  .mc-app .mc-table tbody td:nth-child(6)::before {
+    content: "Next: " !important;
+    display: inline !important;
+    margin: 0 5px 0 0 !important;
+  }
+
+  /* Action buttons inline */
+  .mc-app .mc-table tbody td:nth-child(8) {
+    grid-area: actions !important;
+    align-self: center !important;
+    justify-self: end !important;
+  }
+
+  .mc-app .mc-actions button {
+    width: 29px !important;
+    height: 29px !important;
+  }
+
+}
+
+
+/* MY CASES - BUTTON ON RIGHT SIDE */
+
+.mc-app .mc-title-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+}
+
+.mc-app .mc-heading-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mc-app .mc-title-row .mc-title-actions {
+  display: flex;
+  flex: 0 0 auto;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.mc-app .mc-title-row .mc-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  min-height: 39px !important;
+
+  padding: 9px 12px !important;
+  border-radius: 9px;
+
+  background: #004535;
+  color: white;
+
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .mc-app .mc-title-row {
+    padding: 15px 12px !important;
+  }
+
+  .mc-app .mc-title-row h1 {
+    font-size: 25px !important;
+  }
+
+  .mc-app .mc-title-row p {
+    font-size: 11px !important;
+    line-height: 1.4;
+  }
+
+  .mc-app .mc-title-row .mc-title-actions {
+    width: auto !important;
+  }
+
+  .mc-app .mc-title-row .mc-title-actions button {
+    width: auto !important;
+    flex: none !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    min-height: 36px !important;
+  }
+}

@@ -1,0 +1,666 @@
+
+/* ==========================================
+   ADVO CANOTE - DIARY ENTRY DETAILS
+   MATCHES HEARINGS + MY CASES THEME
+   ========================================== */
+
+.ald-main.ded-page {
+  display: block;
+  min-width: 0;
+  min-height: calc(100vh - 72px);
+  padding: 22px 24px 34px;
+  background: #faf8f3;
+  color: #111b21;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================
+   PAGE HEADING
+   ========================================== */
+
+.ded-page .ded-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 21px;
+}
+
+.ded-page .ded-heading-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.ded-page .ded-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #e6e4dc;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #003e2e;
+  font: 700 13px/1.2 Arial, Helvetica, sans-serif;
+  letter-spacing: 0.01em;
+  box-shadow: 0 3px 10px rgba(50, 42, 25, 0.035);
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.ded-page .ded-back svg {
+  color: #003e2e;
+  transition: transform 0.22s ease;
+}
+
+.ded-page .ded-back:hover {
+  background: #eaf4ef;
+  border-color: #b8d6c6;
+  color: #003a2c;
+  box-shadow: 0 3px 12px rgba(0, 58, 44, 0.07);
+  transform: translateY(-1px);
+}
+
+.ded-page .ded-back:hover svg {
+  transform: translateX(-2px);
+}
+
+.ded-page .ded-back:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 58, 44, 0.08);
+}
+
+.ded-page h1 {
+  margin: 0;
+  color: #101416;
+  font: 700 28px/1.2 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.5px;
+}
+
+.ded-page .ded-heading-main p {
+  margin: 6px 0 0;
+  color: #526277;
+  font: 12px/1.5 Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================
+   ENTRY COUNTER
+   ========================================== */
+
+.ded-page .ded-position {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.ded-page .ded-position strong {
+  padding: 8px 12px;
+  border: 1px solid #d3eadc;
+  border-radius: 8px;
+  background: #e8f5ed;
+  color: #003e2e;
+  font: 700 12px/1.4 Georgia,
+    "Times New Roman", serif;
+}
+
+.ded-page .ded-position small {
+  color: #526277;
+  font: 12px Arial, sans-serif;
+}
+
+/* ==========================================
+   MAIN LAYOUT
+   ========================================== */
+
+.ded-page .ded-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(245px, 28%);
+  gap: 15px;
+  align-items: start;
+}
+
+.ded-page .ded-primary {
+  min-width: 0;
+}
+
+/* ==========================================
+   WHITE CARDS - HEARINGS THEME
+   ========================================== */
+
+.ded-page .ded-card {
+  min-width: 0;
+  margin: 0 0 14px;
+  padding: 15px;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 3px 15px rgba(50, 42, 25, 0.045);
+}
+
+/* ==========================================
+   CARD HEADINGS
+   ========================================== */
+
+.ded-page .ded-card-title,
+.ded-page .ded-history-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -15px -15px 15px;
+  padding: 15px 16px;
+  border-bottom: 1px solid #e6e4dc;
+  border-radius: 10px 10px 0 0;
+  background: #fbfaf8;
+  color: #101416;
+  font: 700 18px/1.3 Georgia,
+    "Times New Roman", serif;
+}
+
+.ded-page .ded-card-title svg,
+.ded-page .ded-history-title svg {
+  color: #008455;
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   CASE INFORMATION
+   ========================================== */
+
+.ded-page .ded-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.ded-page .ded-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 75px;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid #e6e4dc;
+  border-radius: 9px;
+  background: #fbfaf8;
+}
+
+.ded-page .ded-field > span {
+  color: #526277;
+  font: 12px Arial, Helvetica, sans-serif;
+}
+
+.ded-page .ded-field strong {
+  color: #111b21;
+  font: 600 13px/1.5 Arial, Helvetica, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   CASE STATUS
+   ========================================== */
+
+.ded-page .ded-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #e3f5eb;
+  color: #075c3c;
+  font: normal 600 12px Arial, sans-serif;
+}
+
+/* ==========================================
+   FULL COURT PROCEEDINGS
+   ========================================== */
+
+.ded-page .ded-proceedings {
+  padding: 16px;
+  border: 1px solid #e6e4dc;
+  border-left: 3px solid #d6a43b;
+  border-radius: 9px;
+  background: #fbfaf8;
+  color: #354c66;
+  font: 13px/1.65 Arial, Helvetica, sans-serif;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ==========================================
+   POINT-WISE NOTES
+   ========================================== */
+
+.ded-page .ded-points {
+  margin-top: 16px;
+}
+
+.ded-page .ded-points h3 {
+  margin: 0 0 10px;
+  color: #101416;
+  font: 700 17px/1.4 Georgia,
+    "Times New Roman", serif;
+}
+
+/* ==========================================
+   ACTION BUTTONS
+   ========================================== */
+
+.ded-page .ded-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ded-page .ded-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 43px;
+  padding: 10px 15px;
+  border-radius: 9px;
+  font: 600 13px Arial, sans-serif;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ded-page .ded-button-primary {
+  border: 1px solid #003e2e;
+  background: #003e2e;
+  color: #ffffff;
+}
+
+.ded-page .ded-button-primary:hover {
+  background: #00533e;
+  box-shadow: 0 3px 9px rgba(0, 58, 44, 0.13);
+}
+
+.ded-page .ded-button-secondary {
+  border: 1px solid #cbded2;
+  background: #ffffff;
+  color: #003e2e;
+}
+
+.ded-page .ded-button-secondary:hover {
+  background: #eaf4ef;
+}
+
+.ded-page .ded-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   RIGHT SIDE - DIARY HISTORY
+   ========================================== */
+
+.ded-page .ded-history {
+  margin-bottom: 0;
+  outline-offset: 3px;
+}
+
+.ded-page .ded-history-title {
+  margin-bottom: 7px;
+  color: #101416;
+  font-size: 18px;
+}
+
+.ded-page .ded-history-subtitle {
+  margin: 0 0 17px;
+  color: #526277;
+  font: 12px/1.5 Arial, sans-serif;
+}
+
+/* ==========================================
+   HISTORY TIMELINE
+   ========================================== */
+
+.ded-page .ded-timeline {
+  margin: 6px 0 18px 11px;
+  border-left: 2px solid #dfe8e1;
+}
+
+.ded-page .ded-history-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0 0 7px;
+  padding: 12px 11px 12px 17px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #354c66;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ded-page .ded-history-item:hover {
+  background: #f4f9f5;
+}
+
+/* Selected diary entry */
+.ded-page .ded-history-active {
+  border-color: #d6ebdd;
+  background: #e8f5ed;
+}
+
+.ded-page .ded-history-active:hover {
+  background: #e1f2e8;
+}
+
+/* Timeline dots */
+.ded-page .ded-dot {
+  position: absolute;
+  top: 17px;
+  left: -18px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #abbab0;
+}
+
+.ded-page .ded-history-active .ded-dot {
+  background: #008455;
+}
+
+.ded-page .ded-history-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ded-page .ded-history-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.ded-page .ded-history-heading strong,
+.ded-page .ded-history-heading b {
+  color: #102f42;
+  font: 700 12px/1.5 Arial, sans-serif;
+}
+
+.ded-page .ded-history-note {
+  display: block;
+  max-height: 3.2em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #526277;
+  font: 12px/1.6 Arial, sans-serif;
+}
+
+.ded-page .ded-history-body small {
+  color: #526277;
+  font: 11px/1.5 Arial, sans-serif;
+}
+
+/* ==========================================
+   ADD ANOTHER DIARY ENTRY BUTTON
+   ========================================== */
+
+.ded-page .ded-button-add {
+  width: 100%;
+  border: 1px solid #cbded2;
+  background: #ffffff;
+  color: #003e2e;
+  font: 600 13px Arial, sans-serif;
+}
+
+.ded-page .ded-button-add:hover {
+  background: #eaf4ef;
+}
+
+/* ==========================================
+   LOADING AND ERROR
+   ========================================== */
+
+.ded-page .ded-message {
+  padding: 28px;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #354c66;
+  font: 13px Arial, sans-serif;
+}
+
+.ded-page .ded-message button {
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+.ded-page .ded-error,
+.ded-edit-form .ded-error {
+  color: #b42318;
+  font: 12px/1.5 Arial, sans-serif;
+}
+
+.ded-page .ded-empty {
+  color: #526277;
+  font: 12px/1.6 Arial, sans-serif;
+}
+
+/* ==========================================
+   EDIT ENTRY POPUP
+   ========================================== */
+
+.ded-edit-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 15px;
+  background: rgba(9, 37, 29, 0.60);
+}
+
+.ded-edit-dialog {
+  width: min(610px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid #e6e4dc;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(0, 35, 26, 0.18);
+}
+
+.ded-edit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ded-edit-head h2 {
+  margin: 0;
+  color: #101416;
+  font: 700 22px Georgia, "Times New Roman", serif;
+}
+
+.ded-edit-head button {
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 0;
+  border-radius: 8px;
+  background: #edf5ef;
+  color: #003a2c;
+  cursor: pointer;
+}
+
+.ded-edit-dialog > p {
+  margin: 7px 0 12px;
+  color: #526277;
+  font: 12px Arial, sans-serif;
+}
+
+.ded-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.ded-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #254637;
+  font: 600 12px Arial, sans-serif;
+}
+
+.ded-edit-form label:has(textarea),
+.ded-edit-form .ded-error,
+.ded-edit-actions {
+  grid-column: 1 / -1;
+}
+
+.ded-edit-form input,
+.ded-edit-form select,
+.ded-edit-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #e6e4dc;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #111b21;
+  font: 13px Arial, sans-serif;
+}
+
+.ded-edit-form textarea {
+  resize: vertical;
+}
+
+.ded-edit-form input:focus,
+.ded-edit-form select:focus,
+.ded-edit-form textarea:focus {
+  border-color: #d6a43b;
+  box-shadow: 0 0 0 2px rgba(214, 164, 59, 0.18);
+}
+
+.ded-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ded-edit-actions .ded-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 10px 17px;
+  border-radius: 9px;
+  font: 600 13px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.ded-edit-actions .ded-button-primary {
+  border: 1px solid #003e2e;
+  background: #003e2e;
+  color: #ffffff;
+}
+
+.ded-edit-actions .ded-button-secondary {
+  border: 1px solid #cbded2;
+  background: #ffffff;
+  color: #003e2e;
+}
+
+.ded-edit-actions .ded-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1080px) {
+  .ded-page .ded-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .ald-main.ded-page {
+    padding: 15px;
+  }
+
+  .ded-page .ded-heading {
+    align-items: flex-start;
+  }
+
+  .ded-page .ded-heading-main {
+    gap: 10px;
+  }
+
+  .ded-page .ded-info-grid,
+  .ded-edit-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ded-page .ded-position {
+    text-align: right;
+  }
+
+  .ded-page .ded-actions {
+    flex-direction: column;
+  }
+
+  .ded-page .ded-actions .ded-button {
+    width: 100%;
+  }
+}
+
+/* ==========================================
+   PRINT
+   ========================================== */
+
+@media print {
+  body:has(.ded-page) .ald-sidebar,
+  body:has(.ded-page) .ald-topbar,
+  body:has(.ded-page) .ded-back,
+  body:has(.ded-page) .ded-actions,
+  body:has(.ded-page) .ded-history,
+  body:has(.ded-page) .ded-edit-backdrop {
+    display: none !important;
+  }
+
+  body:has(.ded-page) .ald-workspace {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  body:has(.ded-page) .ded-page {
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  body:has(.ded-page) .ded-layout {
+    display: block;
+  }
+
+  body:has(.ded-page) .ded-card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}

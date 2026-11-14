@@ -1,0 +1,357 @@
+
+/* ======================================
+   ADVOCANOTE ADMIN SHARED LAYOUT
+====================================== */
+
+.adm-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #faf8f3;
+  color: #102c23;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.adm-layout *,
+.adm-layout *::before,
+.adm-layout *::after {
+  box-sizing: border-box;
+}
+
+.adm-layout button,
+.adm-layout input {
+  font: inherit;
+}
+
+.adm-layout button {
+  cursor: pointer;
+}
+
+.adm-layout button:focus-visible,
+.adm-layout input:focus-visible {
+  outline: 2px solid #d4a83e;
+  outline-offset: 3px;
+}
+
+.adm-layout > .adms-sidebar {
+  flex-shrink: 0;
+}
+
+/* WORKSPACE */
+
+.adm-workspace {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 5%,
+      #fffefa,
+      transparent 60%
+    ),
+    #faf8f3;
+}
+
+/* TOP HEADER */
+
+.adm-topbar {
+  position: relative;
+  z-index: 20;
+
+  min-height: 72px;
+  padding: 10px 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid #eae6dc;
+}
+
+/* HEADER SEARCH */
+
+.adm-header-search {
+  flex: 1;
+  min-width: 0;
+  max-width: 790px;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 0 12px 0 16px;
+
+  border: 1px solid #e1e3e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #092c25;
+}
+
+.adm-header-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  color: #183b31;
+  background: transparent;
+  font-size: 13px;
+}
+
+.adm-header-search input::placeholder {
+  color: #8395a5;
+}
+
+.adm-header-search button {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #edf5ef;
+  color: #00432f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adm-header-search button:hover {
+  background: #daeadf;
+}
+
+/* HEADER ACTIONS */
+
+.adm-header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.adm-icon-button,
+.adm-menu-toggle {
+  width: 38px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  background: transparent;
+  color: #092c25;
+}
+
+.adm-header-divider {
+  height: 42px;
+  width: 1px;
+  background: #e9e7e0;
+}
+
+.adm-menu-toggle {
+  display: none;
+}
+
+/* ADMIN PROFILE */
+
+.adm-profile-area {
+  position: relative;
+}
+
+.adm-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #102c23;
+  text-align: left;
+}
+
+.adm-avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+  border: 1px solid #f1d38a;
+  background: #ffe6ad;
+
+  font: 700 18px Georgia, serif;
+}
+
+.adm-profile-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.adm-profile-info strong {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.adm-profile-info small {
+  margin-top: 3px;
+  color: #667b8d;
+  font-size: 12px;
+}
+
+/* PROFILE DROPDOWN */
+
+.adm-profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 15px);
+  z-index: 40;
+
+  width: 230px;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border: 1px solid #e4e3dc;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 12px 35px rgba(0, 40, 26, .12);
+}
+
+.adm-profile-dropdown strong {
+  font-size: 14px;
+}
+
+.adm-profile-dropdown small {
+  color: #667b8d;
+  overflow-wrap: anywhere;
+}
+
+.adm-profile-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-top: 7px;
+  padding: 10px;
+
+  border: 0;
+  border-radius: 8px;
+  background: #f1f6f2;
+  color: #00432f;
+}
+
+.adm-profile-dropdown button:hover {
+  background: #e3efe6;
+}
+
+.adm-profile-dropdown button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* CONTENT */
+
+.adm-main {
+  width: 100%;
+  min-width: 0;
+  max-width: 1700px;
+  margin: 0 auto;
+  padding: 23px 25px 36px;
+}
+
+.adm-search-error {
+  padding: 10px 25px;
+  margin: 0;
+  background: #fff6ec;
+  color: #9b5c17;
+  font-size: 12px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+  .adm-topbar {
+    padding-inline: 16px;
+    gap: 15px;
+  }
+
+  .adm-header-actions {
+    gap: 10px;
+  }
+
+  .adm-main {
+    padding: 18px 16px 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .adm-menu-toggle {
+    display: grid;
+  }
+
+  .adm-topbar {
+    min-height: 66px;
+    padding: 10px 12px;
+    gap: 9px;
+  }
+
+  .adm-header-search {
+    height: 42px;
+    gap: 7px;
+    padding: 0 10px;
+  }
+
+  .adm-header-search input {
+    font-size: 12px;
+  }
+
+  .adm-header-search button {
+    display: none;
+  }
+
+  .adm-profile-info,
+  .adm-profile-button > svg,
+  .adm-header-divider {
+    display: none;
+  }
+
+  .adm-profile-button {
+    gap: 0;
+  }
+
+  .adm-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    font-size: 13px;
+  }
+
+  .adm-header-actions {
+    gap: 3px;
+  }
+
+  .adm-main {
+    padding: 15px 12px 25px;
+  }
+}
+
+@media (max-width: 420px) {
+  .adm-icon-button {
+    width: 30px;
+  }
+
+  .adm-header-search {
+    padding: 0 7px;
+  }
+}

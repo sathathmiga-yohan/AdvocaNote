@@ -1,0 +1,2778 @@
+/* ==========================================
+   ADVO CANOTE - CASE DETAILS
+   COMPACT DESIGN
+   Matches My Cases and My Legal Diary
+   ========================================== */
+
+.cd-page {
+  min-width: 0;
+  color: #111b21;
+}
+
+/* ==========================================
+   PAGE HEADER
+   ========================================== */
+
+.cd-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cd-heading-title {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.cd-heading h1 {
+  margin: 0;
+  color: #101416;
+  font: 700 clamp(23px, 2vw, 29px)/1.18 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.5px;
+}
+
+.cd-heading p {
+  margin: 5px 0 0;
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* BACK AND ADD BUTTONS */
+
+.cd-back,
+.cd-add,
+.cd-sort,
+.cd-view,
+.cd-mobile-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  border-radius: 8px;
+  font: 600 12px Arial, Helvetica, sans-serif;
+}
+
+.cd-back {
+  min-height: 38px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  color: #18322a;
+  white-space: nowrap;
+}
+
+.cd-add {
+  min-height: 40px;
+  padding: 8px 13px;
+  background: #003e2e;
+  border: 1px solid #003e2e;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.cd-back svg,
+.cd-add svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cd-back:hover {
+  background: #f1f7f3;
+}
+
+.cd-add:hover {
+  background: #00533e;
+}
+
+/* ==========================================
+   CASE SUMMARY CARD
+   ========================================== */
+
+.cd-summary,
+.cd-panel {
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  box-shadow: 0 3px 15px rgba(50, 42, 25, 0.045);
+}
+
+.cd-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 13px 15px;
+  margin-bottom: 12px;
+}
+
+.cd-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cd-folder {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #fff4d7;
+  color: #d3951b;
+}
+
+.cd-folder svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cd-case-identity {
+  min-width: 0;
+}
+
+.cd-case-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cd-case-line h2 {
+  margin: 0;
+  font: 700 23px/1.15 Georgia, serif;
+  color: #101416;
+  overflow-wrap: anywhere;
+}
+
+.cd-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: #eff0ee;
+  color: #435459;
+  font: 600 11px Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cd-active {
+  color: #07583b;
+  background: #e0f4e7;
+}
+
+.cd-case-identity p {
+  margin: 5px 0 3px;
+  color: #15202c;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.cd-case-identity small {
+  display: block;
+  color: #526277;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* NEXT HEARING */
+
+.cd-next-hearing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: 8px;
+  background: #eff8f2;
+  color: #004b36;
+}
+
+.cd-next-hearing svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cd-next-hearing div {
+  display: grid;
+  gap: 4px;
+}
+
+.cd-next-hearing span {
+  font-size: 11px;
+  color: #395b4b;
+}
+
+.cd-next-hearing strong {
+  font: 700 13px Georgia, serif;
+}
+
+/* ==========================================
+   NAVIGATION TABS
+   ========================================== */
+
+.cd-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cd-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 43px;
+  padding: 8px;
+  border: 1px solid #e6e4dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #132326;
+  font: 600 12px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.cd-tab svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.cd-tab:hover {
+  background: #f2f7f3;
+}
+
+.cd-tab-active,
+.cd-tab-active:hover {
+  color: #fff;
+  border-color: #003e2e;
+  background: #003e2e;
+}
+
+/* ==========================================
+   MAIN CONTENT PANEL
+   ========================================== */
+
+.cd-panel {
+  padding: 15px;
+  min-width: 0;
+}
+
+.cd-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: #111b21;
+  font: 700 19px/1.3 Georgia, serif;
+}
+
+.cd-panel h2 svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cd-panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cd-panel-top p {
+  margin: 4px 0 0;
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* SEARCH AND SORT */
+
+.cd-history-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cd-search {
+  height: 36px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #dce3e8;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.cd-search svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.cd-search input {
+  width: 180px;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #182b3e;
+  font: 12px Arial, sans-serif;
+}
+
+.cd-search input::placeholder {
+  color: #8a99ae;
+}
+
+.cd-sort {
+  height: 36px;
+  padding: 0 11px;
+  background: #fff;
+  border: 1px solid #dce3e8;
+  color: #152d2c;
+  white-space: nowrap;
+}
+
+.cd-sort svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================
+   DIARY HISTORY TABLE
+   ========================================== */
+
+.cd-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cd-table {
+  width: 100%;
+  min-width: 740px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 12px/1.45 Arial, Helvetica, sans-serif;
+}
+
+.cd-table th {
+  height: 43px;
+  padding: 10px 10px;
+  text-align: left;
+  background: #faf8f3;
+  border-bottom: 1px solid #e9e9e8;
+  color: #0d171e;
+  font: 700 12px/1.3 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cd-table th:nth-child(1) {
+  width: 5%;
+}
+
+.cd-table th:nth-child(2) {
+  width: 16%;
+}
+
+.cd-table th:nth-child(3) {
+  width: 18%;
+}
+
+.cd-table th:nth-child(4) {
+  width: 37%;
+}
+
+.cd-table th:nth-child(5) {
+  width: 15%;
+}
+
+.cd-table th:nth-child(6) {
+  width: 9%;
+}
+
+.cd-table td {
+  height: 56px;
+  padding: 10px;
+  border-bottom: 1px solid #edece8;
+  vertical-align: middle;
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cd-table td strong {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-table td small {
+  display: block;
+  margin-top: 3px;
+  color: #6b7b86;
+  font-size: 11px;
+}
+
+.cd-table tbody tr:hover {
+  background: #fcfefc;
+}
+
+.cd-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* NEXT DATE */
+
+.cd-date-pill {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #e6f8ef;
+  color: #073d2f;
+  font: 600 11px/1.35 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+/* VIEW BUTTON */
+
+.cd-view {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  color: #003e2e;
+  border: 1px solid #e1e5e0;
+  background: #fff;
+}
+
+.cd-view svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cd-view:hover,
+.cd-mobile-view:hover {
+  background: #eff8f2;
+}
+
+/* TABLE FOOTER */
+
+.cd-count {
+  margin-top: 12px;
+  color: #526277;
+  font-size: 12px;
+}
+
+.cd-message {
+  padding: 26px 12px;
+  color: #526277;
+  font-size: 12px;
+  text-align: center;
+}
+
+
+/* ==========================================
+   CASE DETAILS - OVERVIEW TAB
+   Matches AdvocaNote existing UI
+   ========================================== */
+
+/* Two column overview layout */
+
+.cd-overview-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+.cd-overview-main {
+  min-width: 0;
+}
+
+.cd-overview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Overview cards */
+
+.cd-overview-card {
+  min-width: 0;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  box-shadow: 0 3px 15px rgba(50, 42, 25, 0.045);
+}
+
+/* Section headings */
+
+.cd-overview-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.cd-overview-heading>svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #132b32;
+}
+
+.cd-overview-heading h2 {
+  margin: 0;
+  color: #111b21;
+  font: 700 19px/1.25 Georgia,
+    "Times New Roman", serif;
+}
+
+.cd-overview-heading p {
+  margin: 5px 0 0;
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   CASE INFORMATION TABLE
+   ========================================== */
+
+.cd-overview-table {
+  overflow: hidden;
+  border: 1px solid #e6e4dc;
+  border-radius: 8px;
+}
+
+.cd-overview-row {
+  display: grid;
+  grid-template-columns:
+    minmax(100px, 39%) minmax(0, 1fr);
+  min-height: 39px;
+  border-bottom: 1px solid #e9e9e8;
+}
+
+.cd-overview-row:last-child {
+  border-bottom: 0;
+}
+
+.cd-overview-row>span {
+  display: flex;
+  align-items: center;
+  padding: 9px 11px;
+  background: #fbfaf8;
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+  border-right: 1px solid #e9e9e8;
+}
+
+.cd-overview-row>div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 9px 11px;
+}
+
+.cd-overview-row strong {
+  color: #354c66;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   LATEST COURT NOTES
+   ========================================== */
+
+.cd-overview-notes {
+  display: flex;
+  flex-direction: column;
+  margin-top: 13px;
+  padding: 14px;
+  border: 1px solid #e0eee5;
+  border-radius: 9px;
+  background: #f1f8f3;
+}
+
+.cd-overview-notes h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px;
+  color: #15352a;
+  font: 700 15px Georgia,
+    "Times New Roman", serif;
+}
+
+.cd-overview-notes h3 svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.cd-overview-notes-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  margin: 0 0 10px;
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.cd-overview-notes button {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid #cfdbdd;
+  border-radius: 7px;
+  background: #fff;
+  color: #003e2e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cd-overview-notes button:hover {
+  background: #eff8f2;
+}
+
+/* ==========================================
+   IMPORTANT DATES
+   ========================================== */
+
+.cd-important-dates {
+  padding: 8px 12px;
+  border: 1px solid #f4ead5;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.cd-important-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f0eadf;
+}
+
+.cd-important-row:last-child {
+  border-bottom: 0;
+}
+
+.cd-important-row svg {
+  color: #003e2e;
+  width: 18px;
+  height: 18px;
+}
+
+.cd-important-row span {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cd-important-row strong {
+  color: #354c66;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ==========================================
+   RECENT ACTIVITY TIMELINE
+   ========================================== */
+
+.cd-activity-list {
+  margin-top: 16px;
+  padding: 0 3px;
+}
+
+.cd-activity-item {
+  position: relative;
+  padding: 0 0 18px 31px;
+  min-height: 57px;
+}
+
+.cd-activity-item:last-child {
+  padding-bottom: 0;
+}
+
+.cd-activity-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 18px;
+  bottom: 0;
+  width: 1px;
+  background: #d3d9d5;
+}
+
+.cd-activity-dot {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #a3aba7;
+}
+
+.cd-activity-dot-active {
+  background: #008252;
+}
+
+.cd-activity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cd-activity-content strong {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-activity-content>span {
+  color: #526277;
+  font-size: 12px;
+}
+
+.cd-activity-content p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  margin: 5px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #e0eee5;
+  border-radius: 7px;
+  background: #f1f8f3;
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cd-overview-empty {
+  color: #526277;
+  font-size: 12px;
+  padding: 12px 0;
+}
+
+/* ==========================================
+   RESPONSIVE - TABLET
+   ========================================== */
+
+@media (max-width: 1100px) {
+  .cd-overview-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .cd-overview-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE - MOBILE
+   ========================================== */
+
+@media (max-width: 720px) {
+  .cd-overview-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .cd-overview-side {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cd-overview-card {
+    padding: 12px;
+  }
+
+  .cd-overview-heading h2 {
+    font-size: 17px;
+  }
+
+  .cd-overview-row {
+    grid-template-columns:
+      minmax(95px, 40%) minmax(0, 1fr);
+  }
+
+  .cd-overview-row>span,
+  .cd-overview-row>div {
+    padding: 8px;
+  }
+
+  .cd-overview-row>span,
+  .cd-overview-row strong {
+    font-size: 11px;
+  }
+
+  .cd-important-row {
+    grid-template-columns:
+      18px minmax(0, 1fr) auto;
+    gap: 7px;
+  }
+
+  .cd-important-row span,
+  .cd-important-row strong {
+    font-size: 11px;
+  }
+
+  .cd-overview-notes {
+    padding: 11px;
+  }
+
+  .cd-overview-notes h3 {
+    font-size: 14px;
+  }
+}
+
+
+/* ==========================================
+   HEARINGS TAB
+   ========================================== */
+
+.cd-hearing-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.cd-hearing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid #e6e4dc;
+  border-radius: 8px;
+}
+
+.cd-hearing-row svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cd-hearing-row div {
+  display: grid;
+  gap: 4px;
+}
+
+.cd-hearing-row strong {
+  font-size: 12px;
+}
+
+.cd-hearing-row small {
+  color: #526277;
+  font-size: 11px;
+}
+
+/* ==========================================
+   MOBILE DIARY HISTORY
+   ========================================== */
+
+.cd-mobile-history {
+  display: none;
+}
+
+/* ==========================================
+   DIARY DETAILS POPUP
+   ========================================== */
+
+.cd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(1, 21, 16, 0.57);
+  display: grid;
+  place-items: center;
+  padding: 15px;
+}
+
+.cd-modal {
+  width: min(100%, 560px);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 11px;
+  padding: 20px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.cd-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cd-modal-head h2 {
+  margin: 0;
+  font: 700 20px Georgia, serif;
+}
+
+.cd-modal-head button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  background: #f1f5f1;
+}
+
+.cd-modal p {
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cd-modal h3 {
+  margin: 16px 0 7px;
+  font: 700 16px Georgia, serif;
+}
+
+.cd-full-note {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+
+/* ==========================================
+   CASE DETAILS - DIARY HISTORY TAB
+   AdvocaNote compact design
+   ========================================== */
+
+/* MAIN DIARY HISTORY PANEL */
+
+.cd-history-panel {
+  min-width: 0;
+  padding: 15px;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+}
+
+/* HEADER */
+
+.cd-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.cd-history-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+
+.cd-history-heading>svg {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  color: #15202c;
+}
+
+.cd-history-heading h2 {
+  margin: 0;
+  color: #111b21;
+  font: 700 19px/1.3 Georgia, "Times New Roman", serif;
+}
+
+.cd-history-heading p {
+  margin: 5px 0 0;
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* SEARCH AND SORT */
+
+.cd-history-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cd-history-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #dce3e8;
+  border-radius: 8px;
+  background: #fff;
+  min-width: 0;
+}
+
+.cd-history-search svg {
+  width: 17px;
+  height: 17px;
+  color: #132b32;
+  flex-shrink: 0;
+}
+
+.cd-history-search input {
+  width: 185px;
+  min-width: 0;
+  max-width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #182b3e;
+  font: 12px Arial, Helvetica, sans-serif;
+}
+
+.cd-history-search input::placeholder {
+  color: #8a99ae;
+}
+
+.cd-history-sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #dce3e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #15202c;
+  font: 600 12px Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cd-history-sort:hover {
+  background: #f1f7f3;
+}
+
+/* ==========================================
+   DESKTOP DIARY TABLE
+   ========================================== */
+
+.cd-history-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cd-history-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 12px/1.5 Arial, Helvetica, sans-serif;
+}
+
+.cd-history-table thead {
+  background: #faf8f3;
+}
+
+.cd-history-table th {
+  height: 45px;
+  padding: 11px 12px;
+  text-align: left;
+  color: #111b21;
+  border-bottom: 1px solid #e9e9e8;
+  font: 700 12px Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+}
+
+.cd-history-table th:nth-child(1) {
+  width: 5%;
+  text-align: center;
+}
+
+.cd-history-table th:nth-child(2) {
+  width: 15%;
+}
+
+.cd-history-table th:nth-child(3) {
+  width: 16%;
+}
+
+.cd-history-table th:nth-child(4) {
+  width: 39%;
+}
+
+.cd-history-table th:nth-child(5) {
+  width: 13%;
+}
+
+.cd-history-table th:nth-child(6) {
+  width: 12%;
+  text-align: center;
+}
+
+/* TABLE ROWS */
+
+.cd-history-table tbody tr {
+  background: #fff;
+  border-bottom: 1px solid #edece8;
+}
+
+.cd-history-table tbody tr:first-child {
+  background: #f1f8f4;
+}
+
+.cd-history-table tbody tr:hover {
+  background: #f5faf7;
+}
+
+.cd-history-table td {
+  height: 68px;
+  padding: 11px 12px;
+  vertical-align: middle;
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   NUMBERED TIMELINE
+   ========================================== */
+
+.cd-history-number-cell {
+  position: relative;
+  text-align: center;
+}
+
+/* Vertical timeline line */
+
+.cd-history-number-cell::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #c5ceca;
+  transform: translateX(-50%);
+}
+
+.cd-history-table tbody tr:first-child .cd-history-number-cell::before {
+  top: 50%;
+}
+
+.cd-history-table tbody tr:last-child .cd-history-number-cell::before {
+  bottom: 50%;
+}
+
+/* Number circle */
+
+.cd-history-number {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #9a9e9c;
+  color: #fff;
+  font: 700 12px Arial, sans-serif;
+}
+
+.cd-history-number-active {
+  background: #007b4d;
+  color: #fff;
+}
+
+/* ==========================================
+   DIARY DATE
+   ========================================== */
+
+.cd-history-date {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cd-history-date strong {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.cd-history-date small {
+  color: #526277;
+  font-size: 11px;
+}
+
+/* ==========================================
+   COURT NAME AND LOCATION
+   ========================================== */
+
+.cd-history-court {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cd-history-court span {
+  color: #354c66;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.cd-history-court small {
+  color: #63768b;
+  font-size: 11px;
+}
+
+/* ==========================================
+   PROCEEDINGS PREVIEW
+   ========================================== */
+
+.cd-history-note {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   NEXT DATE BADGE
+   ========================================== */
+
+.cd-history-next {
+  display: inline-block;
+  width: 88px;
+  max-width: 100%;
+  padding: 8px 7px;
+  border-radius: 8px;
+  background: #e6f8ef;
+  color: #073d2f;
+  text-align: center;
+  white-space: normal;
+  font: 600 11px/1.45 Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================
+   ACTION BUTTONS
+   ========================================== */
+
+.cd-history-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.cd-history-actions button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #dce3e8;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cd-history-view {
+  color: #09283a;
+}
+
+.cd-history-edit {
+  color: #003e2e;
+}
+
+.cd-history-delete {
+  color: #dc3333;
+}
+
+.cd-history-actions button:hover:not(:disabled) {
+  background: #f1f7f3;
+}
+
+.cd-history-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   PAGINATION FOOTER
+   ========================================== */
+
+.cd-history-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 13px;
+  color: #526277;
+  font-size: 12px;
+}
+
+.cd-history-pagination {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cd-history-pagination button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #e1e5e7;
+  border-radius: 7px;
+  background: #fff;
+  color: #354c66;
+  cursor: pointer;
+}
+
+.cd-history-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cd-history-pagination>span {
+  display: grid;
+  place-items: center;
+  min-width: 39px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: #003e2e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-history-message {
+  padding: 45px 14px;
+  color: #526277;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ==========================================
+   MOBILE HISTORY
+   ========================================== */
+
+.cd-history-mobile {
+  display: none;
+}
+
+
+/* EDIT DIARY ENTRY POPUP */
+
+.cd-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.cd-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #153c30;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cd-edit-form input,
+.cd-edit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid #d6dfdf;
+  border-radius: 8px;
+  background: #fff;
+  color: #18363f;
+  font: 12px/1.5 Arial, sans-serif;
+}
+
+.cd-edit-form textarea {
+  resize: vertical;
+}
+
+.cd-edit-error {
+  color: #a22b2b !important;
+  font-size: 12px;
+}
+
+.cd-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+.cd-edit-actions button {
+  min-height: 37px;
+  padding: 8px 13px;
+  border: 1px solid #d6dfdf;
+  border-radius: 8px;
+  background: #fff;
+  color: #18332a;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cd-edit-actions button[type="submit"] {
+  background: #003e2e;
+  border-color: #003e2e;
+  color: #fff;
+}
+
+.cd-edit-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =======================================
+   CASE DETAILS - HEARINGS TAB
+   ======================================= */
+
+.cd-hearings-panel {
+  padding: 15px;
+  min-width: 0;
+}
+
+.cd-hearings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.cd-hearings-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+
+.cd-hearings-heading > svg {
+  flex-shrink: 0;
+  color: #15202c;
+}
+
+.cd-hearings-heading h2 {
+  margin: 0;
+  color: #111b21;
+  font: 700 19px/1.3 Georgia, serif;
+}
+
+.cd-hearings-heading p {
+  margin: 5px 0 0;
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Search and sort */
+
+.cd-hearings-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cd-hearings-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid #dce3e8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.cd-hearings-search svg {
+  flex-shrink: 0;
+}
+
+.cd-hearings-search input {
+  width: 175px;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #182b3e;
+  font-size: 12px;
+}
+
+.cd-hearings-search input::placeholder {
+  color: #8a99ae;
+}
+
+.cd-hearings-sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid #dce3e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cd-hearings-sort:hover {
+  background: #f1f7f3;
+}
+
+/* Table */
+
+.cd-hearings-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.cd-hearings-table {
+  width: 100%;
+  min-width: 740px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cd-hearings-table th {
+  padding: 13px 11px;
+  height: 44px;
+  background: #faf6ed;
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.cd-hearings-table th:nth-child(1) {
+  width: 7%;
+  text-align: center;
+}
+
+.cd-hearings-table th:nth-child(2) {
+  width: 20%;
+}
+
+.cd-hearings-table th:nth-child(3) {
+  width: 21%;
+}
+
+.cd-hearings-table th:nth-child(4) {
+  width: 28%;
+}
+
+.cd-hearings-table th:nth-child(5) {
+  width: 15%;
+}
+
+.cd-hearings-table th:nth-child(6) {
+  width: 9%;
+  text-align: center;
+}
+
+.cd-hearings-table td:nth-child(6) {
+  text-align: center;
+}
+
+.cd-hearings-table tbody tr {
+  border-bottom: 1px solid #e9e9e8;
+}
+
+.cd-hearings-table tbody tr:first-child {
+  background: #f1f8f4;
+}
+
+.cd-hearings-table tbody tr:hover {
+  background: #f6faf7;
+}
+
+.cd-hearings-table td {
+  height: 71px;
+  padding: 12px 11px;
+  vertical-align: middle;
+  font-size: 12px;
+  color: #354c66;
+}
+
+/* Timeline */
+
+.cd-hearings-number-cell {
+  position: relative;
+  text-align: center;
+}
+
+.cd-hearings-number-cell::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #c9d2cc;
+  transform: translateX(-50%);
+}
+
+.cd-hearings-table tbody tr:first-child
+.cd-hearings-number-cell::before {
+  top: 50%;
+}
+
+.cd-hearings-table tbody tr:last-child
+.cd-hearings-number-cell::before {
+  bottom: 50%;
+}
+
+.cd-hearings-number {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #999d9b;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-hearings-number-active {
+  background: #007b4d;
+}
+
+/* Hearing date */
+
+.cd-hearings-date {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cd-hearings-date strong {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-hearings-date small {
+  color: #526277;
+  font-size: 11px;
+}
+
+/* Court */
+
+.cd-hearings-court {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cd-hearings-court span {
+  color: #354c66;
+  font-size: 12px;
+}
+
+.cd-hearings-court small {
+  color: #63768b;
+  font-size: 11px;
+}
+
+/* Purpose notes */
+
+.cd-hearings-purpose {
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Hearing status */
+
+.cd-hearings-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  min-height: 33px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cd-hearings-upcoming {
+  color: #85500d;
+  background: #fff1cf;
+}
+
+.cd-hearings-tentative {
+  color: #44515b;
+  background: #f1f1f1;
+}
+
+.cd-hearings-completed {
+  color: #065c39;
+  background: #e3f5e9;
+}
+
+.cd-hearings-default {
+  color: #526277;
+  background: #f0f2f4;
+}
+
+/* Footer and pagination */
+
+.cd-hearings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  color: #526277;
+  font-size: 12px;
+}
+
+.cd-hearings-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cd-hearings-pagination button {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  border: 1px solid #dce3e8;
+  border-radius: 7px;
+  background: #fff;
+  color: #15202c;
+  cursor: pointer;
+}
+
+.cd-hearings-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cd-hearings-pagination > span {
+  display: grid;
+  place-items: center;
+  min-width: 33px;
+  height: 33px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: #003e2e;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.cd-hearings-empty {
+  padding: 35px 12px;
+  text-align: center;
+  color: #526277;
+  font-size: 12px;
+}
+
+/* Mobile cards hidden on desktop */
+
+.cd-hearings-mobile {
+  display: none;
+}
+
+/* CHANGE CASE STATUS BUTTON */
+
+.cd-status-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cd-status-change {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  background: #f7fbf8;
+  border: 1px solid #bdd4c7;
+  border-radius: 8px;
+  color: #064734;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cd-status-change:hover:not(:disabled) {
+  background: #eaf5ee;
+  border-color: #86b59c;
+}
+
+.cd-status-change:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* CONFIRMATION POPUP */
+
+.cd-close-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 29, 22, 0.55);
+}
+
+.cd-close-dialog {
+  width: min(100%, 430px);
+  padding: 26px;
+  background: #fffdfa;
+  border: 1px solid #e7e3d8;
+  border-radius: 16px;
+  box-shadow: 0 22px 65px rgba(0, 35, 24, 0.2);
+}
+
+.cd-close-dialog-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.cd-close-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  background: #edf7ef;
+  color: #07553b;
+  border-radius: 11px;
+}
+
+.cd-close-dialog-x {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #5f7468;
+  cursor: pointer;
+}
+
+.cd-close-dialog-x:hover {
+  background: #f0f2ed;
+}
+
+.cd-close-dialog h2 {
+  margin: 0 0 10px;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #132a21;
+}
+
+.cd-close-dialog > p {
+  margin: 0;
+  color: #52665a;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.cd-close-dialog > p strong {
+  color: #123e2d;
+}
+
+.cd-close-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  margin: 20px 0 14px;
+  padding: 17px 12px;
+  background: #f5f8f4;
+  border: 1px solid #e1e8df;
+  border-radius: 10px;
+}
+
+.cd-close-arrow {
+  color: #678476;
+  font-size: 20px;
+}
+
+.cd-close-target {
+  background: #e8eae7;
+  color: #415147;
+}
+
+.cd-close-dialog .cd-close-note {
+  font-size: 12px;
+  color: #69796f;
+}
+
+.cd-close-dialog .cd-close-error {
+  margin-top: 12px;
+  color: #b42332;
+  font-size: 12px;
+}
+
+.cd-close-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cd-close-cancel,
+.cd-close-confirm {
+  min-height: 40px;
+  padding: 0 17px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cd-close-cancel {
+  background: #ffffff;
+  border: 1px solid #dce1d9;
+  color: #344a3d;
+}
+
+.cd-close-confirm {
+  background: #003e2e;
+  border: 1px solid #003e2e;
+  color: #ffffff;
+}
+
+.cd-close-confirm:hover:not(:disabled) {
+  background: #075740;
+}
+
+.cd-close-confirm:disabled,
+.cd-close-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .cd-close-dialog {
+    padding: 20px;
+  }
+
+  .cd-close-dialog h2 {
+    font-size: 21px;
+  }
+
+  .cd-close-dialog-actions {
+    flex-wrap: wrap;
+  }
+
+  .cd-close-cancel,
+  .cd-close-confirm {
+    flex: 1;
+  }
+}
+
+
+
+/* CASE CLOSURE CONFIRMATION */
+
+.cd-close-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+  padding: 16px;
+
+  background: rgba(2, 29, 22, 0.55);
+}
+
+.cd-close-dialog {
+  width: min(100%, 430px);
+  padding: 26px;
+
+  background: #fffdfa;
+  border: 1px solid #e7e3d8;
+  border-radius: 16px;
+
+  box-shadow: 0 22px 65px rgba(0, 35, 24, 0.2);
+}
+
+.cd-close-dialog-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.cd-close-dialog-icon {
+  display: grid;
+  place-items: center;
+
+  width: 43px;
+  height: 43px;
+
+  background: #edf7ef;
+  color: #07553b;
+  border-radius: 11px;
+}
+
+.cd-close-dialog-x {
+  display: grid;
+  place-items: center;
+
+  width: 31px;
+  height: 31px;
+
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #5f7468;
+  cursor: pointer;
+}
+
+.cd-close-dialog-x:hover {
+  background: #f0f2ed;
+}
+
+.cd-close-dialog h2 {
+  margin: 0 0 10px;
+
+  font-family: Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #132a21;
+}
+
+.cd-close-dialog > p {
+  margin: 0;
+  color: #52665a;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.cd-close-dialog > p strong {
+  color: #123e2d;
+}
+
+.cd-close-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+
+  margin: 20px 0 14px;
+  padding: 17px 12px;
+
+  background: #f5f8f4;
+  border: 1px solid #e1e8df;
+  border-radius: 10px;
+}
+
+.cd-close-arrow {
+  color: #678476;
+  font-size: 20px;
+}
+
+.cd-close-target {
+  background: #e8eae7;
+  color: #415147;
+}
+
+.cd-close-dialog .cd-close-note {
+  font-size: 12px;
+  color: #69796f;
+}
+
+.cd-close-dialog .cd-close-error {
+  margin-top: 12px;
+  color: #b42332;
+  font-size: 12px;
+}
+
+.cd-close-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cd-close-cancel,
+.cd-close-confirm {
+  min-height: 40px;
+  padding: 0 17px;
+
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cd-close-cancel {
+  background: #ffffff;
+  border: 1px solid #dce1d9;
+  color: #344a3d;
+}
+
+.cd-close-confirm {
+  background: #003e2e;
+  border: 1px solid #003e2e;
+  color: #ffffff;
+}
+
+.cd-close-confirm:hover:not(:disabled) {
+  background: #075740;
+}
+
+.cd-close-confirm:disabled,
+.cd-close-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .cd-close-dialog {
+    padding: 20px;
+  }
+
+  .cd-close-dialog h2 {
+    font-size: 21px;
+  }
+
+  .cd-close-dialog-actions {
+    flex-wrap: wrap;
+  }
+
+  .cd-close-cancel,
+  .cd-close-confirm {
+    flex: 1;
+  }
+}
+
+
+/* Responsive */
+
+@media (max-width: 720px) {
+
+  .cd-hearings-panel {
+    padding: 12px;
+  }
+
+  .cd-hearings-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cd-hearings-heading h2 {
+    font-size: 18px;
+  }
+
+  .cd-hearings-controls {
+    width: 100%;
+  }
+
+  .cd-hearings-search {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+
+  .cd-hearings-search input {
+    width: 100%;
+  }
+
+  .cd-hearings-sort {
+    font-size: 11px;
+  }
+
+  .cd-hearings-table-scroll {
+    display: none;
+  }
+
+  .cd-hearings-mobile {
+    display: grid;
+    gap: 9px;
+  }
+
+  .cd-hearings-mobile-card {
+    padding: 12px;
+    border: 1px solid #e6e4dc;
+    border-radius: 9px;
+    background: #fff;
+  }
+
+  .cd-hearings-mobile-top {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .cd-hearings-mobile-number {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: #003e2e;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .cd-hearings-mobile-top .cd-hearings-date {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .cd-hearings-mobile-top .cd-hearings-status {
+    min-width: 0;
+    padding: 6px 9px;
+  }
+
+  .cd-hearings-mobile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 11px;
+  }
+
+  .cd-hearings-mobile-info strong {
+    color: #354c66;
+    font-size: 12px;
+  }
+
+  .cd-hearings-mobile-info small {
+    color: #63768b;
+    font-size: 11px;
+  }
+
+  .cd-hearings-mobile-purpose {
+    margin: 9px 0 0;
+    color: #354c66;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .cd-hearings-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+
+/* ==========================================
+   TABLET RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1050px) {
+
+  .cd-history-header {
+    align-items: flex-start;
+  }
+
+  .cd-history-table-scroll {
+    overflow-x: auto;
+  }
+
+  .cd-history-table {
+    min-width: 900px;
+  }
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+   ========================================== */
+
+@media (max-width: 720px) {
+
+  .cd-history-panel {
+    padding: 12px;
+  }
+
+  .cd-history-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .cd-history-heading h2 {
+    font-size: 18px;
+  }
+
+  .cd-history-heading p {
+    font-size: 11px;
+  }
+
+  .cd-history-controls {
+    display: flex;
+    width: 100%;
+    gap: 7px;
+  }
+
+  .cd-history-search {
+    flex: 1 1 150px;
+  }
+
+  .cd-history-search input {
+    width: 100%;
+  }
+
+  .cd-history-sort {
+    flex: 0 1 auto;
+    font-size: 11px;
+  }
+
+  /* Hide desktop table */
+
+  .cd-history-table-scroll {
+    display: none;
+  }
+
+  /* Compact diary cards */
+
+  .cd-history-mobile {
+    display: grid;
+    gap: 9px;
+  }
+
+  .cd-history-mobile-card {
+    padding: 12px;
+    border: 1px solid #e6e4dc;
+    border-radius: 9px;
+    background: #fff;
+  }
+
+  .cd-history-mobile-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .cd-history-mobile-number {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    border-radius: 50%;
+    background: #003e2e;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .cd-history-mobile-date {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cd-history-mobile-date strong {
+    color: #15202c;
+    font-size: 12px;
+  }
+
+  .cd-history-mobile-date small {
+    color: #526277;
+    font-size: 11px;
+  }
+
+  .cd-history-mobile-top .cd-history-next {
+    width: auto;
+    max-width: 105px;
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .cd-history-mobile-court {
+    margin-top: 10px;
+    color: #354c66;
+    font-size: 11px;
+  }
+
+  .cd-history-mobile-note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    margin: 9px 0;
+    color: #354c66;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .cd-history-mobile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .cd-history-mobile-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 7px 10px;
+    border: 1px solid #e1e5e7;
+    border-radius: 7px;
+    background: #fff;
+    color: #003e2e;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .cd-history-mobile-actions button:last-child {
+    color: #dc3333;
+  }
+
+  .cd-history-mobile-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .cd-history-footer {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+  }
+}
+
+/* ==========================================
+   TABLET RESPONSIVE
+   ========================================== */
+
+@media (max-width: 900px) {
+
+  .cd-heading {
+    gap: 10px;
+  }
+
+  .cd-heading-title {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .cd-heading h1 {
+    font-size: 26px;
+  }
+
+  .cd-panel {
+    padding: 13px;
+  }
+
+  .cd-summary {
+    padding: 12px 13px;
+  }
+
+  .cd-tabs {
+    gap: 6px;
+  }
+
+  .cd-tab {
+    font-size: 11px;
+    gap: 6px;
+  }
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+   ========================================== */
+
+@media (max-width: 720px) {
+
+  .cd-heading {
+    align-items: stretch;
+  }
+
+  .cd-heading h1 {
+    font-size: 24px;
+  }
+
+  .cd-heading p {
+    font-size: 11px;
+  }
+
+  .cd-back,
+  .cd-add {
+    flex: 1 1 auto;
+  }
+
+  .cd-summary {
+    padding: 12px;
+    gap: 11px;
+  }
+
+  .cd-next-hearing {
+    width: 100%;
+  }
+
+  .cd-case-line h2 {
+    font-size: 21px;
+  }
+
+  .cd-case-identity p {
+    font-size: 12px;
+  }
+
+  .cd-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cd-tab {
+    min-height: 41px;
+    font-size: 11px;
+  }
+
+  .cd-panel h2 {
+    font-size: 18px;
+  }
+
+  .cd-history-controls {
+    width: 100%;
+  }
+
+  .cd-search {
+    flex: 1 1 150px;
+  }
+
+  .cd-search input {
+    width: 100%;
+  }
+
+  /* Mobile uses compact diary cards */
+
+  .cd-table-scroll {
+    display: none;
+  }
+
+  .cd-mobile-history {
+    display: grid;
+    gap: 8px;
+  }
+
+  .cd-mobile-entry {
+    padding: 11px;
+    border: 1px solid #e6e4dc;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .cd-mobile-entry-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .cd-mobile-entry small {
+    display: block;
+    margin-top: 5px;
+    color: #526277;
+    font-size: 11px;
+  }
+
+  .cd-mobile-entry p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    margin: 8px 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #354c66;
+  }
+
+  .cd-mobile-view {
+    padding: 7px 9px;
+    border: 1px solid #e6e4dc;
+    background: #fff;
+    color: #003e2e;
+    font-size: 11px;
+  }
+
+  .cd-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================
+   SMALL MOBILE
+   ========================================== */
+
+@media (max-width: 390px) {
+
+  .cd-summary-left {
+    align-items: flex-start;
+  }
+
+  .cd-folder {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .cd-heading h1 {
+    font-size: 23px;
+  }
+
+  .cd-sort {
+    flex: 1 1 auto;
+  }
+
+  .cd-tabs {
+    gap: 5px;
+  }
+
+  .cd-tab {
+    font-size: 11px;
+    padding: 7px 5px;
+  }
+}
+
+.cd-status-edit {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7faf8;
+  color: #07513b;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cd-status-edit:hover:not(:disabled) {
+  background: #eaf5ee;
+  border-color: #a9ceba;
+}
+
+.cd-status-edit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

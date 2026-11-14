@@ -1,0 +1,235 @@
+
+/* ADVOCANOTE SUBSCRIPTION BILLING */
+
+.anb-container {
+  width: 100%;
+  margin: 22px 0;
+  font-family: "Inter", "Poppins", sans-serif;
+}
+
+.anb-card {
+  background: #ffffff;
+  border: 1px solid #e1e8df;
+  border-radius: 13px;
+  padding: 24px;
+}
+
+.anb-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #edf0eb;
+}
+
+.anb-small-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #b18a4c;
+}
+
+.anb-card-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #004535;
+  margin: 10px 0 0;
+}
+
+.anb-status {
+  padding: 7px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.anb-status-active {
+  background: #e9f6ee;
+  color: #176c45;
+}
+
+.anb-status-pending {
+  background: #fff5e7;
+  color: #9d6c25;
+}
+
+.anb-status-neutral {
+  background: #f1f2ef;
+  color: #6d7970;
+}
+
+.anb-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  padding: 24px 0;
+}
+
+.anb-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.anb-detail span {
+  color: #8a978e;
+  font-size: 11px;
+}
+
+.anb-detail strong {
+  color: #244738;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.anb-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #edf0eb;
+}
+
+.anb-actions strong {
+  color: #244738;
+  font-size: 12px;
+}
+
+.anb-actions p {
+  margin: 6px 0 0;
+  color: #8b978d;
+  font-size: 11px;
+}
+
+.anb-cancel-button {
+  padding: 11px 15px;
+  border: 1px solid #e3bcb7;
+  border-radius: 8px;
+  background: #fff;
+  color: #b0453a;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.anb-cancel-button:hover {
+  background: #fff2f0;
+}
+
+.anb-success,
+.anb-notice {
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 9px;
+  background: #edf6ef;
+  color: #216747;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.anb-error {
+  padding: 14px;
+  margin-bottom: 15px;
+  border-radius: 9px;
+  background: #fff1ef;
+  color: #af4539;
+  font-size: 12px;
+}
+
+.anb-error button {
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.anb-loading {
+  padding: 35px;
+  text-align: center;
+  color: #77887d;
+  font-size: 12px;
+}
+
+.anb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(10, 30, 23, 0.55);
+}
+
+.anb-modal {
+  width: min(100%, 430px);
+  padding: 27px;
+  border-radius: 15px;
+  background: #fffdfa;
+  box-shadow: 0 18px 50px #0002;
+}
+
+.anb-modal h3 {
+  margin: 0 0 14px;
+  color: #004535;
+  font-size: 19px;
+}
+
+.anb-modal p {
+  color: #718178;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.anb-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 23px;
+}
+
+.anb-modal-actions button {
+  padding: 11px 13px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.anb-keep-button {
+  background: #fff;
+  color: #004535;
+  border: 1px solid #d9e5da;
+}
+
+.anb-confirm-button {
+  background: #b44238;
+  color: white;
+  border: 1px solid #b44238;
+}
+
+.anb-modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+  .anb-card {
+    padding: 18px;
+  }
+
+  .anb-details {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .anb-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

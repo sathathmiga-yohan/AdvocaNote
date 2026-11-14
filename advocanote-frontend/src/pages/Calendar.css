@@ -1,0 +1,1907 @@
+
+/* ==========================================
+   ADVOCANOTE - CALENDAR PAGE
+   PROFESSIONAL GREEN + GOLD DESIGN
+   Matching Tasks & Deadlines sizes
+========================================== */
+
+.acp-page {
+  --acp-green: #003e2e;
+  --acp-dark: #002d23;
+  --acp-gold: #be8a38;
+  --acp-text: #102f2b;
+  --acp-muted: #718797;
+  --acp-border: #e6e2dc;
+
+  width: 100%;
+  max-width: 1650px;
+  min-width: 0;
+
+  margin: 0 auto;
+  padding: 22px 20px 35px;
+
+  background: #faf9f6;
+  color: var(--acp-text);
+
+  font-family: Inter, Arial, sans-serif;
+}
+
+.acp-page *,
+.acp-page *::before,
+.acp-page *::after {
+  box-sizing: border-box;
+}
+
+.acp-page button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.acp-page button:focus-visible {
+  outline: 2px solid var(--acp-gold);
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   MAIN PAGE LAYOUT
+========================================== */
+
+.acp-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  align-items: start;
+  gap: 20px;
+}
+
+.acp-main,
+.acp-sidebar {
+  min-width: 0;
+}
+
+.acp-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================
+   COMMON CARDS
+========================================== */
+
+.acp-hero,
+.acp-calendar-card,
+.acp-side-card {
+  background: #ffffff;
+  border: 1px solid #e6e2dc;
+  border-radius: 16px;
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.025);
+}
+
+/* ==========================================
+   CALENDAR BANNER
+   Same 84px height as Tasks page
+========================================== */
+
+.acp-hero {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 84px;
+  min-height: 84px;
+  max-height: 84px;
+
+  padding: 10px 18px;
+  margin-bottom: 14px;
+
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.acp-hero-copy {
+  position: relative;
+  z-index: 2;
+
+  min-width: 0;
+  padding-right: 10px;
+}
+
+.acp-hero h1 {
+  margin: 0 0 4px;
+
+  color: #082e29;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.acp-hero p {
+  margin: 0;
+
+  color: #52667e;
+
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Banner image */
+
+.acp-hero-art {
+  position: absolute;
+  z-index: 1;
+
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 180px;
+
+  background-color: #d5b77f;
+  background-image: url("/images/calendar-gavel.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border-radius: 0 15px 15px 0;
+  overflow: hidden;
+}
+
+.acp-hero-art::before {
+  content: "";
+
+  position: absolute;
+  inset: 0 auto 0 0;
+
+  width: 50px;
+
+  background: linear-gradient(
+    100deg,
+    #ffffff 5%,
+    rgba(255, 255, 255, 0) 90%
+  );
+}
+
+/* Add Event button */
+
+.acp-add-btn {
+  position: absolute;
+  z-index: 3;
+  right: 197px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  height: 39px;
+  min-height: 39px;
+
+  padding: 0 16px;
+
+  border: 1px solid #003e2e;
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: #003e2e;
+
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  box-shadow:
+    0 3px 8px rgba(0, 62, 46, 0.12);
+}
+
+.acp-add-btn:hover {
+  background: #00523d;
+}
+
+/* ==========================================
+   MAIN CALENDAR CARD
+========================================== */
+
+.acp-calendar-card {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Month header */
+
+.acp-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  min-height: 78px;
+  padding: 16px 16px 14px;
+}
+
+.acp-month-title {
+  min-width: 0;
+}
+
+.acp-month-header h2 {
+  margin: 0 0 4px;
+
+  color: #08372d;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.acp-month-header p {
+  margin: 0;
+
+  color: #718797;
+  font-size: 10px;
+}
+
+/* Month navigation */
+
+.acp-month-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.acp-month-actions > button,
+.acp-view-switch button {
+  height: 36px;
+  padding: 0 12px;
+
+  border: 1px solid #e4e6e1;
+  border-radius: 9px;
+
+  color: #193b34;
+  background: #ffffff;
+
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.acp-month-actions > button:first-child {
+  background: #f8f9f5;
+}
+
+.acp-month-actions > button:hover {
+  background: #f2f5f0;
+}
+
+.acp-month-actions > button.acp-square {
+  display: grid;
+  place-items: center;
+
+  width: 36px;
+  padding: 0;
+}
+
+/* Month / List switch */
+
+.acp-view-switch {
+  display: flex;
+  align-items: center;
+
+  padding: 3px;
+
+  border: 1px solid #e4e6e1;
+  border-radius: 10px;
+}
+
+.acp-view-switch button {
+  min-width: 53px;
+  height: 29px;
+
+  border: none;
+  border-radius: 7px;
+}
+
+.acp-view-switch button.active {
+  color: #ffffff;
+  background: #003e2e;
+}
+
+/* ==========================================
+   CALENDAR GRID
+========================================== */
+
+.acp-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+
+  border-top: 1px solid #eae8e3;
+}
+
+/* Weekday header */
+
+.acp-weekday {
+  display: grid;
+  place-items: center;
+
+  height: 38px;
+
+  color: #49665c;
+  background: #f7f5f1;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Calendar days */
+
+.acp-day {
+  position: relative;
+
+  min-width: 0;
+  height: 94px;
+
+  padding: 6px 7px;
+
+  border-top: 1px solid #eeece8;
+  border-right: 1px solid #eeece8;
+
+  background: #ffffff;
+}
+
+.acp-day:nth-child(7n) {
+  border-right: none;
+}
+
+.acp-day.is-blank {
+  background: #faf9f7;
+}
+
+/* Selected day */
+
+.acp-day.is-selected {
+  background: #fffaf0;
+
+  box-shadow:
+    inset 0 0 0 1.5px #d8a348;
+}
+
+.acp-day-num {
+  display: inline-grid;
+  place-items: center;
+
+  min-width: 23px;
+  height: 23px;
+
+  padding: 0 3px;
+
+  border: none;
+  border-radius: 6px;
+
+  color: #133c32;
+  background: transparent;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.acp-day-num:hover {
+  background: #edf4ef;
+}
+
+/* Today number */
+
+.acp-day-num.is-today {
+  color: #ffffff;
+  background: #004a37;
+}
+
+/* Events inside calendar */
+
+.acp-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  margin-top: 3px;
+}
+
+.acp-event {
+  display: block;
+
+  width: 100%;
+  min-width: 0;
+
+  padding: 5px 6px;
+
+  overflow: hidden;
+
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: 5px;
+
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.acp-event:hover {
+  filter: brightness(0.96);
+}
+
+/* Hearing event */
+
+.acp-event-hearing {
+  color: #095538;
+  background: #e2f3e9;
+  border-left-color: #189566;
+}
+
+/* Task event */
+
+.acp-event-task {
+  color: #81530e;
+  background: #fff0ca;
+  border-left-color: #d99b31;
+}
+
+/* Custom event */
+
+.acp-event-custom {
+  color: #845d20;
+  background: #f9ecd9;
+  border-left-color: #c8984b;
+}
+
+.acp-more {
+  border: none;
+
+  color: #4c7d6a;
+  background: transparent;
+
+  font-size: 10px;
+  text-align: left;
+}
+
+/* ==========================================
+   CALENDAR LIST VIEW
+========================================== */
+
+.acp-event-list {
+  min-height: 250px;
+  padding: 10px 16px;
+}
+
+.acp-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  padding: 12px 8px;
+
+  border: none;
+  border-bottom: 1px solid #ecece6;
+
+  color: #17372f;
+  background: #ffffff;
+
+  font-size: 12px;
+  text-align: left;
+}
+
+.acp-list-row:hover {
+  background: #f8faf8;
+}
+
+.acp-list-date {
+  display: inline-grid;
+  place-items: center;
+
+  min-width: 64px;
+  height: 33px;
+
+  border-radius: 8px;
+
+  color: #13543d;
+  background: #eaf4ed;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.acp-type-label {
+  margin-left: auto;
+
+  color: #657b72;
+
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+/* ==========================================
+   CALENDAR FOOTER
+========================================== */
+
+.acp-calendar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  min-height: 40px;
+  padding: 10px 16px;
+
+  border-top: 1px solid #ebeae5;
+
+  color: #7890a0;
+
+  font-size: 10px;
+}
+
+.acp-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  white-space: nowrap;
+}
+
+.acp-legend i {
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  margin-left: 7px;
+
+  border-radius: 50%;
+
+  background: #209768;
+}
+
+.acp-legend i:nth-of-type(2) {
+  background: #cd9948;
+}
+
+/* ==========================================
+   RIGHT SIDEBAR CARDS
+========================================== */
+
+.acp-side-card {
+  padding: 18px 17px;
+}
+
+.acp-selected-card {
+  min-height: 155px;
+}
+
+.acp-upcoming-card {
+  min-height: 160px;
+}
+
+/* Right panel headings */
+
+.acp-side-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+
+  margin-bottom: 14px;
+}
+
+.acp-side-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.acp-side-heading svg {
+  flex-shrink: 0;
+  color: #007d56;
+}
+
+.acp-side-heading h2 {
+  margin: 0;
+
+  color: #0c362d;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Selected date plus */
+
+.acp-side-plus {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 35px;
+  height: 35px;
+
+  border: 1px solid #dce9e0;
+  border-radius: 9px;
+
+  color: #00533e;
+  background: #edf7ef;
+}
+
+.acp-side-plus:hover {
+  background: #e2f1e7;
+}
+
+/* Selected date details */
+
+.acp-selected-date {
+  margin: 5px 0 14px;
+
+  color: #6c8599;
+  font-size: 12px;
+}
+
+.acp-muted {
+  margin: 0;
+
+  color: #758a9a;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.acp-selected-events {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ==========================================
+   UPCOMING EVENTS
+========================================== */
+
+.acp-upcoming-list {
+  border-top: 1px solid #eeece7;
+}
+
+.acp-upcoming-list > .acp-muted {
+  padding-top: 13px;
+}
+
+.acp-upcoming-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  width: 100%;
+  padding: 11px 0;
+
+  border: none;
+  border-bottom: 1px solid #f0eee9;
+
+  color: #13372f;
+  background: #ffffff;
+
+  text-align: left;
+}
+
+.acp-upcoming-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.acp-date-chip {
+  display: flex;
+  flex: 0 0 55px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: 56px;
+
+  border-radius: 11px;
+  background: #edf6ef;
+}
+
+.acp-date-chip strong {
+  color: #00432f;
+
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.acp-date-chip small {
+  color: #668075;
+  font-size: 10px;
+}
+
+.acp-upcoming-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+}
+
+.acp-upcoming-info strong {
+  overflow: hidden;
+
+  color: #13372f;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acp-upcoming-info small {
+  color: #8697a5;
+  font-size: 10px;
+}
+
+.acp-upcoming-row > svg {
+  flex-shrink: 0;
+  color: #82958d;
+}
+
+/* ==========================================
+   EVENT FILTERS
+========================================== */
+
+.acp-filter-heading > small {
+  color: #91a0a9;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.acp-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.acp-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+
+  width: 100%;
+  min-height: 36px;
+
+  padding: 7px 10px;
+
+  border: 1px solid #e5e9e6;
+  border-radius: 9px;
+
+  color: #153d32;
+  background: #ffffff;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.acp-filter-btn:hover {
+  background: #f3f8f4;
+}
+
+.acp-filter-btn.active {
+  color: #ffffff;
+  background: #004734;
+  border-color: #004734;
+}
+
+.acp-filter-btn > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  text-align: left;
+}
+
+.acp-filter-btn strong {
+  display: grid;
+  place-items: center;
+
+  min-width: 28px;
+  height: 21px;
+
+  padding: 0 5px;
+
+  border-radius: 7px;
+
+  color: #285647;
+  background: #eef4ef;
+
+  font-size: 10px;
+}
+
+.acp-filter-btn.active strong {
+  color: #ffffff;
+  background: #1b6954;
+}
+
+/* ==========================================
+   ADD EVENT MODAL
+========================================== */
+
+.acp-overlay {
+  position: fixed;
+  z-index: 8000;
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+
+  padding: 16px;
+
+  background: rgba(0, 45, 35, 0.68);
+}
+
+.acp-dialog {
+  width: min(100%, 490px);
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  border: 1px solid #e6e2dc;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.2);
+}
+
+.acp-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 17px 20px;
+
+  border-bottom: 1px solid #e9e7e2;
+}
+
+.acp-dialog-head h2 {
+  margin: 0;
+
+  color: #003e2e;
+
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.acp-dialog-head button {
+  display: grid;
+  place-items: center;
+
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  border-radius: 7px;
+
+  color: #003e2e;
+  background: #edf5ef;
+}
+
+.acp-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  padding: 20px;
+}
+
+.acp-dialog label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+
+  min-width: 0;
+
+  color: #24433f;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.acp-dialog input,
+.acp-dialog select {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+
+  padding: 8px 10px;
+
+  border: 1px solid #dfe5df;
+  border-radius: 8px;
+
+  outline: none;
+
+  color: #173d32;
+  background: #ffffff;
+
+  font-family: Inter, Arial, sans-serif;
+  font-size: 12px;
+}
+
+.acp-dialog input:focus,
+.acp-dialog select:focus {
+  border-color: #00774f;
+}
+
+.acp-form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.acp-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.acp-dialog-actions button {
+  height: 38px;
+  padding: 0 14px;
+
+  border: 1px solid #deded9;
+  border-radius: 9px;
+
+  color: #324a49;
+  background: #ffffff;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.acp-dialog-actions button.acp-save {
+  color: #ffffff;
+  background: #003e2e;
+  border-color: #003e2e;
+}
+
+.acp-dialog-actions button.acp-save:hover {
+  background: #00523d;
+}
+
+.acp-error {
+  margin: 0;
+
+  color: #b3261e;
+  font-size: 11px;
+}
+
+/* ==========================================
+   RESPONSIVE - DESKTOP / LAPTOP
+========================================== */
+
+@media (max-width: 1450px) {
+  .acp-page {
+    padding: 18px 14px 28px;
+  }
+
+  .acp-layout {
+    grid-template-columns: minmax(0, 1fr) 315px;
+    gap: 14px;
+  }
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 1150px) {
+  .acp-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .acp-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .acp-filters-card {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 700px) {
+  .acp-month-header {
+    flex-wrap: wrap;
+  }
+
+  .acp-hero-art {
+    width: 110px;
+  }
+
+  .acp-add-btn {
+    right: 120px;
+    padding: 0 9px;
+  }
+
+  .acp-hero p {
+    max-width: 220px;
+  }
+
+  .acp-day {
+    height: 78px;
+    padding: 4px 3px;
+  }
+
+  .acp-event {
+    font-size: 9px;
+    padding: 4px 2px;
+  }
+
+  .acp-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .acp-filters-card {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .acp-page {
+    padding: 12px 8px 24px;
+  }
+
+  .acp-hero-art {
+    display: none;
+  }
+
+  .acp-add-btn {
+    right: 10px;
+  }
+
+  .acp-hero-copy {
+    padding-right: 115px;
+  }
+
+  .acp-hero h1 {
+    font-size: 19px;
+  }
+
+  .acp-hero p {
+    font-size: 10px;
+  }
+
+  .acp-month-actions {
+    gap: 3px;
+  }
+
+  .acp-month-actions > button,
+  .acp-view-switch button {
+    padding: 0 8px;
+  }
+
+  .acp-day {
+    height: 69px;
+  }
+
+  .acp-day-num {
+    min-width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .acp-event {
+    font-size: 8px;
+  }
+
+  .acp-calendar-footer {
+    flex-wrap: wrap;
+  }
+
+  .acp-form-row {
+    flex-direction: column;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE CALENDAR - FINAL SIZE FIX
+   Match Tasks & Deadlines Page
+========================================== */
+
+/* 1. MAIN PAGE */
+
+.acp-page {
+  width: 100% !important;
+  max-width: 1650px !important;
+  min-width: 0 !important;
+
+  margin: 0 auto !important;
+  padding: 22px 20px 35px !important;
+
+  background: #faf9f6 !important;
+  color: #102f2b !important;
+
+  font-family: Inter, Arial, sans-serif !important;
+}
+
+.acp-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 350px !important;
+  align-items: start !important;
+  gap: 20px !important;
+}
+
+/* 2. BANNER - SAME SIZE AS TASKS */
+
+.acp-page .acp-hero {
+  position: relative !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  width: 100% !important;
+
+  height: 84px !important;
+  min-height: 84px !important;
+  max-height: 84px !important;
+
+  padding: 9px 17px !important;
+  margin: 0 0 14px !important;
+
+  background: #ffffff !important;
+  border: 1px solid #e6e2dc !important;
+  border-radius: 16px !important;
+
+  overflow: hidden !important;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.025) !important;
+}
+
+/* 3. BANNER TEXT */
+
+.acp-page .acp-hero-copy {
+  position: relative !important;
+  z-index: 3 !important;
+
+  min-width: 0 !important;
+}
+
+.acp-page .acp-hero h1 {
+  margin: 0 0 4px !important;
+
+  color: #082e29 !important;
+
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.acp-page .acp-hero p {
+  margin: 0 !important;
+
+  color: #52667e !important;
+
+  font-family: Inter, Arial, sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* 4. BANNER IMAGE FIX */
+
+.acp-page .acp-hero-art {
+  position: absolute !important;
+  z-index: 1 !important;
+
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+
+  width: 180px !important;
+  max-width: 180px !important;
+  height: 100% !important;
+
+  background-color: #ffffff !important;
+
+  /* Calendar image, Tasks image as fallback */
+  background-image:
+    url("/images/calendar-gavel.png"),
+    url("/images/task2.png") !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+
+  border: none !important;
+  border-radius: 0 15px 15px 0 !important;
+  overflow: hidden !important;
+}
+
+/* Gold curved edge */
+
+.acp-page .acp-hero-art::before {
+  content: "" !important;
+  display: block !important;
+
+  position: absolute !important;
+  z-index: 2 !important;
+
+  top: 0 !important;
+  left: 0 !important;
+
+  width: 65px !important;
+  height: 100% !important;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 65 84' preserveAspectRatio='none'%3E%3Cpath d='M0 0 H15 C30 15 34 54 65 84 H0 Z' fill='%23ffffff'/%3E%3Cpath d='M15 0 C30 15 34 54 65 84' stroke='%23d6a044' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") !important;
+
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
+
+  pointer-events: none !important;
+}
+
+.acp-page .acp-hero-art::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 5. ADD EVENT BUTTON */
+
+.acp-page .acp-add-btn {
+  position: absolute !important;
+  z-index: 4 !important;
+
+  right: 195px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+
+  height: 39px !important;
+  min-height: 39px !important;
+
+  padding: 7px 15px !important;
+
+  border: 1px solid #003e2e !important;
+  border-radius: 10px !important;
+
+  background: #003e2e !important;
+  color: #ffffff !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* 6. MONTH CARD */
+
+.acp-page .acp-calendar-card {
+  border: 1px solid #e6e2dc !important;
+  border-radius: 16px !important;
+
+  background: #ffffff !important;
+
+  overflow: hidden !important;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.025) !important;
+}
+
+.acp-page .acp-month-header {
+  min-height: 70px !important;
+  padding: 12px 15px !important;
+}
+
+.acp-page .acp-month-header h2 {
+  font-family: Georgia, serif !important;
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+}
+
+.acp-page .acp-month-header p {
+  font-size: 10px !important;
+}
+
+/* 7. MONTH CONTROLS */
+
+.acp-page .acp-month-actions {
+  gap: 6px !important;
+}
+
+.acp-page .acp-month-actions > button {
+  height: 36px !important;
+  font-size: 11px !important;
+}
+
+.acp-page .acp-view-switch button {
+  font-size: 11px !important;
+}
+
+/* 8. COMPACT CALENDAR GRID */
+
+.acp-page .acp-weekday {
+  height: 35px !important;
+
+  background: #f7f5f1 !important;
+  font-size: 10px !important;
+}
+
+.acp-page .acp-day {
+  height: 76px !important;
+  min-height: 76px !important;
+
+  padding: 5px 6px !important;
+}
+
+.acp-page .acp-day-num {
+  min-width: 22px !important;
+  height: 22px !important;
+
+  font-size: 10px !important;
+}
+
+/* 9. SMALL EVENT LABELS */
+
+.acp-page .acp-day-events {
+  gap: 3px !important;
+  margin-top: 3px !important;
+}
+
+.acp-page .acp-event {
+  min-width: 0 !important;
+
+  padding: 4px 5px !important;
+
+  font-family: Inter, Arial, sans-serif !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* 10. SIDEBAR PANELS */
+
+.acp-page .acp-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.acp-page .acp-side-card {
+  padding: 18px 17px !important;
+
+  border: 1px solid #e6e2dc !important;
+  border-radius: 16px !important;
+
+  background: #ffffff !important;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.025) !important;
+}
+
+.acp-page .acp-selected-card {
+  min-height: 125px !important;
+}
+
+.acp-page .acp-upcoming-card {
+  min-height: 125px !important;
+}
+
+/* 11. SIDEBAR FONT SIZES */
+
+.acp-page .acp-side-heading h2 {
+  margin: 0 !important;
+
+  font-family: Georgia, serif !important;
+  font-size: 19px !important;
+  line-height: 1.25 !important;
+}
+
+.acp-page .acp-selected-date {
+  font-size: 11px !important;
+}
+
+.acp-page .acp-muted {
+  font-size: 11px !important;
+}
+
+/* 12. FILTERS */
+
+.acp-page .acp-filter-list {
+  gap: 7px !important;
+}
+
+.acp-page .acp-filter-btn {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+
+  border-radius: 9px !important;
+
+  font-size: 11px !important;
+}
+
+.acp-page .acp-filter-btn strong {
+  font-size: 10px !important;
+}
+
+/* 13. RESPONSIVE */
+
+@media (max-width: 1450px) {
+  .acp-page {
+    padding: 18px 14px 28px !important;
+  }
+
+  .acp-layout {
+    grid-template-columns: minmax(0, 1fr) 315px !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 1150px) {
+  .acp-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .acp-sidebar {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .acp-filters-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .acp-hero-art {
+    display: none !important;
+  }
+
+  .acp-page .acp-add-btn {
+    right: 12px !important;
+  }
+
+  .acp-hero-copy {
+    padding-right: 110px !important;
+  }
+
+  .acp-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .acp-day {
+    height: 65px !important;
+    min-height: 65px !important;
+  }
+}
+
+
+/* ==========================================
+   CALENDAR EVENT COLORS + LEGEND
+========================================== */
+
+/* TASK EVENTS - RED */
+
+.acp-page .acp-event.acp-event-task {
+  background: #ffe7e7 !important;
+  color: #b4232d !important;
+  border-left: 3px solid #dc4148 !important;
+}
+
+.acp-page .acp-event.acp-event-task:hover {
+  background: #ffd8d8 !important;
+}
+
+/* CALENDAR FOOTER LEGEND */
+
+.acp-page .acp-calendar-footer .acp-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.acp-page .acp-legend-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #61758a;
+}
+
+.acp-page .acp-legend-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+/* Hearing - Green */
+
+.acp-page .acp-legend-dot.hearing {
+  background: #1c9665;
+}
+
+/* Tasks - Red */
+
+.acp-page .acp-legend-dot.task {
+  background: #da4147;
+}
+
+/* Custom Event - Gold */
+
+.acp-page .acp-legend-dot.custom {
+  background: #d49a3b;
+}
+
+/* Responsive Footer */
+
+@media (max-width: 700px) {
+  .acp-page .acp-calendar-footer .acp-legend {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+}
+
+/* ==========================================
+   CALENDAR BANNER - REMOVE IMAGE
+   ADD EVENT BUTTON ON RIGHT SIDE
+========================================== */
+
+.acp-page .acp-hero {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+
+  padding: 12px 20px !important;
+  background: #ffffff !important;
+}
+
+/* Remove old banner image */
+
+.acp-page .acp-hero-art {
+  display: none !important;
+}
+
+/* Banner title */
+
+.acp-page .acp-hero .acp-hero-copy {
+  flex: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  padding-right: 12px !important;
+}
+
+/* Add Event Button */
+
+.acp-page .acp-hero .acp-add-btn {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
+
+  height: 40px !important;
+  padding: 0 18px !important;
+
+  background: #003e2e !important;
+  color: #ffffff !important;
+
+  border: 1px solid #003e2e !important;
+  border-radius: 10px !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+
+  cursor: pointer !important;
+}
+
+.acp-page .acp-hero .acp-add-btn:hover {
+  background: #00523d !important;
+}
+
+@media (max-width: 600px) {
+  .acp-page .acp-hero {
+    padding: 10px 13px !important;
+    gap: 8px !important;
+  }
+
+  .acp-page .acp-hero .acp-add-btn {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+
+/* ==========================================
+   CALENDAR MONTH HEADER - FINAL ALIGNMENT
+   Arrows Left / Other Controls Right
+========================================== */
+
+.acp-page .acp-month-header-split {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+/* Month title and arrows together */
+
+.acp-page .acp-month-header-split .acp-month-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+}
+
+.acp-page .acp-month-header-split .acp-month-title-row h2 {
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Previous and Next buttons */
+
+.acp-page .acp-month-header-split .acp-month-nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.acp-page .acp-month-header-split .acp-month-nav button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 32px !important;
+  height: 32px !important;
+
+  padding: 0 !important;
+  border: 1px solid #e6e2dc !important;
+  border-radius: 9px !important;
+
+  background: #ffffff !important;
+  color: #003e2e !important;
+
+  cursor: pointer;
+}
+
+.acp-page .acp-month-header-split .acp-month-nav button:hover {
+  background: #edf5ef !important;
+}
+
+/* Today / Month / List stay on right */
+
+.acp-page .acp-month-header-split .acp-month-actions-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+
+  width: auto !important;
+  margin-left: auto !important;
+  gap: 8px !important;
+}
+
+.acp-page .acp-month-header-split .acp-month-actions-right .acp-view-switch {
+  margin: 0 !important;
+}
+
+/* Smaller screens */
+
+@media (max-width: 750px) {
+  .acp-page .acp-month-header-split {
+    align-items: flex-start !important;
+  }
+
+  .acp-page .acp-month-header-split .acp-month-title-row {
+    gap: 7px !important;
+  }
+
+  .acp-page .acp-month-header-split .acp-month-actions-right {
+    gap: 5px !important;
+  }
+}
+
+
+/* ==========================================
+   CALENDAR ADD EVENT BUTTON
+   AFTER MONTH / LIST ON RIGHT
+========================================== */
+
+.acp-page .acp-month-header-split {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+/* Right side controls */
+
+.acp-page .acp-month-header-split
+.acp-month-actions-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+
+  width: auto !important;
+  margin-left: auto !important;
+  gap: 8px !important;
+}
+
+/* Add Event button */
+
+.acp-page .acp-month-header
+.acp-month-actions-right .acp-header-add-btn {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+
+  flex-shrink: 0 !important;
+  width: auto !important;
+  height: 38px !important;
+  min-height: 38px !important;
+
+  margin: 0 !important;
+  padding: 0 14px !important;
+
+  color: #ffffff !important;
+  background: #003e2e !important;
+
+  border: 1px solid #003e2e !important;
+  border-radius: 9px !important;
+
+  font-size: 11px !important;
+  font-weight: 600 !important;
+
+  cursor: pointer !important;
+}
+
+.acp-page .acp-header-add-btn:hover {
+  background: #005540 !important;
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+  .acp-page .acp-month-header-split {
+    flex-wrap: wrap !important;
+  }
+
+  .acp-page .acp-month-header-split
+  .acp-month-actions-right {
+    flex-wrap: wrap !important;
+    margin-left: 0 !important;
+  }
+}
+
+
+/* ==========================================
+   CALENDAR - SOFT GOLD WEEKDAY ROW
+========================================== */
+
+.acp-page .acp-weekday {
+  background: #fcf8f0 !important;
+
+  border-top: 1px solid #eedfbe !important;
+  border-bottom: 1px solid #eedfbe !important;
+
+  color: #65563b !important;
+}
+
+/* Subtle separation below month header */
+
+.acp-page .acp-month-header {
+  border-bottom: none !important;
+}
+
+
+/* CALENDAR NOTIFICATION BELL */
+
+.ald-notify {
+  position: relative;
+}
+
+.acp-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 20px;
+  background: #b18a4c;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.acp-bell-popover {
+  min-width: 270px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.acp-bell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.acp-bell-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #eee9dc;
+  border-radius: 9px;
+  background: #faf9f5;
+  color: #004535;
+  text-align: left;
+  cursor: pointer;
+}
+
+.acp-bell-item:hover {
+  background: #f3efe5;
+}
+
+.acp-bell-item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.acp-bell-item small {
+  color: #77766f;
+  font-size: 11px;
+}

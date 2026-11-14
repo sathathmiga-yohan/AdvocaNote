@@ -1,0 +1,1138 @@
+
+/* Add Diary Entry Page */
+/* Existing sidebar and MyLegalDiary.css remain unchanged */
+
+.ade2-app .ade2-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 256px;
+  gap: 18px;
+  padding: 21px 22px 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.ade2-app .ade2-content {
+  min-width: 0;
+}
+
+.ade2-app .ade2-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 21px;
+}
+
+.ade2-app .ade2-heading h1 {
+  font: 700 30px/1.12 Georgia, "Times New Roman", serif;
+  color: #101416;
+  margin: 0;
+}
+
+.ade2-app .ade2-heading p {
+  color: #526277;
+  margin: 8px 0 0;
+  font: 14px/1.5 Georgia, serif;
+}
+
+.ade2-app button {
+  cursor: pointer;
+}
+
+/* Back button - same as Diary Entry Details */
+
+.ade2-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid #d8dfd7;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    #fffefb 0%,
+    #f7f4ec 100%
+  );
+  color: #0b5a43;
+  font: 700 14px/1 Arial, sans-serif;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 14px rgba(0, 58, 44, 0.06);
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.ade2-back svg {
+  color: #0b5a43;
+  transition: transform 0.22s ease;
+}
+
+.ade2-back:hover {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f8f3 100%
+  );
+  border-color: #b7d2c1;
+  color: #003a2c;
+  box-shadow: 0 8px 18px rgba(0, 58, 44, 0.10);
+  transform: translateY(-1px);
+}
+
+.ade2-back:hover svg {
+  transform: translateX(-2px);
+}
+
+.ade2-back:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 58, 44, 0.08);
+}
+
+
+/* FIVE COLUMN DIARY */
+
+.ade2-app .ade2-entry-sheet {
+  background: #fff;
+  border: 1px solid #e5e1d8;
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 3px 15px rgba(50, 42, 25, 0.045);
+}
+
+.ade2-app .ade2-sheet-scroll {
+  overflow-x: auto;
+}
+
+.ade2-app .ade2-diary-table {
+  width: 100%;
+  min-width: 890px;
+  table-layout: fixed;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.ade2-app .ade2-diary-table th {
+  font: 700 13px Georgia, serif;
+  text-align: center;
+  color: #0d171e;
+  padding: 14px 7px;
+  background: #fbfaf8;
+  border-bottom: 1px solid #e9e9e8;
+}
+
+.ade2-app .ade2-diary-table th:not(:last-child) {
+  border-right: 1px solid #edece8;
+}
+
+.ade2-app .ade2-diary-table td {
+  padding: 14px 9px;
+  vertical-align: top;
+  border-right: 1px solid #edece8;
+}
+
+.ade2-app .ade2-diary-table td:last-child {
+  border-right: none;
+}
+
+.ade2-app .ade2-diary-table tbody tr {
+  height: 285px;
+}
+
+.ade2-app .ade2-control {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 41px;
+  color: #182b3e;
+  border: 1px solid #e1e2e6;
+  border-radius: 7px;
+  background: #fff;
+  padding: 8px 9px;
+  outline: none;
+  font: 13px Arial, sans-serif;
+}
+
+.ade2-app .ade2-control:focus,
+.ade2-app .ade2-transcript textarea:focus,
+.ade2-app .ade2-tasks input:focus {
+  border-color: #126b53;
+  outline: 2px solid rgba(0, 91, 65, 0.10);
+}
+
+.ade2-app .ade2-control[readonly] {
+  background: #f7faf8;
+  color: #405c56;
+}
+
+.ade2-app .ade2-location {
+  margin-top: 9px;
+}
+
+.ade2-app .ade2-control[type="date"] {
+  font-size: 12px;
+  padding: 7px 3px;
+}
+
+/* CASE SEARCH */
+
+.ade2-app .ade2-case-wrapper {
+  position: relative;
+}
+
+.ade2-app .ade2-case-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+}
+
+.ade2-app .ade2-case-control svg {
+  flex: none;
+  color: #285447;
+}
+
+.ade2-app .ade2-case-control input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: 13px Arial, sans-serif;
+}
+
+.ade2-app .ade2-case-list {
+  position: absolute;
+  z-index: 15;
+  left: 0;
+  top: calc(100% + 5px);
+  min-width: 228px;
+  width: max-content;
+  max-width: min(330px, 70vw);
+  max-height: 240px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 7px;
+  box-shadow: 0 12px 30px rgba(3, 29, 17, 0.13);
+}
+
+.ade2-app .ade2-case-list button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  border: 0;
+  border-bottom: 1px solid #edf1ee;
+  background: white;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.ade2-app .ade2-case-list button:hover {
+  background: #edf7f0;
+}
+
+.ade2-app .ade2-case-list strong {
+  color: #132e29;
+  font-size: 13px;
+}
+
+.ade2-app .ade2-case-list small,
+.ade2-app .ade2-helper {
+  font: 11px Arial, sans-serif;
+  color: #688076;
+}
+
+.ade2-app .ade2-case-list p {
+  font: 12px Arial, sans-serif;
+  padding: 5px 12px;
+}
+
+.ade2-app .ade2-case-list .ade2-new-case {
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  color: #00523c;
+  font-weight: 700;
+}
+
+.ade2-app .ade2-helper {
+  display: block;
+  margin: 7px 2px;
+}
+
+.ade2-app .ade2-new-details {
+  margin-top: 8px;
+}
+
+.ade2-app .ade2-new-details small {
+  font: 11px Arial, sans-serif;
+  color: #0f6550;
+}
+
+.ade2-app .ade2-new-details input {
+  margin-top: 5px;
+  display: block;
+  padding: 7px;
+  width: 100%;
+  border: 1px solid #e1e2e6;
+  border-radius: 5px;
+  font: 12px Arial, sans-serif;
+}
+
+/* VOICE AND MANUAL TYPING */
+
+.ade2-app .ade2-step-tabs {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ade2-app .ade2-step-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  border: 1px solid #e1e2e6;
+  color: #243a46;
+  border-radius: 7px;
+  background: #fff;
+  font: 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-step-tabs button.ade2-tab-active {
+  border-color: #f0cd75;
+  background: #fff0d5;
+  color: #3c3019;
+}
+
+.ade2-app .ade2-step-tabs select {
+  max-width: 85px;
+  height: 37px;
+  padding: 3px;
+  border: 1px solid #e5e7e4;
+  border-radius: 6px;
+  background: white;
+  font: 11px Arial, sans-serif;
+}
+
+.ade2-app .ade2-recording {
+  margin-top: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a72126;
+  font: 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-rec-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 100%;
+  background: #e22;
+}
+
+.ade2-app .ade2-wave {
+  color: #139969;
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+
+.ade2-app .ade2-transcript {
+  background: #f7f9fb;
+  margin-top: 12px;
+  border-radius: 7px;
+  padding: 11px;
+}
+
+.ade2-app .ade2-transcript strong {
+  display: block;
+  font: 700 12px Georgia, serif;
+  color: #152c35;
+  margin-bottom: 8px;
+}
+
+.ade2-app .ade2-transcript textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 85px;
+  resize: vertical;
+  padding: 6px 7px;
+  color: #24313a;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font: 12px/1.65 Georgia, serif;
+}
+
+/* POINT-WISE FORMAT */
+
+.ade2-app .ade2-point-preview {
+  background: #edf9f1;
+  border-radius: 7px;
+  margin-top: 11px;
+  padding: 10px;
+}
+
+.ade2-app .ade2-point-preview > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  color: #1c4134;
+  background: transparent;
+  font: bold 12px Georgia, serif;
+}
+
+.ade2-app .ade2-point-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #254a36;
+  font: 12px/1.6 Georgia, serif;
+  margin: 8px 0;
+}
+
+.ade2-app .ade2-point-preview small {
+  color: #367a54;
+  font: 10px Arial, sans-serif;
+}
+
+/* AI SUGGESTED TASKS */
+
+.ade2-app .ade2-tasks {
+  background: #fff;
+  border: 1px solid #e6e4dc;
+  border-radius: 9px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.ade2-app .ade2-tasks-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.ade2-app .ade2-tasks-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #162b32;
+  font: 700 18px Georgia, serif;
+}
+
+.ade2-app .ade2-tasks-heading h2 svg {
+  color: #e6a800;
+}
+
+.ade2-app .ade2-tasks-heading h2 span {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ade2-app .ade2-tasks-heading > small {
+  color: #748078;
+  font: 11px Arial, sans-serif;
+}
+
+.ade2-app .ade2-task-scroll {
+  overflow-x: auto;
+}
+
+.ade2-app .ade2-tasks table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.ade2-app .ade2-tasks th {
+  color: #1b2931;
+  font: 700 12px Georgia, serif;
+  background: #fbfaf8;
+  padding: 10px;
+  text-align: center;
+}
+
+.ade2-app .ade2-tasks td {
+  padding: 10px;
+  border-top: 1px solid #e5e8e6;
+  color: #173037;
+  font: 13px Georgia, serif;
+}
+
+.ade2-app .ade2-tasks td:first-child {
+  text-align: center;
+}
+
+.ade2-app .ade2-tasks td:nth-child(2) {
+  min-width: 180px;
+}
+
+.ade2-app .ade2-tasks input,
+.ade2-app .ade2-tasks select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid #dce4e5;
+  padding: 6px;
+  background: white;
+  color: #243a40;
+  font: 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-tasks td:nth-child(3) {
+  min-width: 142px;
+}
+
+.ade2-app .ade2-task-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ade2-app .ade2-task-actions button {
+  border: 1px solid #d2dedc;
+  border-radius: 6px;
+  background: #fff;
+  color: #1c4344;
+  padding: 8px;
+  white-space: nowrap;
+  font: 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-task-actions .ade2-approve,
+.ade2-app .ade2-task-actions .ade2-approved {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #00472f;
+  color: white;
+}
+
+.ade2-app .ade2-task-actions .ade2-approved {
+  background: #167455;
+}
+
+.ade2-app .ade2-task-actions .ade2-reject,
+.ade2-app .ade2-task-actions .ade2-rejected {
+  border-color: #ecc5c5;
+  color: #ba3131;
+  background: #fff6f5;
+}
+
+.ade2-app .ade2-task-empty {
+  padding: 16px;
+  margin: 0;
+  color: #526277;
+  font: 13px Arial, sans-serif;
+}
+
+.ade2-app .ade2-error {
+  color: #9b2525;
+  background: #fff0ef;
+  padding: 12px;
+  border-radius: 6px;
+  font: 13px Arial, sans-serif;
+}
+
+/* RIGHT SIDE CALENDAR */
+
+.ade2-app .ade2-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ade2-app .ade2-panel {
+  background: #fffdfa;
+  border: 1px solid #e6e4dc;
+  border-radius: 9px;
+  padding: 13px;
+}
+
+.ade2-app .ade2-calendar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.ade2-app .ade2-calendar-top strong {
+  font: 700 13px Georgia, serif;
+  color: #15352a;
+}
+
+.ade2-app .ade2-calendar-top button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 5px;
+}
+
+.ade2-app .ade2-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.ade2-app .ade2-calendar-grid .ade2-weekday {
+  text-align: center;
+  font: 700 11px Georgia, serif;
+  padding: 7px 0;
+}
+
+.ade2-app .ade2-calendar-grid button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: #22333b;
+  height: 30px;
+  font: 12px Georgia, serif;
+}
+
+.ade2-app .ade2-calendar-grid button:hover {
+  background: #e6f2e9;
+}
+
+.ade2-app .ade2-calendar-grid button.ade2-day-active {
+  background: #00432f;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* AUTOMATIC SYNC */
+
+.ade2-app .ade2-sync {
+  background: #eaf8f1;
+  border-color: #e6f2e8;
+}
+
+.ade2-app .ade2-sync h2 {
+  font: 700 15px Georgia, serif;
+  margin: 3px 0 17px;
+  color: #21332e;
+}
+
+.ade2-app .ade2-sync p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 11px 0;
+  font: 13px/1.5 Georgia, serif;
+  color: #263935;
+}
+
+.ade2-app .ade2-sync p svg {
+  flex: none;
+  color: #087a57;
+}
+
+.ade2-app .ade2-sync small {
+  display: block;
+  color: #5d7c68;
+  font: 11px Arial, sans-serif;
+  padding-top: 4px;
+}
+
+/* SAVE BUTTON */
+
+.ade2-app .ade2-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 51px;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  background: #003e2e;
+  color: white;
+  font: 600 14px Georgia, serif;
+}
+
+.ade2-app .ade2-save:hover {
+  background: #00533e;
+}
+
+.ade2-app .ade2-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ade2-app .ade2-cancel {
+  display: block;
+  min-height: 42px;
+  width: 100%;
+  color: #003a2c;
+  background: #fff;
+  border: 1px solid #e1e2e6;
+  border-radius: 7px;
+  font: 14px Georgia, serif;
+}
+
+.ade2-app .ade2-private {
+  font: 11px/1.65 Arial, sans-serif;
+  color: #668076;
+  padding: 0 7px;
+}
+
+/* APPROVAL + SUCCESS POPUPS */
+
+.ade2-app .ade2-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(3, 26, 20, 0.58);
+  padding: 16px;
+}
+
+.ade2-app .ade2-modal {
+  box-sizing: border-box;
+  width: min(100%, 460px);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.25);
+}
+
+.ade2-app .ade2-success-mark {
+  width: 57px;
+  height: 57px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  color: #fff;
+  background: #007a57;
+}
+
+.ade2-app .ade2-modal h2 {
+  font: 700 22px Georgia, serif;
+  margin: 13px 0 4px;
+}
+
+.ade2-app .ade2-modal > p {
+  font: 13px/1.6 Arial, sans-serif;
+  color: #596e65;
+}
+
+.ade2-app .ade2-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0;
+  text-align: left;
+}
+
+.ade2-app .ade2-review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 13px Arial, sans-serif;
+  color: #264a3c;
+}
+
+.ade2-app .ade2-review-form input {
+  min-height: 39px;
+  border: 1px solid #d5e0dc;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: white;
+  font: 13px Arial, sans-serif;
+}
+
+.ade2-app .ade2-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin: 18px 0;
+}
+
+.ade2-app .ade2-result-grid > div {
+  border: 1px solid #e4e9e4;
+  border-radius: 7px;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.ade2-app .ade2-result-grid svg {
+  color: #006d4d;
+}
+
+.ade2-app .ade2-result-grid strong {
+  color: #1e302a;
+  font: 700 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-result-grid small {
+  color: #6a8073;
+  font: 11px Arial, sans-serif;
+}
+
+.ade2-app .ade2-modal > .ade2-save,
+.ade2-app .ade2-modal > .ade2-cancel {
+  margin-top: 9px;
+}
+
+/* RESPONSIVE - Add Diary Entry only */
+/* Desktop appearance stays unchanged */
+
+@media (max-width: 1300px) {
+  .ade2-app .ade2-main {
+    grid-template-columns: minmax(0, 1fr) 230px;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .ade2-app .ade2-heading h1 {
+    font-size: 28px;
+  }
+}
+
+/* Tablet: form gets full available width */
+
+@media (max-width: 1200px) {
+  .ade2-app .ade2-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ade2-app .ade2-right {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .ade2-app .ade2-private {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Stack diary fields at tablet widths */
+
+@media (max-width: 1020px) {
+  .ade2-app .ade2-entry-sheet,
+  .ade2-app .ade2-sheet-scroll {
+    overflow: visible;
+  }
+
+  .ade2-app .ade2-diary-table,
+  .ade2-app .ade2-diary-table tbody,
+  .ade2-app .ade2-diary-table tbody tr,
+  .ade2-app .ade2-diary-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ade2-app .ade2-diary-table colgroup {
+    display: none;
+  }
+
+  .ade2-app .ade2-diary-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ade2-app .ade2-diary-table tbody tr {
+    height: auto;
+  }
+
+  .ade2-app .ade2-diary-table td {
+    padding: 13px 15px;
+    border-right: 0;
+    border-bottom: 1px solid #edece8;
+  }
+
+  .ade2-app .ade2-diary-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .ade2-app .ade2-diary-table td::before {
+    display: block;
+    margin-bottom: 9px;
+    font: 700 13px/1.35 Georgia, "Times New Roman", serif;
+    color: #0d171e;
+  }
+
+  .ade2-app .ade2-diary-table td:nth-child(1)::before {
+    content: "Case No";
+  }
+
+  .ade2-app .ade2-diary-table td:nth-child(2)::before {
+    content: "Court";
+  }
+
+  .ade2-app .ade2-diary-table td:nth-child(3)::before {
+    content: "Previous Date";
+  }
+
+  .ade2-app .ade2-diary-table td:nth-child(4)::before {
+    content: "Step (Court Proceedings)";
+  }
+
+  .ade2-app .ade2-diary-table td:nth-child(5)::before {
+    content: "Next Date";
+  }
+
+  /* Stack AI task cells */
+
+  .ade2-app .ade2-task-scroll {
+    overflow: visible;
+  }
+
+  .ade2-app .ade2-tasks table,
+  .ade2-app .ade2-tasks tbody,
+  .ade2-app .ade2-tasks tbody tr,
+  .ade2-app .ade2-tasks td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ade2-app .ade2-tasks thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ade2-app .ade2-tasks td {
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .ade2-app .ade2-tasks td:first-child {
+    text-align: left;
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(2),
+  .ade2-app .ade2-tasks td:nth-child(3) {
+    min-width: 0;
+  }
+
+  .ade2-app .ade2-diary-table td input,
+  .ade2-app .ade2-diary-table td select,
+  .ade2-app .ade2-diary-table td textarea {
+    max-width: 100%;
+  }
+
+  .ade2-app .ade2-tasks td::before {
+    display: block;
+    margin-bottom: 7px;
+    color: #0d171e;
+    font: 700 12px Georgia, serif;
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(1)::before {
+    content: "#";
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(2)::before {
+    content: "Suggested Task";
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(3)::before {
+    content: "Due Date";
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(4)::before {
+    content: "Priority";
+  }
+
+  .ade2-app .ade2-tasks td:nth-child(5)::before {
+    content: "Action";
+  }
+
+  .ade2-app .ade2-task-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* Smaller fonts below shared layout zoom breakpoint */
+
+@media (max-width: 850px) {
+  .ade2-app .ade2-heading h1 {
+    font-size: 25px;
+  }
+
+  .ade2-app .ade2-heading p {
+    font-size: 13px;
+  }
+
+  .ade2-app .ade2-control,
+  .ade2-app .ade2-case-control input,
+  .ade2-app .ade2-new-details input,
+  .ade2-app .ade2-new-details select {
+    font-size: 12px;
+  }
+
+  .ade2-app .ade2-tasks-heading h2 {
+    font-size: 16px;
+  }
+
+  .ade2-app .ade2-calendar-top strong {
+    font-size: 12px;
+  }
+
+  .ade2-app .ade2-sync h2 {
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+  .ade2-app .ade2-main {
+    padding: 12px 9px 24px;
+  }
+
+  .ade2-app .ade2-heading {
+    flex-direction: column;
+    gap: 11px;
+    margin-bottom: 16px;
+  }
+
+  .ade2-app .ade2-heading h1 {
+    font-size: 24px;
+  }
+
+  .ade2-app .ade2-back {
+    white-space: normal;
+  }
+
+  .ade2-app .ade2-right {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ade2-app .ade2-private {
+    grid-column: auto;
+  }
+
+  .ade2-app .ade2-diary-table td {
+    padding: 12px;
+  }
+
+  .ade2-app .ade2-step-tabs {
+    gap: 6px;
+  }
+
+  .ade2-app .ade2-tasks-heading h2 {
+    flex-wrap: wrap;
+    line-height: 1.3;
+  }
+
+  .ade2-app .ade2-modal {
+    padding: 18px 14px;
+  }
+}
+
+/* Very small mobile */
+
+@media (max-width: 390px) {
+  .ade2-app .ade2-heading h1 {
+    font-size: 23px;
+  }
+
+  .ade2-app .ade2-case-list {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ade2-app .ade2-result-grid {
+    gap: 6px;
+  }
+}
+
+/* Manual task option - Add Diary Entry only */
+
+.ade2-app .ade2-manual-task-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 14px 12px;
+  padding: 8px 12px;
+  border: 1px solid #b6d2c3;
+  border-radius: 7px;
+  background: #f2f8f3;
+  color: #00432f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ade2-app .ade2-manual-task-button:hover {
+  background: #e5f2e9;
+}
+
+/* New Case Title and Type */
+
+.ade2-app .ade2-new-details label {
+  display: block;
+  margin-top: 12px;
+  color: #153e30;
+  font: 600 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-new-details input,
+.ade2-app .ade2-new-details select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 39px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid #e1e2e6;
+  border-radius: 7px;
+  background: #fff;
+  color: #182b3e;
+  font: 12px Arial, sans-serif;
+}
+
+.ade2-app .ade2-new-details input:focus,
+.ade2-app .ade2-new-details select:focus {
+  border-color: #126b53;
+  outline: 2px solid rgba(0, 91, 65, 0.10);
+}
+
+
+/* Next Hearing Purpose - Only */
+
+#next-hearing-purpose {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 9px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+label[for="next-hearing-purpose"] {
+  line-height: 1.5;
+}
+

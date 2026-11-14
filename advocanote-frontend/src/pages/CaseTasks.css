@@ -1,0 +1,425 @@
+
+/* CASE DETAILS - TASKS TAB ONLY */
+
+.ct-panel {
+  padding: 20px;
+}
+
+.ct-heading,
+.ct-toolbar,
+.ct-footer,
+.ct-title,
+.ct-actions,
+.ct-pages,
+.ct-dialog-head,
+.ct-dialog-footer {
+  display: flex;
+  align-items: center;
+}
+
+.ct-heading,
+.ct-footer {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ct-title {
+  gap: 14px;
+  color: #132c25;
+}
+
+.ct-title svg {
+  flex: 0 0 auto;
+}
+
+.ct-title h2,
+.ct-dialog h2 {
+  margin: 0;
+  font: 700 23px Georgia, serif;
+  color: #132c25;
+}
+
+.ct-title p {
+  margin: 6px 0 0;
+  color: #526277;
+  font: 13px Arial, sans-serif;
+}
+
+.ct-primary,
+.ct-secondary {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  min-height: 40px;
+  padding: 9px 15px;
+  font: 600 13px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.ct-primary {
+  background: #003e2e;
+  color: white;
+  border: 1px solid #003e2e;
+}
+
+.ct-primary:hover:not(:disabled) {
+  background: #075540;
+}
+
+.ct-secondary {
+  background: white;
+  color: #233a30;
+  border: 1px solid #d8dfd9;
+}
+
+/* SEARCH AND SORT */
+
+.ct-toolbar {
+  margin: 23px 0 14px;
+  gap: 13px;
+}
+
+.ct-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 43px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid #dbe1e2;
+  border-radius: 8px;
+  background: #fff;
+  color: #233c47;
+}
+
+.ct-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  font: 13px Arial, sans-serif;
+  color: #1b3335;
+}
+
+.ct-sort {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 0 13px;
+  background: #fff;
+  border: 1px solid #dbe1e2;
+  border-radius: 8px;
+  font: 600 13px Arial, sans-serif;
+  color: #1b3335;
+  cursor: pointer;
+}
+
+/* TASK TABLE */
+
+.ct-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.ct-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 750px;
+  font: 13px Arial, sans-serif;
+}
+
+.ct-table th {
+  padding: 14px 10px;
+  text-align: left;
+  font: 700 13px Georgia, serif;
+  background: #fff7e8;
+  color: #152c2a;
+}
+
+.ct-table th:first-child {
+  border-radius: 8px 0 0 8px;
+  width: 9%;
+}
+
+.ct-table th:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.ct-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid #eae9e4;
+  color: #26384c;
+  vertical-align: middle;
+}
+
+.ct-task-title {
+  font-weight: 600;
+  color: #132b34 !important;
+}
+
+.ct-done-title {
+  color: #758178 !important;
+  text-decoration: line-through;
+}
+
+/* COMPLETION CHECKBOX */
+
+.ct-check-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.ct-check-row input {
+  accent-color: #006145;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.ct-check-row span {
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  color: #fff;
+  border-radius: 50%;
+  background: #68796f;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* STATUS BADGES */
+
+.ct-badge {
+  display: inline-block;
+  min-width: 70px;
+  padding: 8px 10px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ct-pending {
+  background: #fff1d0;
+  color: #785408;
+}
+
+.ct-overdue {
+  background: #ffe3e2;
+  color: #a32020;
+}
+
+.ct-completed {
+  background: #e1f5e7;
+  color: #075b35;
+}
+
+/* PRIORITY BADGES */
+
+.ct-priority-high {
+  background: #ffe3e3;
+  color: #a62727;
+}
+
+.ct-priority-medium {
+  background: #e3f1ff;
+  color: #22558a;
+}
+
+.ct-priority-low {
+  background: #e0f5e7;
+  color: #176541;
+}
+
+/* VIEW / EDIT / DELETE */
+
+.ct-actions {
+  gap: 7px;
+}
+
+.ct-actions button,
+.ct-pages button,
+.ct-dialog-head button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  background: #fff;
+  border: 1px solid #dce4e3;
+  border-radius: 7px;
+  color: #173e34;
+  cursor: pointer;
+}
+
+.ct-actions button:hover,
+.ct-pages button:hover:not(:disabled) {
+  background: #eff7f1;
+}
+
+.ct-actions .ct-delete {
+  color: #cb2d2d;
+}
+
+/* PAGINATION */
+
+.ct-footer {
+  padding-top: 17px;
+  color: #526277;
+  font: 12px Arial, sans-serif;
+}
+
+.ct-pages {
+  gap: 9px;
+}
+
+.ct-pages span {
+  min-width: 32px;
+  text-align: center;
+  border-radius: 7px;
+  background: #003e2e;
+  padding: 9px 0;
+  color: white;
+  font-weight: bold;
+}
+
+.ct-pages button:disabled,
+.ct-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ct-empty {
+  padding: 36px 14px;
+  text-align: center;
+  color: #526277;
+  font: 13px Arial, sans-serif;
+}
+
+.ct-error {
+  margin: 10px 0;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: #fff0ee;
+  color: #a22222;
+  font: 12px Arial, sans-serif;
+}
+
+/* ADD / EDIT / VIEW POPUP */
+
+.ct-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(1, 22, 16, 0.55);
+}
+
+.ct-dialog {
+  width: min(100%, 460px);
+  padding: 24px;
+  border: 1px solid #e6e4dc;
+  border-radius: 14px;
+  background: #fffdfa;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.18);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.ct-dialog-head {
+  justify-content: space-between;
+  margin-bottom: 19px;
+}
+
+.ct-dialog-head h2 {
+  font-size: 23px;
+}
+
+.ct-form {
+  display: grid;
+  gap: 14px;
+}
+
+.ct-form label {
+  display: grid;
+  gap: 7px;
+  font: 600 12px Arial, sans-serif;
+  color: #18372d;
+}
+
+.ct-form input,
+.ct-form select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 1px solid #dce4e0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1d3132;
+  font: 13px Arial, sans-serif;
+}
+
+.ct-dialog-footer {
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 9px;
+}
+
+.ct-view h3 {
+  margin: 0 0 14px;
+  font: 700 19px Georgia, serif;
+  color: #132c25;
+}
+
+.ct-view p {
+  margin: 8px 0;
+  color: #475a55;
+  font: 13px Arial, sans-serif;
+}
+
+.ct-view .ct-primary {
+  margin-top: 16px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+  .ct-panel {
+    padding: 13px;
+  }
+
+  .ct-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .ct-heading .ct-primary {
+    margin-left: auto;
+  }
+
+  .ct-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .ct-search {
+    flex: 1 1 100%;
+  }
+
+  .ct-sort {
+    margin-left: auto;
+  }
+
+  .ct-footer {
+    flex-wrap: wrap;
+  }
+}

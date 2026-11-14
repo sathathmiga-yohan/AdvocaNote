@@ -1,0 +1,259 @@
+
+/*
+  AdvocaNote - Compact Right Side Diary Panel
+  Original MyLegalDiary.css remains unchanged.
+*/
+
+.ald-app .ald-diary-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 255px;
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+}
+
+.ald-app .ald-diary-primary {
+  min-width: 0;
+}
+
+.ald-app .ald-diary-widgets {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 13px;
+}
+
+.ald-app .ald-diary-widget {
+  min-width: 0;
+  padding: 13px;
+  background: #fffdfa;
+  border: 1px solid #e6e4dc;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(35, 42, 25, 0.04);
+}
+
+.ald-app .ald-widget-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.ald-app .ald-widget-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font: 700 15px Georgia, "Times New Roman", serif;
+  color: #18352c;
+}
+
+.ald-app .ald-widget-heading h3 svg {
+  color: #07503a;
+  flex: 0 0 auto;
+}
+
+.ald-app .ald-widget-month-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #41556a;
+  font-size: 11px;
+}
+
+.ald-app .ald-widget-month-controls button {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: #f4f7f3;
+  color: #074331;
+}
+
+.ald-app .ald-widget-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+}
+
+.ald-app .ald-widget-weekday {
+  text-align: center;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64736c;
+}
+
+.ald-app .ald-widget-calendar-grid button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #243e38;
+  font-size: 11px;
+}
+
+.ald-app .ald-widget-calendar-grid button:hover {
+  background: #eaf5ed;
+}
+
+.ald-app .ald-widget-calendar-grid button.ald-widget-today {
+  border-color: #b1d4bb;
+}
+
+.ald-app .ald-widget-calendar-grid button.ald-widget-selected,
+.ald-app .ald-widget-calendar-grid button.ald-widget-selected:hover {
+  background: #00432f;
+  border-color: #00432f;
+  color: white;
+  font-weight: 700;
+}
+
+.ald-app .ald-widget-muted {
+  margin: 10px 0 4px;
+  color: #66776e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ald-app .ald-widget-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 0;
+  border-top: 1px solid #eeeae2;
+  line-height: 1.45;
+}
+
+.ald-app .ald-widget-list-item strong {
+  font-size: 12px;
+  color: #153b2c;
+  overflow-wrap: anywhere;
+}
+
+.ald-app .ald-widget-list-item span {
+  color: #425766;
+  font-size: 12px;
+}
+
+.ald-app .ald-widget-list-item small {
+  color: #61766a;
+  font-size: 11px;
+}
+
+/* Edit and Delete buttons */
+
+.ald-app .ald-diary-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ald-app .ald-diary-modal-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ald-app .ald-diary-modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ald-app .ald-diary-edit-btn {
+  border: 1px solid #00432f;
+  background: #00432f;
+  color: white;
+}
+
+.ald-app .ald-diary-delete-btn {
+  border: 1px solid #e9c5c5;
+  background: #fffafa;
+  color: #a33030;
+}
+
+/* Edit popup fields */
+
+.ald-app .ald-diary-edit-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ald-app .ald-diary-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c342b;
+}
+
+.ald-app .ald-diary-edit-form input,
+.ald-app .ald-diary-edit-form select,
+.ald-app .ald-diary-edit-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid #dce4df;
+  border-radius: 7px;
+  background: white;
+  color: #20392f;
+  font: 13px Arial, Helvetica, sans-serif;
+}
+
+.ald-app .ald-diary-edit-form textarea {
+  resize: vertical;
+}
+
+.ald-app .ald-diary-action-error {
+  padding: 9px 12px;
+  background: #fff3f1;
+  color: #a32121;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* Keep existing diary table scroll behavior */
+
+.ald-app .ald-diary-primary .ald-table-scroll {
+  overflow-x: auto;
+}
+
+/* Responsive layout */
+
+@media (max-width: 1220px) {
+  .ald-app .ald-diary-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ald-app .ald-diary-widgets {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .ald-app .ald-diary-widgets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

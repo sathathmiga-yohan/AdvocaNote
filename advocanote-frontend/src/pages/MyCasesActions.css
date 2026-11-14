@@ -1,0 +1,148 @@
+
+/* MY CASES - THREE-DOT ROW ACTIONS */
+
+.mc-row-action-menu {
+  position: fixed;
+  z-index: 10020;
+  width: 224px;
+  padding: 5px;
+  background: #fffdfa;
+  border: 1px solid #e1e7df;
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(2, 33, 24, 0.14);
+}
+
+.mc-row-action-menu button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 10px;
+  text-align: left;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #173b2f;
+  font: 600 12px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.mc-row-action-menu button:hover {
+  background: #f0f7f0;
+}
+
+.mc-row-action-menu .mc-row-action-danger {
+  color: #b52a2d;
+}
+
+.mc-row-action-menu .mc-row-action-danger:hover {
+  background: #fff0ef;
+}
+
+/* DELETE CASE CONFIRMATION */
+
+.mc-case-delete-backdrop {
+  position: fixed;
+  z-index: 10030;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 27, 19, 0.54);
+}
+
+.mc-case-delete-dialog {
+  width: min(100%, 430px);
+  padding: 25px;
+  border: 1px solid #e3e2d9;
+  border-radius: 14px;
+  background: #fffdfa;
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.18);
+}
+
+.mc-case-delete-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mc-case-delete-heading h2 {
+  margin: 0;
+  color: #213c2e;
+  font: 700 23px Georgia, serif;
+}
+
+.mc-case-delete-heading button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #55675b;
+  cursor: pointer;
+}
+
+.mc-case-delete-dialog > p {
+  margin: 0 0 12px;
+  color: #45584f;
+  font: 13px/1.65 Arial, sans-serif;
+}
+
+.mc-case-delete-dialog .mc-case-delete-note {
+  color: #6b746d;
+  font-size: 12px;
+}
+
+.mc-case-delete-dialog .mc-case-delete-error {
+  color: #b42332;
+}
+
+.mc-case-delete-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.mc-case-delete-buttons button {
+  min-height: 39px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font: 600 13px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.mc-case-delete-cancel {
+  background: white;
+  color: #273c32;
+  border: 1px solid #d7ded7;
+}
+
+.mc-case-delete-confirm {
+  background: #b42332;
+  color: white;
+  border: 1px solid #b42332;
+}
+
+.mc-case-delete-confirm:hover:not(:disabled) {
+  background: #981d2b;
+}
+
+.mc-case-delete-buttons button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .mc-case-delete-dialog {
+    padding: 19px;
+  }
+
+  .mc-case-delete-buttons button {
+    flex: 1;
+  }
+}

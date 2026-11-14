@@ -1,0 +1,278 @@
+
+.apm-root {
+  padding: 24px;
+  min-width: 0;
+}
+
+.apm-heading,
+.apm-form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.apm-heading {
+  margin-bottom: 22px;
+}
+
+.apm-heading h3,
+.apm-form-heading h3 {
+  margin: 0;
+  color: #003d30;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.apm-heading p {
+  margin: 7px 0 0;
+  color: #78817e;
+  font-size: 13px;
+}
+
+.apm-button,
+.apm-action,
+.apm-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.2s ease;
+}
+
+.apm-button {
+  border-radius: 9px;
+  padding: 11px 17px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.apm-primary {
+  background: #004936;
+  color: white;
+  border: 1px solid #004936;
+}
+
+.apm-primary:hover:not(:disabled) {
+  background: #006148;
+}
+
+.apm-outline {
+  background: white;
+  color: #173a33;
+  border: 1px solid #dce4df;
+}
+
+.apm-button:disabled,
+.apm-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.apm-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 0;
+  padding: 13px 15px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.apm-error {
+  background: #fff0ef;
+  color: #a32925;
+  border: 1px solid #f7d3cf;
+}
+
+.apm-success {
+  background: #eaf6ee;
+  color: #196b3e;
+  border: 1px solid #d2e9d7;
+}
+
+.apm-form {
+  padding: 23px;
+  margin-bottom: 24px;
+  border: 1px solid #e7dac2;
+  background: #fffefa;
+  border-radius: 13px;
+}
+
+.apm-form-heading {
+  margin-bottom: 22px;
+}
+
+.apm-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #e4e7e3;
+  background: white;
+  color: #374a43;
+}
+
+.apm-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.apm-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: #294a3f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.apm-fields input,
+.apm-fields select,
+.apm-fields textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid #dce3dc;
+  border-radius: 9px;
+  background: white;
+  color: #17372d;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.apm-fields input:focus,
+.apm-fields select:focus,
+.apm-fields textarea:focus {
+  border-color: #c8a25a;
+  box-shadow: 0 0 0 3px #c8a25a20;
+}
+
+.apm-fields input:disabled,
+.apm-fields select:disabled,
+.apm-fields textarea:disabled {
+  background: #f0f1ef;
+  cursor: not-allowed;
+}
+
+.apm-fields .apm-wide {
+  grid-column: 1 / -1;
+}
+
+.apm-fields textarea {
+  resize: vertical;
+}
+
+.apm-fields small,
+.apm-subtext {
+  color: #819087;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.apm-subtext {
+  display: block;
+  margin-top: 5px;
+}
+
+.apm-warning {
+  padding: 12px;
+  background: #fff5e5;
+  border-radius: 8px;
+  color: #956221;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.apm-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #294a3f;
+  font-size: 13px;
+}
+
+.apm-checkbox input {
+  accent-color: #004936;
+}
+
+.apm-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.apm-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.apm-action {
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: 1px solid #e4e9e4;
+  background: white;
+  color: #00513b;
+  font-size: 12px;
+}
+
+.apm-action:hover:not(:disabled) {
+  border-color: #c6a65f;
+  background: #fffbf3;
+}
+
+.apm-confirm {
+  margin-top: 18px;
+  border: 1px solid #dfc997;
+  background: #fff9eb;
+  padding: 18px;
+  border-radius: 12px;
+  color: #203e33;
+}
+
+.apm-confirm p {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #7b7262;
+}
+
+@media (max-width: 768px) {
+  .apm-root {
+    padding: 15px;
+  }
+
+  .apm-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .apm-form {
+    padding: 16px;
+  }
+
+  .apm-heading {
+    align-items: flex-start;
+  }
+
+  .apm-heading .apm-button {
+    width: 100%;
+  }
+
+  .apm-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .apm-form-actions .apm-button {
+    width: 100%;
+  }
+}

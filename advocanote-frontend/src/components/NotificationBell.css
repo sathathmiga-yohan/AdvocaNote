@@ -1,0 +1,77 @@
+
+.anb-holder {
+  position: relative;
+}
+
+.anb-holder .ald-notify {
+  position: relative;
+}
+
+.anb-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #b18a4c;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.anb-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 1000;
+  width: min(310px, 90vw);
+  max-height: 350px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.anb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.anb-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #eee9dc;
+  border-radius: 9px;
+  background: #faf9f5;
+  color: #004535;
+  text-align: left;
+  cursor: pointer;
+}
+
+.anb-item:hover {
+  background: #f3efe5;
+}
+
+.anb-item span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.anb-item b {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.anb-item small {
+  font-size: 11px;
+  color: #77766f;
+}

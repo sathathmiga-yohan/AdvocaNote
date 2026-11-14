@@ -1,0 +1,1947 @@
+
+/* ==========================================
+   ADVOCANOTE
+   SUBSCRIPTION + PROFILE PAGES
+========================================== */
+
+.anp-page {
+  min-height: 100%;
+  width: 100%;
+  padding: 35px 35px 60px;
+  background: #faf9f5;
+  font-family: "DM Sans", Arial, sans-serif;
+  color: #18372f;
+}
+
+.anp-page * {
+  box-sizing: border-box;
+}
+
+.anp-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* PAGE HEADER */
+
+.anp-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.anp-eyebrow {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #b18a4c;
+}
+
+.anp-page-header h1 {
+  margin: 0 0 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 600;
+  color: #003e31;
+}
+
+.anp-page-header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #76847d;
+}
+
+.anp-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #eadfc9;
+  border-radius: 16px;
+  color: #a67e42;
+  background: #fff9ed;
+}
+
+/* SUBSCRIPTION MAIN CARD */
+
+.anp-main-card {
+  width: 100%;
+  padding: 50px 35px 35px;
+  border: 1px solid #e9e8e0;
+  border-radius: 20px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(27, 56, 43, 0.035);
+}
+
+.anp-feature-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 22px;
+  border-radius: 22px;
+  color: #005244;
+  background: #eef5ef;
+}
+
+.anp-coming-badge {
+  display: inline-block;
+  padding: 7px 15px;
+  border: 1px solid #e9dab7;
+  border-radius: 30px;
+  background: #fff9ed;
+  color: #987038;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+}
+
+.anp-main-card > h2 {
+  margin: 19px 0 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 3vw, 33px);
+  font-weight: 600;
+  color: #003e31;
+}
+
+.anp-main-description {
+  max-width: 590px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #718079;
+}
+
+.anp-divider {
+  height: 1px;
+  margin: 38px 0;
+  background: #eeeee8;
+}
+
+/* SUBSCRIPTION PREVIEW ITEMS */
+
+.anp-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  text-align: left;
+}
+
+.anp-mini-card {
+  min-width: 0;
+  padding: 25px 22px;
+  border: 1px solid #e9ece4;
+  border-radius: 14px;
+  background: #fcfcf9;
+}
+
+.anp-mini-card > svg {
+  color: #b18a4c;
+  margin-bottom: 14px;
+}
+
+.anp-mini-card h3 {
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #173f33;
+}
+
+.anp-mini-card p {
+  margin: 0;
+  color: #75837d;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.anp-footer-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 32px;
+  font-size: 12px;
+  color: #9a855f;
+}
+
+/* PROFILE SUMMARY */
+
+.anp-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 30px;
+  margin-bottom: 22px;
+  border: 1px solid #e4e9e2;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.anp-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 90px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #005244;
+  color: #ffffff;
+  font-family: Georgia, serif;
+  font-size: 38px;
+  font-weight: 600;
+}
+
+.anp-profile-intro {
+  min-width: 0;
+}
+
+.anp-profile-intro h2 {
+  margin: 0 0 7px;
+  font-family: Georgia, serif;
+  font-size: 27px;
+  color: #003e31;
+}
+
+.anp-profile-intro p {
+  margin: 0 0 12px;
+  color: #74817d;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.anp-role-label {
+  display: inline-block;
+  padding: 6px 13px;
+  border-radius: 20px;
+  background: #eef5ef;
+  color: #00624a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* PROFILE DETAILS */
+
+.anp-details-card {
+  padding: 28px 30px;
+  margin-bottom: 22px;
+  border: 1px solid #e4e9e2;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.anp-section-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 25px;
+  color: #005244;
+}
+
+.anp-section-title h2 {
+  margin: 0 0 5px;
+  font-family: Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #003e31;
+}
+
+.anp-section-title p {
+  margin: 0;
+  color: #7b8881;
+  font-size: 12px;
+}
+
+.anp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.anp-info-field label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #42564c;
+}
+
+.anp-info-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 15px;
+  border: 1px solid #e1e7e1;
+  border-radius: 9px;
+  background: #fafbf9;
+  color: #334a40;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.anp-info-value svg {
+  flex-shrink: 0;
+  color: #8b9c91;
+}
+
+/* PROFILE SETTINGS */
+
+.anp-settings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.anp-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0ea;
+}
+
+.anp-setting-row:last-child {
+  border-bottom: none;
+}
+
+.anp-setting-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: #005244;
+  background: #eef5ef;
+}
+
+.anp-setting-row > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.anp-setting-row h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #244238;
+}
+
+.anp-setting-row p {
+  margin: 0;
+  color: #819088;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.anp-setting-status {
+  flex-shrink: 0;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #f7f1e4;
+  color: #9b7b49;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .anp-feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .anp-page {
+    padding: 22px 16px 40px;
+  }
+
+  .anp-page-header {
+    align-items: flex-start;
+  }
+
+  .anp-header-icon {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+  }
+
+  .anp-main-card {
+    padding: 30px 18px;
+  }
+
+  .anp-profile-card {
+    padding: 22px;
+    gap: 15px;
+  }
+
+  .anp-avatar {
+    width: 64px;
+    height: 64px;
+    flex-basis: 64px;
+    font-size: 28px;
+  }
+
+  .anp-profile-intro h2 {
+    font-size: 21px;
+  }
+
+  .anp-details-card {
+    padding: 22px 18px;
+  }
+
+  .anp-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .anp-setting-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .anp-setting-status {
+    margin-left: 59px;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE - PROFILE API INTEGRATION
+   ADD BELOW EXISTING ACCOUNT PAGES CSS
+========================================== */
+
+.anp-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* THREE DOT MENU */
+
+.anp-profile-menu-wrap {
+  position: relative;
+  z-index: 10;
+}
+
+.anp-more-button {
+  width: 43px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e1e7de;
+  border-radius: 11px;
+  background: #fff;
+  color: #28483b;
+  cursor: pointer;
+}
+
+.anp-more-button:hover {
+  background: #f1f6f0;
+}
+
+.anp-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  width: 270px;
+  padding: 7px;
+  background: #fff;
+  border: 1px solid #e3e8df;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 45, 33, 0.12);
+  z-index: 20;
+}
+
+.anp-profile-dropdown button,
+.anp-profile-menu-soon {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #254538;
+  text-align: left;
+  font-size: 12px;
+}
+
+.anp-profile-dropdown button {
+  cursor: pointer;
+}
+
+.anp-profile-dropdown button:hover {
+  background: #f1f6f0;
+}
+
+.anp-profile-menu-soon {
+  color: #89938c;
+}
+
+.anp-profile-menu-soon small {
+  margin-left: auto;
+  color: #a89166;
+  font-size: 10px;
+}
+
+/* PROFESSIONAL INFORMATION */
+
+.anp-section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.anp-section-header-row .anp-section-title {
+  margin-bottom: 0;
+}
+
+.anp-edit-button,
+.anp-primary-button,
+.anp-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 41px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.anp-edit-button,
+.anp-secondary-button {
+  border: 1px solid #dce5da;
+  background: #fff;
+  color: #005244;
+}
+
+.anp-edit-button:hover,
+.anp-secondary-button:hover {
+  background: #f0f6f1;
+}
+
+.anp-primary-button {
+  border: 1px solid #004535;
+  background: #004535;
+  color: #fff;
+}
+
+.anp-primary-button:hover {
+  background: #006047;
+}
+
+.anp-primary-button:disabled,
+.anp-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* EDIT INPUTS */
+
+.anp-edit-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid #dce5dd;
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: #26463a;
+  font: inherit;
+  font-size: 13px;
+}
+
+.anp-edit-input:focus {
+  border-color: #00664e;
+  box-shadow: 0 0 0 3px rgba(0, 102, 78, 0.09);
+}
+
+/* PRACTICE AREAS */
+
+.anp-practice-section {
+  margin-top: 27px;
+  padding-top: 23px;
+  border-top: 1px solid #edf0ea;
+}
+
+.anp-practice-section h3 {
+  margin: 0 0 14px;
+  color: #244437;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.anp-profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.anp-practice-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 33px;
+  padding: 7px 13px;
+  border: 1px solid #e1e6de;
+  border-radius: 22px;
+  background: #fff;
+  color: #64776d;
+  font-size: 11px;
+}
+
+button.anp-practice-chip {
+  cursor: pointer;
+}
+
+.anp-practice-chip.selected {
+  border-color: #cee2d4;
+  background: #edf6ef;
+  color: #00533e;
+  font-weight: 700;
+}
+
+button.anp-practice-chip:hover {
+  border-color: #75ab94;
+}
+
+.anp-empty-note {
+  color: #99a39b;
+  font-size: 12px;
+}
+
+/* NOTIFICATION PREFERENCES */
+
+.anp-preferences-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #00634b;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.anp-notification-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 0;
+  border-bottom: 1px solid #edf0eb;
+  cursor: pointer;
+}
+
+.anp-notification-option:last-child {
+  border-bottom: none;
+}
+
+.anp-notification-option strong {
+  color: #2b493b;
+  font-size: 13px;
+}
+
+.anp-notification-option p {
+  margin: 5px 0 0;
+  color: #89968d;
+  font-size: 11px;
+}
+
+.anp-notification-option input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: #005244;
+  cursor: pointer;
+}
+
+/* FORM ACTIONS */
+
+.anp-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* FEEDBACK */
+
+.anp-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 17px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.anp-message-success {
+  background: #eef7f0;
+  border: 1px solid #cfe7d5;
+  color: #24644b;
+}
+
+.anp-message-error {
+  background: #fff4f0;
+  border: 1px solid #efd6ce;
+  color: #a34231;
+}
+
+/* PROFILE MOBILE */
+
+@media (max-width: 600px) {
+  .anp-page-header-actions {
+    gap: 7px;
+  }
+
+  .anp-profile-dropdown {
+    width: min(270px, calc(100vw - 36px));
+  }
+
+  .anp-section-header-row {
+    flex-direction: column;
+  }
+
+  .anp-profile-actions {
+    justify-content: stretch;
+  }
+
+  .anp-profile-actions button {
+    flex: 1;
+  }
+
+  .anp-profile-intro h2 {
+    overflow-wrap: anywhere;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE - SCREENSHOT STYLE PROFILE
+   ADD AT END OF AccountPages.css
+========================================== */
+
+.anp-profile-ref {
+  padding: 12px 28px 45px;
+  background: #faf9f6;
+  color: #163d2d;
+}
+
+.anp-profile-ref .anp-container {
+  max-width: 1240px;
+}
+
+.anp-ref-heading {
+  margin-bottom: 17px;
+}
+
+.anp-ref-heading h1 {
+  margin: 0 0 2px;
+  color: #003b2a;
+  font: 700 36px Georgia, serif;
+}
+
+.anp-ref-heading p {
+  margin: 0;
+  color: #4a5d65;
+  font-size: 13px;
+}
+
+/* PROFILE SUMMARY */
+
+.anp-ref-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  min-height: 110px;
+  padding: 17px 23px;
+  margin-bottom: 18px;
+  background: #fff;
+  border: 1px solid #ebe7dc;
+  border-radius: 15px;
+  box-shadow: 0 5px 17px #352a1710;
+}
+
+.anp-ref-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 70px;
+  height: 70px;
+  width: 70px;
+  border-radius: 50%;
+  color: #392b18;
+  background: linear-gradient(145deg, #ffedbf, #efc77c);
+  font: 700 28px Georgia, serif;
+}
+
+.anp-ref-identity {
+  min-width: 135px;
+}
+
+.anp-ref-identity h2 {
+  margin: 0 0 5px;
+  color: #17231e;
+  font: 700 24px Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.anp-ref-identity p {
+  margin: 0;
+  color: #4e6070;
+  font: 15px Georgia, serif;
+}
+
+.anp-ref-meta {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 17px;
+  min-width: 0;
+  padding-left: 18px;
+  border-left: 1px solid #e1e2dd;
+}
+
+.anp-ref-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #273746;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.anp-ref-meta svg {
+  flex-shrink: 0;
+  color: #152d39;
+}
+
+.anp-ref-summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.anp-ref-photo,
+.anp-ref-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 39px;
+  border: 1px solid #dce2e5;
+  border-radius: 9px;
+  background: #f7f8f9;
+  color: #24342e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.anp-ref-photo {
+  padding: 0 15px;
+}
+
+.anp-ref-photo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.anp-ref-menu-trigger {
+  width: 40px;
+  cursor: pointer;
+}
+
+/* OVERFLOW SETTINGS MENU */
+
+.anp-ref-menu-wrap {
+  position: relative;
+  z-index: 30;
+}
+
+.anp-ref-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 265px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e2e4de;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px #1d281f2b;
+}
+
+.anp-ref-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #26382e;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.anp-ref-dropdown button:hover:not(:disabled) {
+  background: #edf5ee;
+}
+
+.anp-ref-dropdown button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.anp-ref-dropdown button small {
+  margin-left: auto;
+  font-size: 10px;
+}
+
+.anp-ref-dropdown .anp-ref-danger {
+  color: #c43b37;
+  background: #fff0ee;
+}
+
+/* MAIN SECTION CARDS */
+
+.anp-ref-card {
+  margin-bottom: 18px;
+  background: #fff;
+  border: 1px solid #e4e7dc;
+  border-radius: 15px;
+  overflow: visible;
+  box-shadow: 0 6px 16px #42372510;
+}
+
+.anp-ref-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-height: 46px;
+  padding: 10px 27px;
+  border-bottom: 1px solid #e3e8e2;
+  border-radius: 15px 15px 0 0;
+  color: #005137;
+  background: linear-gradient(100deg, #eef5ef, #f6f8f3);
+}
+
+.anp-ref-card-heading h2 {
+  margin: 0;
+  color: #0b3020;
+  font: 700 20px Georgia, serif;
+}
+
+/* INPUTS */
+
+.anp-ref-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 35px;
+  padding: 16px 30px 10px;
+}
+
+.anp-ref-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 5px;
+}
+
+.anp-ref-field > span {
+  color: #17251f;
+  font: 700 12px Georgia, serif;
+}
+
+.anp-ref-field > span b {
+  color: #c94a3d;
+}
+
+.anp-ref-field input {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #ccd5df;
+  border-radius: 7px;
+  outline: none;
+  background: #fcfcfb;
+  color: #1d2c36;
+  font: 13px Arial, sans-serif;
+}
+
+.anp-ref-field input:focus {
+  border-color: #006343;
+  box-shadow: 0 0 0 3px #00563c12;
+}
+
+.anp-ref-field input:read-only {
+  color: #66736b;
+  background: #f5f6f4;
+}
+
+.anp-ref-save-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 3px 25px 16px;
+}
+
+.anp-ref-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 140px;
+  min-height: 38px;
+  padding: 9px 17px;
+  border: 1px solid #00432b;
+  border-radius: 7px;
+  background: #004a30;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.anp-ref-button:hover:not(:disabled) {
+  background: #006343;
+}
+
+.anp-ref-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* PRACTICE AREAS MULTI-SELECT */
+
+.anp-ref-select {
+  position: relative;
+  min-width: 0;
+}
+
+.anp-ref-select summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 5px 9px;
+  border: 1px solid #ccd5df;
+  border-radius: 7px;
+  background: #fcfcfb;
+  cursor: pointer;
+  list-style: none;
+}
+
+.anp-ref-select summary::-webkit-details-marker {
+  display: none;
+}
+
+.anp-ref-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.anp-ref-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border: 1px solid #e7dfcc;
+  border-radius: 20px;
+  background: #f6f0e6;
+  color: #383a32;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.anp-ref-placeholder {
+  color: #929b94;
+  font-size: 12px;
+}
+
+.anp-ref-options {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 5px);
+  z-index: 15;
+  display: grid;
+  gap: 3px;
+  max-height: 205px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #dde3dc;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 10px 22px #1c2f221a;
+}
+
+.anp-ref-options label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.anp-ref-options label:hover {
+  background: #f1f7f2;
+}
+
+.anp-ref-options input {
+  width: 15px;
+  min-height: 15px;
+  accent-color: #00543b;
+}
+
+/* NOTIFICATION SETTINGS */
+
+.anp-ref-notifications {
+  padding: 6px 30px 14px;
+}
+
+.anp-ref-notification {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 61px;
+  padding: 9px 5px;
+  border-bottom: 1px solid #ebeee9;
+  cursor: pointer;
+}
+
+.anp-ref-notification:last-child {
+  border-bottom: none;
+}
+
+.anp-ref-notification-check {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: #006039;
+  color: #fff;
+}
+
+.anp-ref-notification-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.anp-ref-notification-copy strong {
+  color: #142820;
+  font: 700 14px Georgia, serif;
+}
+
+.anp-ref-notification-copy small {
+  color: #6b7b87;
+  font-size: 11px;
+}
+
+/* GREEN SWITCH */
+
+.anp-ref-switch {
+  position: relative;
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  background: #c4ccc7;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.anp-ref-switch:checked {
+  background: #005f39;
+}
+
+.anp-ref-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.anp-ref-switch:checked::after {
+  transform: translateX(20px);
+}
+
+/* LANGUAGE PREFERENCES */
+
+.anp-ref-language {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 13px;
+  padding: 17px 30px;
+  border-top: 1px solid #e7ebe5;
+}
+
+.anp-ref-language label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.anp-ref-language select {
+  min-width: 140px;
+  padding: 9px 12px;
+  border: 1px solid #d0d9d0;
+  border-radius: 7px;
+  background: #fff;
+}
+
+/* FEEDBACK */
+
+.anp-ref-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.anp-ref-success {
+  border: 1px solid #cde4d0;
+  background: #eff8f0;
+  color: #00603e;
+}
+
+.anp-ref-error {
+  border: 1px solid #efd0c8;
+  background: #fff1ee;
+  color: #ac4238;
+}
+
+.anp-ref-feedback {
+  padding: 25px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+  .anp-ref-summary {
+    align-items: flex-start;
+  }
+
+  .anp-ref-meta {
+    flex-basis: 100%;
+    order: 3;
+    padding: 10px 0 0;
+    border-left: none;
+    border-top: 1px solid #eceee8;
+  }
+}
+
+@media (max-width: 650px) {
+  .anp-profile-ref {
+    padding: 18px 14px 35px;
+  }
+
+  .anp-ref-heading h1 {
+    font-size: 29px;
+  }
+
+  .anp-ref-summary {
+    gap: 12px;
+    padding: 17px;
+  }
+
+  .anp-ref-avatar {
+    flex-basis: 58px;
+    width: 58px;
+    height: 58px;
+    font-size: 23px;
+  }
+
+  .anp-ref-identity h2 {
+    font-size: 20px;
+  }
+
+  .anp-ref-summary-actions {
+    margin-left: 0;
+  }
+
+  .anp-ref-fields {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    padding: 16px;
+  }
+
+  .anp-ref-card-heading {
+    padding: 12px 16px;
+  }
+
+  .anp-ref-card-heading h2 {
+    font-size: 18px;
+  }
+
+  .anp-ref-save-row {
+    padding: 4px 16px 16px;
+  }
+
+  .anp-ref-notifications {
+    padding: 7px 15px;
+  }
+
+  .anp-ref-notification {
+    gap: 12px;
+  }
+}
+
+
+/* ==========================================
+   PROFILE PHOTO
+========================================== */
+
+.anp-ref-avatar {
+  overflow: hidden;
+}
+
+.anp-ref-avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.anp-ref-hidden-file {
+  display: none;
+}
+
+/* ==========================================
+   PRIVACY / ACCOUNT DIALOGS
+========================================== */
+
+.anp-ref-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+  background: rgba(0, 25, 18, 0.55);
+}
+
+.anp-ref-dialog {
+  width: min(100%, 500px);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  padding: 28px;
+  border: 1px solid #e3e8e0;
+  border-radius: 16px;
+
+  background: #ffffff;
+  color: #18372f;
+
+  box-shadow: 0 20px 55px rgba(0, 30, 20, 0.2);
+}
+
+.anp-ref-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  color: #005244;
+}
+
+.anp-ref-dialog-title h2 {
+  margin: 0;
+  color: #003e31;
+  font: 600 25px Georgia, serif;
+}
+
+.anp-ref-dialog > p {
+  margin: 0 0 16px;
+  color: #697c70;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.anp-ref-dialog-info {
+  display: grid;
+  gap: 6px;
+  margin: 20px 0;
+  padding: 18px;
+  border-radius: 10px;
+  background: #f5f8f4;
+}
+
+.anp-ref-dialog-info strong {
+  color: #25483a;
+  font-size: 12px;
+}
+
+.anp-ref-dialog-info span {
+  margin-bottom: 10px;
+  color: #69796f;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.anp-ref-dialog > .anp-ref-button {
+  margin-left: auto;
+  display: flex;
+}
+
+
+/* ================================================
+   ADVOCANOTE PROFILE V2 - RESPONSIVE
+   APPEND TO AccountPages.css
+================================================ */
+
+.anp-v2,
+.anp-v2-container,
+.anp-v2-shell,
+.anp-v2-main,
+.anp-v2-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.anp-v2-field-control {
+  width: 100%;
+  min-width: 0;
+}
+
+.anp-v2-field-control input {
+  max-width: 100%;
+}
+
+/* SMALL DESKTOPS */
+
+@media (max-width: 1280px) {
+
+  .anp-page.anp-v2 {
+    padding: 25px 23px 45px;
+  }
+
+  .anp-v2-shell {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  .anp-v2-main {
+    padding: 0 23px 30px;
+  }
+
+  .anp-v2-tabs {
+    gap: 17px;
+  }
+
+  .anp-v2-tabs button {
+    font-size: 11px;
+  }
+
+  .anp-v2-field-row {
+    grid-template-columns: 155px minmax(0, 1fr);
+    gap: 19px;
+  }
+}
+
+/* TABLET LANDSCAPE */
+
+@media (max-width: 980px) {
+
+  .anp-page.anp-v2 {
+    padding: 20px 18px 40px;
+  }
+
+  .anp-v2-shell {
+    grid-template-columns: 205px minmax(0, 1fr);
+  }
+
+  .anp-v2-sidebar {
+    padding: 30px 16px 24px;
+  }
+
+  .anp-v2-lawyer-name {
+    font-size: 19px;
+  }
+
+  .anp-v2-main {
+    padding: 0 18px 25px;
+  }
+
+  .anp-v2-tabs {
+    gap: 20px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .anp-v2-tabs button {
+    min-height: 58px;
+    font-size: 11px;
+  }
+
+  .anp-v2-field-row {
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .anp-v2-overview {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* TABLET PORTRAIT + MOBILE */
+
+@media (max-width: 760px) {
+
+  .anp-v2-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .anp-v2-page-header h1 {
+    font-size: 30px;
+  }
+
+  .anp-v2-page-header p {
+    font-size: 12px;
+  }
+
+  .anp-v2-shell {
+    display: block;
+    min-height: 0;
+  }
+
+  /* PROFILE SUMMARY MOVES ABOVE SETTINGS */
+
+  .anp-v2-sidebar {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: center;
+    padding: 24px 20px;
+    border-right: none;
+    border-bottom: 1px solid #e9ece7;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .anp-v2-avatar {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    width: 75px;
+    height: 75px;
+    margin: 0;
+    font-size: 25px;
+  }
+
+  .anp-v2-lawyer-name {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 32px;
+    margin: 0 0 4px;
+    text-align: left;
+    font-size: 21px;
+  }
+
+  .anp-v2-lawyer-role {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0 0 5px;
+    text-align: left;
+  }
+
+  .anp-v2-lawyer-tag {
+    grid-column: 2;
+    grid-row: 3;
+    margin: 0;
+  }
+
+  .anp-v2-more-wrap {
+    top: 18px;
+    right: 13px;
+  }
+
+  .anp-v2-photo-actions {
+    grid-column: 1 / -1;
+    margin-top: 21px;
+  }
+
+  .anp-v2-completion,
+  .anp-v2-sidebar-section,
+  .anp-v2-edit-practice {
+    grid-column: 1 / -1;
+  }
+
+  .anp-v2-completion {
+    margin-top: 20px;
+    padding: 16px 0;
+  }
+
+  .anp-v2-sidebar-section {
+    padding-top: 18px;
+  }
+
+  .anp-v2-edit-practice {
+    margin-top: 18px;
+  }
+
+  /* TABS */
+
+  .anp-v2-main {
+    padding: 0 19px 25px;
+  }
+
+  .anp-v2-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 22px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .anp-v2-tabs button {
+    flex-shrink: 0;
+    min-height: 55px;
+    font-size: 11px;
+  }
+
+  .anp-v2-panel {
+    padding: 24px 0 15px;
+    min-height: 0;
+  }
+
+  /* FORM ROWS */
+
+  .anp-v2-field-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .anp-v2-field-row > label {
+    padding-top: 0;
+  }
+
+  .anp-v2-field-control {
+    max-width: none;
+  }
+
+  .anp-v2-field-control input {
+    height: 44px;
+    width: 100%;
+  }
+
+  .anp-v2-picture-row {
+    flex-wrap: wrap;
+  }
+
+  .anp-v2-overview {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .anp-v2-feature-row,
+  .anp-v2-status-row {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 520px) {
+
+  .anp-page.anp-v2 {
+    padding: 14px 11px 32px;
+  }
+
+  .anp-v2-page-header {
+    gap: 14px;
+    margin-bottom: 19px;
+  }
+
+  .anp-v2-page-header h1 {
+    font-size: 27px;
+  }
+
+  .anp-v2-page-header p {
+    font-size: 11px;
+  }
+
+  .anp-v2-page-header .anp-v2-save {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .anp-v2-shell {
+    border-radius: 11px;
+  }
+
+  .anp-v2-sidebar {
+    grid-template-columns: 65px minmax(0, 1fr);
+    column-gap: 12px;
+    padding: 21px 15px;
+  }
+
+  .anp-v2-avatar {
+    width: 62px;
+    height: 62px;
+    font-size: 21px;
+  }
+
+  .anp-v2-lawyer-name {
+    font-size: 18px;
+  }
+
+  .anp-v2-lawyer-role {
+    font-size: 11px;
+  }
+
+  .anp-v2-lawyer-tag {
+    font-size: 9px;
+  }
+
+  .anp-v2-photo-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .anp-v2-sidebar-section h3 {
+    font-size: 14px;
+  }
+
+  .anp-v2-main {
+    padding: 0 14px 22px;
+  }
+
+  .anp-v2-tabs {
+    gap: 20px;
+  }
+
+  .anp-v2-tabs button {
+    min-height: 52px;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .anp-v2-tabs button svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .anp-v2-panel {
+    padding-top: 22px;
+  }
+
+  .anp-v2-section-heading h2 {
+    font-size: 19px;
+  }
+
+  .anp-v2-section-heading p {
+    font-size: 11px;
+  }
+
+  .anp-v2-field-row {
+    padding: 13px 0;
+  }
+
+  .anp-v2-field-control input {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .anp-v2-picture-row {
+    gap: 14px;
+  }
+
+  .anp-v2-small-avatar {
+    width: 43px;
+    height: 43px;
+  }
+
+  .anp-v2-feature-row,
+  .anp-v2-status-row {
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 70px;
+    padding: 15px 0;
+  }
+
+  .anp-v2-feature-row > div,
+  .anp-v2-status-row > div {
+    flex: 1 1 175px;
+  }
+
+  .anp-v2-status {
+    white-space: normal;
+  }
+
+  .anp-v2-overview {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .anp-v2-area-list {
+    gap: 8px;
+  }
+
+  .anp-v2-area-list button {
+    min-height: 36px;
+  }
+
+  .anp-v2-language-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .anp-v2-language-control select,
+  .anp-v2-language-control button {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+  }
+
+  .anp-v2-modal-backdrop {
+    padding: 12px;
+  }
+
+  .anp-v2-modal {
+    width: 100%;
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding: 25px 19px;
+  }
+}
+
+/* VERY SMALL MOBILE */
+
+@media (max-width: 380px) {
+
+  .anp-v2-page-header h1 {
+    font-size: 24px;
+  }
+
+  .anp-v2-sidebar {
+    padding: 18px 12px;
+  }
+
+  .anp-v2-lawyer-name {
+    font-size: 16px;
+  }
+
+  .anp-v2-main {
+    padding: 0 11px 19px;
+  }
+
+  .anp-v2-tabs {
+    gap: 16px;
+  }
+
+  .anp-v2-tabs button {
+    font-size: 10px;
+  }
+
+  .anp-v2-section-heading h2 {
+    font-size: 18px;
+  }
+
+  .anp-v2-dropdown {
+    width: min(220px, calc(100vw - 38px));
+  }
+
+  .anp-v2-feature-row,
+  .anp-v2-status-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* TOUCH AND ACCESSIBILITY */
+
+@media (hover: none) {
+
+  .anp-v2-tabs button,
+  .anp-v2-area-list button,
+  .anp-v2-photo-actions button {
+    touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .anp-v2 *,
+  .ald-app * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE PROFILE SIDEBAR CHANGES
+========================================== */
+
+/* Hide 3-dot menu on large screens */
+@media (min-width: 761px) {
+  .anp-v2-sidebar .anp-v2-more-wrap {
+    display: none;
+  }
+}
+
+/* Remove Edit Professional Profile button */
+.anp-v2-sidebar .anp-v2-edit-practice {
+  display: none;
+}
+
+

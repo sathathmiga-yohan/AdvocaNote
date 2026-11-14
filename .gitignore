@@ -1,0 +1,15 @@
+node_modules/
+.venv/
+venv/
+__pycache__/
+dist/
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite3
+uploads/
+recordings/
+*.log
+advocanote_backup.sql
+stripe_webhooks_backup.py

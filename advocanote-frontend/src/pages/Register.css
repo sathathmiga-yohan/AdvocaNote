@@ -1,0 +1,2868 @@
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap");
+
+/* ==========================================
+   ADVOCANOTE REGISTER
+   SAME DESIGN AS LOGIN
+   Desktop / Laptop / Tablet / Mobile
+========================================== */
+
+.anr-page,
+.anr-page * {
+  box-sizing: border-box;
+}
+
+.anr-page {
+  --anr-green: #003e31;
+  --anr-gold: #e8b777;
+  --anr-ink: #112a34;
+
+  display: grid;
+  grid-template-columns: minmax(0, 51fr) minmax(0, 49fr);
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  font-family: "DM Sans", sans-serif;
+}
+
+.anr-page button,
+.anr-page input {
+  font: inherit;
+}
+
+.anr-page button {
+  cursor: pointer;
+}
+
+/* ==========================================
+   LEFT SIDE BACKGROUND
+========================================== */
+
+.anr-page .anr-hero {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+
+  background-color: var(--anr-green);
+  background-image: url("/images/login2.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  overflow: hidden;
+}
+
+.anr-page .anr-hero-content {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  padding: 75px 25px 30px clamp(30px, 4.7vw, 85px);
+
+  color: #ffffff;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+}
+
+/* ==========================================
+   LEFT LOGO - SAME AS LOGIN
+========================================== */
+
+.anr-page .anr-hero .anr-brand {
+  display: grid;
+  grid-template-columns: 38px max-content;
+
+  column-gap: 6px;
+  row-gap: 2px;
+
+  align-items: center;
+  justify-content: start;
+
+  flex: 0 0 auto;
+
+  width: fit-content;
+  max-width: calc(100% - 12px);
+
+  margin: 0 0 20px 12px;
+  padding: 0;
+
+  text-align: left;
+}
+
+/* Court Logo */
+
+.anr-page .anr-hero .anr-brand-icon {
+  display: block;
+
+  grid-column: 1;
+  grid-row: 1 / 3;
+
+  width: 38px;
+  height: 43px;
+
+  margin: 0;
+
+  color: #ffffff;
+}
+
+/* AdvocaNote */
+
+.anr-page .anr-hero .anr-brand-name {
+  grid-column: 2;
+  grid-row: 1;
+
+  margin: 0;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1.17;
+  letter-spacing: -0.7px;
+
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.anr-page .anr-hero .anr-advoca {
+  color: #ffffff;
+}
+
+.anr-page .anr-hero .anr-note {
+  color: var(--anr-gold);
+}
+
+/* AI Smart Legal Diary */
+
+.anr-page .anr-hero .anr-brand-subtitle {
+  grid-column: 2;
+  grid-row: 2;
+
+  margin: 2px 0 0;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  color: #ffffff;
+  text-align: left;
+}
+
+/* Gold line */
+
+.anr-page .anr-hero .anr-brand-line {
+  grid-column: 2;
+  grid-row: 3;
+
+  justify-self: start;
+
+  width: 75px;
+  height: 4px;
+
+  margin: 9px 0 0;
+
+  background: var(--anr-gold);
+  border-radius: 10px;
+}
+
+/* ==========================================
+   LEFT WELCOME SECTION
+========================================== */
+
+.anr-page .anr-intro {
+  width: 100%;
+  max-width: 550px;
+  min-width: 0;
+
+  text-align: left;
+}
+
+.anr-page .anr-title {
+  margin: 0;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(35px, 3.35vw, 58px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+
+  overflow-wrap: break-word;
+}
+
+.anr-page .anr-title-white,
+.anr-page .anr-title-gold {
+  display: block;
+}
+
+.anr-page .anr-title-white {
+  color: #ffffff;
+}
+
+.anr-page .anr-title-gold {
+  color: #e9bb7c;
+}
+
+/* Description */
+
+.anr-page .anr-intro .auth-description,
+.anr-page .anr-intro .anr-description {
+  max-width: 485px;
+
+  margin: 18px 0 0;
+
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+
+  color: #ffffff;
+
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   LEFT FEATURES
+========================================== */
+
+.anr-page .anr-features {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+
+  width: 100%;
+  max-width: 530px;
+
+  margin: 24px 0 0;
+  padding: 0;
+}
+
+.anr-page .anr-feature {
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+  min-width: 0;
+}
+
+/* Feature icon */
+
+.anr-page .anr-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 50px;
+
+  width: 50px;
+  height: 50px;
+
+  border: 1px solid rgba(232, 183, 110, 0.45);
+  border-radius: 15px;
+
+  background: rgba(255, 255, 255, 0.09);
+  color: #e9bb7c;
+}
+
+/* Feature text */
+
+.anr-page .anr-feature-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.anr-page .anr-feature-content h3 {
+  margin: 0 0 4px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  color: #ffffff;
+}
+
+.anr-page .anr-feature-content p {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #ffffff;
+
+  overflow-wrap: break-word;
+}
+
+/* ==========================================
+   RIGHT SIDE
+========================================== */
+
+.anr-page .anr-right {
+  position: relative;
+  isolation: isolate;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 0;
+
+  padding: 78px 24px 24px;
+
+  background: radial-gradient(
+    circle at center,
+    #ffffff 0%,
+    #faf8f3 60%,
+    #f2eee5 100%
+  );
+
+  overflow: hidden;
+}
+
+/* Background decorations */
+
+.anr-page .anr-right::before,
+.anr-page .anr-right::after {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+
+  pointer-events: none;
+
+  background: rgba(149, 157, 113, 0.4);
+}
+
+.anr-page .anr-right::before {
+  top: 25px;
+  right: -55px;
+
+  width: 165px;
+  height: 240px;
+
+  border-radius: 0 100% 0 100%;
+  transform: rotate(-24deg);
+}
+
+.anr-page .anr-right::after {
+  bottom: 20px;
+  left: -65px;
+
+  width: 140px;
+  height: 200px;
+
+  border-radius: 100% 0 100% 0;
+  transform: rotate(-24deg);
+
+  opacity: 0.75;
+}
+
+/* ==========================================
+   LOGIN HERE TOP BAR
+========================================== */
+
+.anr-page .anr-topbar {
+  position: absolute;
+
+  top: 20px;
+  right: 8%;
+  z-index: 3;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 14px;
+
+  font-size: 14px;
+  color: #34404b;
+}
+
+.anr-page .anr-login-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 42px;
+  padding: 0 20px;
+
+  border: 1px solid #064b3f;
+  border-radius: 6px;
+
+  background: transparent;
+  color: #064b3f;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.anr-page .anr-login-link:hover {
+  background: #064b3f;
+  color: #ffffff;
+}
+
+/* ==========================================
+   REGISTER WHITE CARD
+========================================== */
+
+.anr-page .anr-card {
+  position: relative;
+  z-index: 2;
+
+  flex: 0 1 auto;
+
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100dvh - 102px);
+
+  padding: 19px 36px 24px;
+
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 15px;
+
+  box-shadow: 0 16px 55px rgba(52, 45, 30, 0.08);
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* ==========================================
+   CARD LOGO - SAME AS LOGIN CARD
+========================================== */
+
+.anr-page .anr-brand--dark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0;
+
+  text-align: center;
+  color: #004b3d;
+}
+
+/* Court logo */
+
+.anr-page .anr-brand--dark .anr-brand-icon {
+  display: block;
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 45px;
+
+  margin: 0 auto;
+
+  color: #004b3d;
+}
+
+/* Brand text */
+
+.anr-page .anr-brand--dark .anr-brand-text {
+  text-align: center;
+}
+
+.anr-page .anr-brand--dark .anr-brand-name {
+  margin: 0;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.anr-page .anr-brand--dark .anr-advoca {
+  color: #102c34;
+}
+
+.anr-page .anr-brand--dark .anr-note {
+  color: #c89b5a;
+}
+
+.anr-page .anr-brand--dark .anr-brand-subtitle {
+  margin: 2px 0 0;
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  color: #65707a;
+}
+
+/* ==========================================
+   REGISTER CARD HEADER
+========================================== */
+
+.anr-page .anr-card-header {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.anr-page .anr-card-header h2 {
+  margin: 0 0 8px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  color: #112a34;
+}
+
+.anr-page .anr-card-header p {
+  max-width: 380px;
+
+  margin: 0 auto;
+
+  font-size: 14px;
+  line-height: 1.45;
+
+  color: #657180;
+}
+
+/* ==========================================
+   REGISTER FORM
+========================================== */
+
+.anr-page .anr-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  width: 100%;
+  margin-top: 22px;
+}
+
+.anr-page .anr-field {
+  min-width: 0;
+}
+
+.anr-page .anr-field label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #243540;
+}
+
+.anr-page .anr-field label span {
+  color: #b73a33;
+}
+
+/* Input boxes */
+
+.anr-page .anr-input-wrap {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  width: 100%;
+  height: 46px;
+
+  padding: 0 14px;
+
+  border: 1px solid #cbd3db;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #657889;
+}
+
+.anr-page .anr-input-wrap:focus-within {
+  border-color: #075e4c;
+
+  box-shadow: 0 0 0 3px rgba(0, 83, 65, 0.1);
+}
+
+.anr-page .anr-input-wrap > svg {
+  flex-shrink: 0;
+
+  width: 22px;
+  height: 22px;
+}
+
+.anr-page .anr-input-wrap input {
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+  color: #203641;
+}
+
+.anr-page .anr-input-wrap input::placeholder {
+  color: #9aa5b1;
+}
+
+/* Password eye icon */
+
+.anr-page .anr-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 30px;
+
+  width: 30px;
+  height: 34px;
+
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #65717e;
+}
+
+.anr-page .anr-eye:hover {
+  color: #005244;
+}
+
+/* Password hint */
+
+.anr-page .anr-hint {
+  margin: 5px 0 0;
+
+  font-size: 11px;
+  line-height: 1.45;
+
+  color: #778493;
+}
+
+/* Form feedback */
+
+.anr-page .anr-message {
+  margin: 0;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.anr-page .anr-error {
+  color: #a33b32;
+}
+
+.anr-page .anr-success {
+  color: #086749;
+}
+
+/* ==========================================
+   REGISTER SUBMIT BUTTON
+========================================== */
+
+.anr-page .anr-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 14px;
+
+  width: 100%;
+  min-height: 49px;
+
+  margin-top: 3px;
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: linear-gradient(
+    100deg,
+    #004537,
+    #005447 50%,
+    #004236
+  );
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  transition: filter 0.2s ease;
+}
+
+.anr-page .anr-submit:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.anr-page .anr-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* ==========================================
+   SMALL LAPTOP
+========================================== */
+
+@media (min-width: 981px) and (max-width: 1250px) {
+  .anr-page .anr-hero-content {
+    padding-left: 28px;
+    padding-right: 18px;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(34px, 3.4vw, 46px);
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px;
+  }
+
+  .anr-page .anr-features {
+    gap: 12px;
+  }
+
+  .anr-page .anr-card {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* ==========================================
+   SHORT DESKTOP SCREEN
+========================================== */
+
+@media (min-width: 981px) and (max-height: 760px) {
+  .anr-page .anr-hero-content {
+    padding-top: 30px;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(32px, 3vw, 46px);
+  }
+
+  .anr-page .anr-features {
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .anr-page .anr-feature-icon {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .anr-page .anr-card {
+    padding-top: 15px;
+    padding-bottom: 17px;
+  }
+
+  .anr-page .anr-card-header {
+    margin-top: 9px;
+  }
+
+  .anr-page .anr-form {
+    margin-top: 15px;
+    gap: 9px;
+  }
+
+  .anr-page .anr-input-wrap {
+    height: 43px;
+  }
+}
+
+/* ==========================================
+   TABLET AND MOBILE
+   BELOW 980px
+========================================== */
+
+@media (max-width: 980px) {
+  .anr-page {
+    display: flex;
+    flex-direction: column;
+
+    height: auto;
+    min-height: 100dvh;
+
+    overflow: visible;
+  }
+
+  /* Green section moves to top */
+
+  .anr-page .anr-hero {
+    flex: 0 0 auto;
+
+    width: 100%;
+    height: auto;
+
+    background-image:
+      linear-gradient(
+        90deg,
+        rgba(0, 49, 39, 0.70),
+        rgba(0, 49, 39, 0.16)
+      ),
+      url("/images/login2.png");
+
+    background-size: cover, cover;
+    background-position: center, center;
+  }
+
+  .anr-page .anr-hero-content {
+    height: auto;
+
+    padding: 25px 25px 110px;
+
+    overflow: visible;
+  }
+
+  /* Welcome */
+
+  .anr-page .anr-title {
+    font-size: clamp(32px, 5vw, 43px);
+  }
+
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description {
+    max-width: 440px;
+
+    margin-top: 13px;
+    font-size: 13px;
+  }
+
+  /* Features */
+
+  .anr-page .anr-features {
+    max-width: 440px;
+
+    margin-top: 23px;
+    gap: 14px;
+  }
+
+  .anr-page .anr-feature-icon {
+    flex-basis: 45px;
+
+    width: 45px;
+    height: 45px;
+
+    border-radius: 13px;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 15px;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 11px;
+  }
+
+  /* Form below green panel */
+
+  .anr-page .anr-right {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+
+    width: 100%;
+    height: auto;
+    min-height: 0;
+
+    padding: 22px 16px 35px;
+
+    overflow: visible;
+  }
+
+  .anr-page .anr-topbar {
+    position: relative;
+
+    top: auto;
+    right: auto;
+
+    align-self: flex-end;
+
+    margin: 0 0 22px;
+  }
+
+  .anr-page .anr-card {
+    flex: 0 1 auto;
+
+    width: 100%;
+    max-width: 540px;
+    max-height: none;
+
+    margin: 0 auto;
+    padding: 24px 28px 28px;
+
+    overflow: visible;
+  }
+}
+
+/* ==========================================
+   MOBILE - BELOW 600px
+========================================== */
+
+@media (max-width: 600px) {
+  .anr-page .anr-hero {
+    background-position: center, 57% center;
+  }
+
+  .anr-page .anr-hero-content {
+    padding: 20px 18px 130px;
+  }
+
+  /* Logo */
+
+  .anr-page .anr-hero .anr-brand {
+    margin-left: 0;
+    margin-bottom: 18px;
+  }
+
+  .anr-page .anr-hero .anr-brand-name {
+    font-size: 27px;
+  }
+
+  .anr-page .anr-hero .anr-brand-subtitle {
+    font-size: 12px;
+  }
+
+  .anr-page .anr-hero .anr-brand-line {
+    height: 3px;
+    width: 62px;
+  }
+
+  /* Text */
+
+  .anr-page .anr-title {
+    font-size: clamp(29px, 7vw, 36px);
+  }
+
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  /* Features */
+
+  .anr-page .anr-features {
+    max-width: 95%;
+
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .anr-page .anr-feature {
+    gap: 11px;
+
+    padding: 4px 6px 4px 0;
+    border-radius: 12px;
+
+    background: linear-gradient(
+      90deg,
+      rgba(0, 55, 43, 0.88),
+      rgba(0, 55, 43, 0.45)
+    );
+  }
+
+  .anr-page .anr-feature-icon {
+    flex-basis: 42px;
+
+    width: 42px;
+    height: 42px;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 14px;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 10.5px;
+  }
+
+  /* Register card */
+
+  .anr-page .anr-right {
+    padding: 22px 12px 30px;
+  }
+
+  .anr-page .anr-topbar {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .anr-page .anr-login-link {
+    min-height: 39px;
+
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .anr-page .anr-card {
+    padding: 22px 18px 25px;
+  }
+
+  .anr-page .anr-card-header h2 {
+    font-size: 25px;
+  }
+
+  .anr-page .anr-card-header p {
+    font-size: 13px;
+  }
+
+  .anr-page .anr-field label {
+    font-size: 13px;
+  }
+
+  .anr-page .anr-input-wrap {
+    gap: 10px;
+    padding: 0 11px;
+  }
+}
+
+/* ==========================================
+   VERY SMALL MOBILE
+========================================== */
+
+@media (max-width: 360px) {
+  .anr-page .anr-hero-content {
+    padding: 17px 13px 120px;
+  }
+
+  .anr-page .anr-hero .anr-brand-name {
+    font-size: 24px;
+  }
+
+  .anr-page .anr-title {
+    font-size: 28px;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 13px;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 10px;
+  }
+
+  .anr-page .anr-card {
+    padding: 20px 13px 22px;
+  }
+
+  .anr-page .anr-topbar {
+    font-size: 11px;
+  }
+
+  .anr-page .anr-login-link {
+    padding: 0 9px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .anr-page *,
+  .anr-page *::before,
+  .anr-page *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* ==========================================
+   REGISTER LEFT CONTENT ALIGNMENT
+   MATCH LOGIN PAGE STARTING POSITION
+========================================== */
+
+@media (min-width: 981px) {
+  .anr-page .anr-hero-content {
+    padding-top: 80px !important;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE REGISTER FINAL IMPROVEMENTS
+   Same animations as Login
+========================================== */
+
+/* 1. REGISTER HEADING SIZE */
+
+@media (min-width: 981px) {
+  .anr-page .anr-title {
+    font-size: clamp(37px, 2.8vw, 45px);
+    line-height: 1.12;
+    letter-spacing: -1px;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 18px;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+/* 2. REGISTER BUTTON SPACING */
+
+.anr-page .anr-submit {
+  margin-top: 8px;
+  min-height: 49px;
+}
+
+/* 3. LOGO FADE-IN */
+
+.anr-page .anr-hero .anr-brand {
+  animation: anrBrandFade 0.9s ease-out both;
+}
+
+@keyframes anrBrandFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 4. COURT LOGO FLOATING */
+
+.anr-page .anr-hero .anr-brand-icon {
+  animation: anrLogoFloat 4s ease-in-out infinite;
+}
+
+@keyframes anrLogoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 5. GOLD LINE ANIMATION */
+
+.anr-page .anr-hero .anr-brand-line {
+  transform-origin: left center;
+  animation: anrGoldExpand 0.9s ease-out 0.35s both;
+}
+
+@keyframes anrGoldExpand {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* 6. HEADING FADE-IN */
+
+.anr-page .anr-intro .anr-title {
+  animation: anrTextRise 0.8s ease-out 0.25s both;
+}
+
+/* 7. DESCRIPTION FADE-IN */
+
+.anr-page .anr-intro .auth-description,
+.anr-page .anr-intro .anr-description {
+  animation: anrTextRise 0.8s ease-out 0.4s both;
+}
+
+@keyframes anrTextRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 8. FEATURES APPEAR ONE BY ONE */
+
+.anr-page .anr-feature {
+  animation: anrFeatureReveal 0.7s ease-out both;
+}
+
+.anr-page .anr-feature:nth-child(1) {
+  animation-delay: 0.55s;
+}
+
+.anr-page .anr-feature:nth-child(2) {
+  animation-delay: 0.7s;
+}
+
+.anr-page .anr-feature:nth-child(3) {
+  animation-delay: 0.85s;
+}
+
+.anr-page .anr-feature:nth-child(4) {
+  animation-delay: 1s;
+}
+
+@keyframes anrFeatureReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 9. FEATURE ICON HOVER */
+
+.anr-page .anr-feature-icon {
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+@media (hover: hover) {
+  .anr-page .anr-feature:hover .anr-feature-icon {
+    transform: translateY(-2px);
+    background: rgba(232, 183, 110, 0.14);
+    border-color: rgba(232, 183, 110, 0.7);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* 10. SMALL LAPTOP TEXT */
+
+@media (min-width: 981px) and (max-width: 1200px) {
+  .anr-page .anr-title {
+    font-size: clamp(32px, 3.3vw, 39px);
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px;
+  }
+}
+
+/* 11. SHORT SCREEN ADJUSTMENT */
+
+@media (min-width: 981px) and (max-height: 760px) {
+  .anr-page .anr-title {
+    font-size: 38px;
+  }
+}
+
+/* 12. REDUCED MOTION SUPPORT */
+
+@media (prefers-reduced-motion: reduce) {
+  .anr-page .anr-hero .anr-brand,
+  .anr-page .anr-hero .anr-brand-icon,
+  .anr-page .anr-hero .anr-brand-line,
+  .anr-page .anr-intro .anr-title,
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description,
+  .anr-page .anr-feature {
+    animation: none !important;
+  }
+}
+
+
+/* REGISTER TEXT - MATCH LOGIN TYPOGRAPHY */
+
+@media (min-width: 981px) {
+  /* Main heading */
+  .anr-page .anr-title {
+    font-size: 45px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  /* Main description */
+  .anr-page .anr-intro .auth-description {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* Feature headings */
+  .anr-page .anr-feature-content h3 {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  /* Feature descriptions */
+  .anr-page .anr-feature-content p {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* Register form heading */
+  .anr-page .anr-card-header h2 {
+    font-size: 27px;
+    font-weight: 700;
+  }
+
+  /* Form description */
+  .anr-page .anr-card-header p {
+    font-size: 14px;
+  }
+
+  /* Form labels */
+  .anr-page .anr-field label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+/* SMALL LAPTOP */
+
+@media (min-width: 981px) and (max-width: 1200px) {
+  .anr-page .anr-title {
+    font-size: 37px;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px;
+  }
+}
+
+/* TABLET & MOBILE */
+
+@media (max-width: 980px) {
+  .anr-page .anr-title {
+    font-size: clamp(30px, 4.5vw, 40px);
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 12px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================
+   REGISTER - RESPONSIVE ALIGNMENT FIX
+   MATCH LOGIN PAGE
+========================================== */
+
+@media (max-width: 980px) {
+
+  .anr-page .anr-hero-content {
+    padding: 42px 26px 130px 30px !important;
+  }
+
+  /* Logo spacing */
+
+  .anr-page .anr-hero .anr-brand {
+    margin: 0 0 20px 12px !important;
+  }
+
+  /* Heading */
+
+  .anr-page .anr-intro {
+    width: 100% !important;
+    max-width: 450px !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(32px, 5vw, 40px) !important;
+    line-height: 1.12 !important;
+    margin: 0 !important;
+  }
+
+  /* Responsive description */
+
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description {
+    width: 100% !important;
+    max-width: 430px !important;
+
+    min-height: 66px !important;
+
+    margin: 16px 0 0 !important;
+
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* Features */
+
+  .anr-page .anr-features {
+    width: 100% !important;
+    max-width: 440px !important;
+
+    margin-top: 18px !important;
+    gap: 13px !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 17px !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* SAME TABLET SECTION HEIGHT */
+
+@media (min-width: 601px) and (max-width: 980px) {
+  .anr-page .anr-hero {
+    min-height: 790px !important;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .anr-page .anr-hero-content {
+    padding: 25px 18px 145px !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(29px, 6.4vw, 34px) !important;
+  }
+
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description {
+    max-width: 100% !important;
+    min-height: 0 !important;
+
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 14px !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 11px !important;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE MOBILE COMPACT FIX
+   LOGIN + REGISTER
+========================================== */
+
+@media (max-width: 600px) {
+
+  /* MAIN PAGE - NO HORIZONTAL SCROLL */
+
+  .login-page.auth-sync,
+  .anr-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    height: auto !important;
+    min-height: 100dvh !important;
+
+    overflow-x: clip !important;
+  }
+
+  /* SAME GREEN SECTION HEIGHT */
+
+  .login-page.auth-sync .login-left.an-hero,
+  .anr-page .anr-hero {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    height: auto !important;
+    min-height: 530px !important;
+
+    background-image:
+      linear-gradient(
+        90deg,
+        rgba(0, 48, 38, 0.80),
+        rgba(0, 48, 38, 0.35)
+      ),
+      url("/images/login2.png") !important;
+
+    background-size: cover !important;
+    background-position: center, 60% center !important;
+
+    overflow: hidden !important;
+  }
+
+  /* SAME CONTENT PADDING */
+
+  .login-page.auth-sync .an-hero .an-hero-inner,
+  .anr-page .anr-hero-content {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 20px 17px 28px !important;
+
+    overflow: visible !important;
+  }
+
+  /* LOGO POSITION */
+
+  .login-page.auth-sync .an-hero .an-hero-brand,
+  .anr-page .anr-hero .anr-brand {
+    margin: 0 0 18px 8px !important;
+    max-width: calc(100% - 8px) !important;
+  }
+
+  /* HEADING WRAPPER */
+
+  .login-page.auth-sync .an-hero .an-hero-welcome,
+  .anr-page .anr-intro {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* MAIN HEADINGS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-welcome h1,
+  .anr-page .anr-title {
+    margin: 0 !important;
+
+    font-size: clamp(28px, 7.5vw, 34px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.6px !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  /* BOTH DESCRIPTION TEXTS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-welcome > p,
+  .anr-page .anr-intro .auth-description,
+  .anr-page .anr-intro .anr-description {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+
+    margin: 12px 0 0 !important;
+
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+  }
+
+  /* FEATURES START POSITION */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-features,
+  .anr-page .anr-features {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin: 19px 0 0 !important;
+    padding: 0 !important;
+
+    gap: 10px !important;
+  }
+
+  /* FEATURE ROW */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature,
+  .anr-page .anr-feature {
+    display: flex !important;
+    align-items: center !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+
+    gap: 11px !important;
+    padding: 2px 0 !important;
+  }
+
+  /* SMALLER FEATURE ICONS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-icon,
+  .anr-page .anr-feature-icon {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+
+    border-radius: 12px !important;
+  }
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-icon svg,
+  .anr-page .anr-feature-icon svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  /* FEATURE TEXT CONTAINERS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-text,
+  .anr-page .anr-feature-content {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* FEATURE HEADINGS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-text h3,
+  .anr-page .anr-feature-content h3 {
+    margin: 0 0 3px !important;
+
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+
+    white-space: normal !important;
+  }
+
+  /* FEATURE DESCRIPTIONS */
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-text p,
+  .anr-page .anr-feature-content p {
+    display: block !important;
+
+    margin: 0 !important;
+
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+  }
+
+  /* VERY LONG HEADING SAFETY */
+
+  .anr-page .anr-title-gold {
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* VERY SMALL MOBILE - 320px TO 360px */
+
+@media (max-width: 360px) {
+
+  .login-page.auth-sync .an-hero .an-hero-inner,
+  .anr-page .anr-hero-content {
+    padding: 17px 13px 24px !important;
+  }
+
+  .login-page.auth-sync .an-hero
+  .an-hero-welcome h1,
+  .anr-page .anr-title {
+    font-size: 27px !important;
+  }
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-text h3,
+  .anr-page .anr-feature-content h3 {
+    font-size: 13px !important;
+  }
+
+  .login-page.auth-sync .an-hero
+  .an-hero-feature-text p,
+  .anr-page .anr-feature-content p {
+    font-size: 10.5px !important;
+  }
+}
+
+
+/* MOBILE REGISTER DESCRIPTION WRAP FIX */
+
+@media (max-width: 600px) {
+  .anr-page .anr-intro .auth-description {
+    width: 100% !important;
+    max-width: 330px !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+
+
+/* REGISTER MOBILE FEATURE TEXT FIX */
+
+@media (max-width: 600px) {
+
+  .anr-page .anr-features {
+    max-width: 330px !important;
+  }
+
+  .anr-page .anr-feature {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 45px !important;
+
+    background: rgba(0, 52, 41, 0.65) !important;
+  }
+
+  .anr-page .anr-feature-content {
+    min-width: 0 !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+
+    white-space: normal !important;
+    overflow: visible !important;
+    overflow-wrap: break-word !important;
+  }
+  .anr-page .anr-title-gold {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 290px !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+}
+
+
+/* ==========================================
+   REGISTER RESPONSIVE PAGE WIDTH FIX
+   PREVENT SIDEWAYS SCROLLING
+========================================== */
+
+.anr-page {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.anr-page .anr-hero,
+.anr-page .anr-right {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* TABLET + SMALL LAPTOP */
+
+@media (min-width: 981px) and (max-width: 1250px) {
+
+  .anr-page {
+    display: flex !important;
+    flex-direction: column !important;
+
+    grid-template-columns: none !important;
+
+    height: auto !important;
+    min-height: 100dvh !important;
+
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  /* LEFT GREEN SECTION */
+
+  .anr-page .anr-hero {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+
+    flex: 0 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  .anr-page .anr-hero-content {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+
+    padding: 35px 5% 65px !important;
+
+    overflow: visible !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(34px, 4vw, 44px) !important;
+  }
+
+  /* RIGHT REGISTER FORM */
+
+  .anr-page .anr-right {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding: 28px 20px 40px !important;
+
+    overflow: clip !important;
+  }
+
+  .anr-page .anr-topbar {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+
+    align-self: flex-end !important;
+
+    margin: 0 0 20px !important;
+  }
+
+  .anr-page .anr-card {
+    width: 100% !important;
+    max-width: 570px !important;
+    max-height: none !important;
+
+    margin: 0 auto !important;
+
+    overflow: visible !important;
+  }
+}
+
+/* WIDE DESKTOP - KEEP TWO COLUMNS */
+
+@media (min-width: 1251px) {
+  .anr-page {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 51fr)
+      minmax(0, 49fr) !important;
+
+    overflow: hidden !important;
+  }
+}
+/* ==========================================
+   ADVOCANOTE REGISTER
+   RESPONSIVE TWO COLUMN LAYOUT FIX
+========================================== */
+
+/* DESKTOP AND LAPTOP - 981px AND ABOVE */
+
+@media (min-width: 981px) {
+
+  .anr-page {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 51fr)
+      minmax(0, 49fr) !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    height: 100dvh !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+  /* LEFT GREEN SECTION */
+
+  .anr-page .anr-hero {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+  .anr-page .anr-hero-content {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+
+    padding:
+      35px 20px 28px
+      clamp(25px, 4vw, 75px) !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  /* LOGO */
+
+  .anr-page .anr-hero .anr-brand {
+    max-width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* HEADING */
+
+  .anr-page .anr-title {
+    font-size: clamp(35px, 3.2vw, 49px) !important;
+    line-height: 1.12 !important;
+  }
+
+  .anr-page .anr-title-gold {
+    max-width: 100% !important;
+
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* DESCRIPTION */
+
+  .anr-page .anr-intro .auth-description {
+    max-width: 420px !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* FEATURES */
+
+  .anr-page .anr-features {
+    max-width: 450px !important;
+    margin-top: 20px !important;
+    gap: 12px !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 17px !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 12px !important;
+    white-space: normal !important;
+  }
+
+  /* RIGHT FORM SECTION */
+
+  .anr-page .anr-right {
+    position: relative !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    padding: 75px 20px 25px !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  /* LOGIN HERE TOP RIGHT */
+
+  .anr-page .anr-topbar {
+    position: absolute !important;
+
+    top: 18px !important;
+    right: 20px !important;
+
+    left: auto !important;
+    bottom: auto !important;
+
+    z-index: 5 !important;
+
+    align-self: auto !important;
+
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  /* REGISTER CARD */
+
+  .anr-page .anr-card {
+    width: 100% !important;
+    max-width: 520px !important;
+    min-width: 0 !important;
+
+    max-height: calc(100dvh - 105px) !important;
+
+    margin: 0 auto !important;
+    padding: 20px 26px !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* ==========================================
+   SMALL LAPTOP - 981px TO 1250px
+========================================== */
+
+@media (min-width: 981px) and (max-width: 1250px) {
+
+  .anr-page .anr-hero-content {
+    padding-left: 28px !important;
+    padding-right: 18px !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(32px, 3.1vw, 40px) !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 11px !important;
+  }
+
+  .anr-page .anr-right {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .anr-page .anr-card {
+    padding: 18px 22px !important;
+  }
+
+  .anr-page .anr-topbar {
+    gap: 10px !important;
+    font-size: 12px !important;
+  }
+
+  .anr-page .anr-login-link {
+    padding: 0 14px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ==========================================
+   MOBILE + TABLET - BELOW 981px
+========================================== */
+
+@media (max-width: 980px) {
+
+  .anr-page {
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    height: auto !important;
+    min-height: 100dvh !important;
+
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  .anr-page .anr-hero {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .anr-page .anr-right {
+    width: 100% !important;
+    height: auto !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow-x: clip !important;
+  }
+
+  .anr-page .anr-topbar {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    margin: 0 0 20px !important;
+  }
+
+  .anr-page .anr-card {
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+
+/* ==========================================
+   REGISTER TWO-COLUMN TEXT ALIGNMENT FIX
+   LAPTOP / SMALL DESKTOP
+========================================== */
+
+@media (min-width: 981px) and (max-width: 1350px) {
+
+  /* LEFT CONTENT */
+
+  .anr-page .anr-hero-content {
+    padding-left: clamp(26px, 3vw, 42px) !important;
+    padding-right: 16px !important;
+  }
+
+  /* HEADING CONTAINER */
+
+  .anr-page .anr-intro {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* MAIN HEADING */
+
+  .anr-page .anr-title {
+    max-width: 100% !important;
+    font-size: clamp(32px, 3vw, 40px) !important;
+    line-height: 1.12 !important;
+  }
+
+  .anr-page .anr-title-gold {
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* DESCRIPTION - STAY INSIDE GREEN AREA */
+
+  .anr-page .anr-intro .auth-description {
+    width: 100% !important;
+    max-width: min(100%, clamp(315px, 29vw, 370px)) !important;
+
+    margin-top: 18px !important;
+
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* FEATURE LIST WIDTH */
+
+  .anr-page .anr-features {
+    width: 100% !important;
+    max-width: min(100%, clamp(315px, 31vw, 390px)) !important;
+
+    margin-top: 22px !important;
+    gap: 13px !important;
+  }
+
+  /* FEATURE TEXT */
+
+  .anr-page .anr-feature-content {
+    min-width: 0 !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 11.5px !important;
+    line-height: 1.5 !important;
+
+    white-space: normal !important;
+    overflow: visible !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE REGISTER
+   NO DOUBLE SCROLL - DESKTOP / LAPTOP
+========================================== */
+
+@media (min-width: 981px) {
+
+  /* MAIN PAGE */
+
+  .anr-page {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 51fr) minmax(0, 49fr) !important;
+
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+  /* LEFT SECTION */
+
+  .anr-page .anr-hero {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .anr-page .anr-hero-content {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+  /* RIGHT SECTION */
+
+  .anr-page .anr-right {
+    display: flex !important;
+    flex-direction: column !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+
+    padding: 65px 18px 14px !important;
+
+    overflow: hidden !important;
+  }
+
+  /* TOP LOGIN HERE */
+
+  .anr-page .anr-topbar {
+    position: absolute !important;
+
+    top: 12px !important;
+    right: 20px !important;
+
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+
+  /* REGISTER CARD */
+
+  .anr-page .anr-card {
+    flex: 0 1 auto !important;
+
+    width: 100% !important;
+    max-width: 520px !important;
+
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+
+    margin: 0 auto !important;
+    padding: 16px 25px 18px !important;
+
+    overflow: visible !important;
+  }
+
+  /* CARD LOGO */
+
+  .anr-page .anr-brand--dark .anr-brand-icon {
+    width: 33px !important;
+    height: 39px !important;
+  }
+
+  .anr-page .anr-brand--dark .anr-brand-name {
+    font-size: 23px !important;
+  }
+
+  .anr-page .anr-brand--dark .anr-brand-subtitle {
+    font-size: 11px !important;
+  }
+
+  /* CARD HEADING */
+
+  .anr-page .anr-card-header {
+    margin-top: 10px !important;
+  }
+
+  .anr-page .anr-card-header h2 {
+    font-size: 24px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .anr-page .anr-card-header p {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* FORM SPACING */
+
+  .anr-page .anr-form {
+    margin-top: 15px !important;
+    gap: 10px !important;
+  }
+
+  /* LABELS */
+
+  .anr-page .anr-field label {
+    margin-bottom: 5px !important;
+    font-size: 13px !important;
+  }
+
+  /* INPUT BOXES */
+
+  .anr-page .anr-input-wrap {
+    height: 42px !important;
+  }
+
+  /* PASSWORD HINT */
+
+  .anr-page .anr-hint {
+    margin-top: 4px !important;
+    font-size: 10.5px !important;
+  }
+
+  /* REGISTER BUTTON */
+
+  .anr-page .anr-submit {
+    min-height: 44px !important;
+    margin-top: 5px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* ==========================================
+   SHORT LAPTOP SCREEN
+========================================== */
+
+@media (min-width: 981px) and (max-height: 740px) {
+
+  .anr-page .anr-right {
+    padding-top: 56px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .anr-page .anr-card {
+    padding: 11px 20px 12px !important;
+  }
+
+  .anr-page .anr-card-header {
+    margin-top: 6px !important;
+  }
+
+  .anr-page .anr-form {
+    margin-top: 10px !important;
+    gap: 7px !important;
+  }
+
+  .anr-page .anr-input-wrap {
+    height: 39px !important;
+  }
+
+  .anr-page .anr-submit {
+    min-height: 40px !important;
+  }
+}
+
+
+/* ==========================================
+   REGISTER DESKTOP LEFT CONTENT FINAL FIX
+   MATCH LOGIN STARTING POSITION
+========================================== */
+
+@media (min-width: 981px) {
+
+  /* LEFT CONTENT - MOVE DOWN */
+
+  .anr-page .anr-hero-content {
+    padding-top: clamp(65px, 5.7vw, 85px) !important;
+    padding-left: clamp(30px, 4.7vw, 85px) !important;
+    padding-right: 20px !important;
+    padding-bottom: 25px !important;
+  }
+
+  /* LOGO POSITION */
+
+  .anr-page .anr-hero .anr-brand {
+    margin: 0 0 22px 12px !important;
+  }
+
+  /* HEADING CONTAINER */
+
+  .anr-page .anr-intro {
+    width: 100% !important;
+    max-width: 440px !important;
+  }
+
+  /* MAIN HEADING */
+
+  .anr-page .anr-title {
+    font-size: clamp(35px, 3.05vw, 43px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.8px !important;
+  }
+
+  /* GOLD HEADING - PROPER WRAPPING */
+
+  .anr-page .anr-title-gold {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 400px !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  /* DESCRIPTION */
+
+  .anr-page .anr-intro .auth-description {
+    width: 100% !important;
+    max-width: 370px !important;
+
+    margin: 17px 0 0 !important;
+
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  /* FEATURES */
+
+  .anr-page .anr-features {
+    width: 100% !important;
+    max-width: 410px !important;
+
+    margin-top: 20px !important;
+    gap: 12px !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+  }
+}
+
+/* ==========================================
+   SMALL LAPTOP - 981px TO 1250px
+========================================== */
+
+@media (min-width: 981px) and (max-width: 1250px) {
+
+  .anr-page .anr-hero-content {
+    padding-top: 48px !important;
+    padding-left: 28px !important;
+    padding-right: 16px !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(32px, 3.1vw, 39px) !important;
+  }
+
+  .anr-page .anr-title-gold {
+    max-width: 330px !important;
+  }
+
+  .anr-page .anr-intro .auth-description {
+    max-width: 330px !important;
+    font-size: 13px !important;
+  }
+
+  .anr-page .anr-features {
+    max-width: 370px !important;
+  }
+
+  .anr-page .anr-feature-content h3 {
+    font-size: 16px !important;
+  }
+
+  .anr-page .anr-feature-content p {
+    font-size: 11px !important;
+  }
+}
+
+/* ==========================================
+   REGISTER DESKTOP ALIGNMENT
+   MATCH LOGIN PAGE
+========================================== */
+
+@media (min-width: 1251px) {
+
+  /* LEFT LOGO TO HEADING GAP */
+
+  .anr-page .anr-hero .anr-brand {
+    margin-bottom: 16px !important;
+  }
+
+  /* MAIN HEADING */
+
+  .anr-page .anr-title {
+    font-size: clamp(36px, 2.8vw, 42px) !important;
+    line-height: 1.09 !important;
+  }
+
+  /* DESCRIPTION SPACING */
+
+  .anr-page .anr-intro .auth-description {
+    margin-top: 13px !important;
+  }
+
+  /* FEATURE SPACING */
+
+  .anr-page .anr-features {
+    margin-top: 17px !important;
+    gap: 11px !important;
+  }
+
+  /* REGISTER FORM - MOVE SLIGHTLY UP */
+
+  .anr-page .anr-card {
+    transform: translateY(-12px);
+  }
+}
+
+
+/* ==========================================
+   REGISTER DESKTOP HEADING
+   KEEP PRACTICE ON SECOND LINE
+========================================== */
+
+@media (min-width: 1251px) {
+
+  .anr-page .anr-intro {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .anr-page .anr-title {
+    font-size: clamp(34px, 2.7vw, 40px) !important;
+    line-height: 1.12 !important;
+  }
+
+  .anr-page .anr-title-gold {
+    display: block !important;
+
+    width: max-content !important;
+    max-width: none !important;
+
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+
+
+/* ==========================================
+   BACK TO HOME BUTTON
+   LOGIN + REGISTER
+========================================== */
+
+.login-page .login-card .auth-back-home,
+.anr-page .anr-card .auth-back-home {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 6px 8px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+  color: #005244;
+
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.login-page .auth-back-home:hover,
+.anr-page .auth-back-home:hover {
+  color: #003c30;
+  background: rgba(0, 82, 68, 0.07);
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .login-page .login-card .auth-back-home,
+  .anr-page .anr-card .auth-back-home {
+    top: 10px;
+    left: 10px;
+    padding: 5px;
+    font-size: 11px;
+  }
+}
+
+
+/* ==========================================
+   REGISTER TOP LOGIN BUTTON
+   EXACTLY MATCH LOGIN PAGE TOP BUTTON
+========================================== */
+
+@media (min-width: 981px) {
+
+  .anr-page .anr-right .anr-topbar {
+    position: absolute !important;
+
+    top: 20px !important;
+    right: 8% !important;
+    left: auto !important;
+    bottom: auto !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 20px !important;
+    margin: 0 !important;
+
+    color: #34404b !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+
+    z-index: 5 !important;
+  }
+
+  /* LOGIN HERE BUTTON */
+
+  .anr-page .anr-right .anr-login-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+
+    height: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 28px !important;
+
+    border: 1px solid #064b3f !important;
+    border-radius: 6px !important;
+
+    background: transparent !important;
+    color: #064b3f !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+
+    text-decoration: none !important;
+
+    transition:
+      background 0.2s ease,
+      color 0.2s ease !important;
+  }
+
+  /* HOVER */
+
+  .anr-page .anr-right .anr-login-link:hover {
+    background: #064b3f !important;
+    color: #ffffff !important;
+  }
+}
+
+/* MOBILE / TABLET BUTTON STYLE */
+
+@media (max-width: 980px) {
+
+  .anr-page .anr-right .anr-login-link {
+    background: transparent !important;
+    color: #064b3f !important;
+
+    border: 1px solid #064b3f !important;
+    border-radius: 6px !important;
+
+    text-decoration: none !important;
+  }
+
+  .anr-page .anr-right .anr-login-link:hover {
+    background: #064b3f !important;
+    color: #ffffff !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* FULL HD TV - REGISTER PAGE */
+
+@media (min-width: 1900px) and (min-height: 1000px) {
+
+  .anr-page {
+    grid-template-columns: 51% 49%;
+  }
+
+  .anr-page .anr-hero-content {
+    padding-top: 90px;
+    padding-left: 100px;
+  }
+
+  .anr-page .anr-title {
+    font-size: 52px;
+  }
+
+  .anr-page .anr-card {
+    max-width: 580px;
+  }
+}
+
+
+/* ==========================================
+   ADVOCANOTE - LARGE SCREEN SUPPORT
+   Laptop Design Preserved on Full HD TVs
+========================================== */
+
+@media (min-width: 1600px) {
+
+  /* Keep same laptop two-column layout */
+
+  .login-page.auth-sync,
+  .anr-page {
+    grid-template-columns:
+      minmax(0, 51fr)
+      minmax(0, 49fr);
+  }
+
+  /* Prevent form cards becoming too wide */
+
+  .login-page .login-card,
+  .anr-page .anr-card {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Keep content readable */
+
+  .login-page .an-hero-inner,
+  .anr-page .anr-hero-content {
+    padding-left: clamp(45px, 5vw, 95px);
+  }
+}

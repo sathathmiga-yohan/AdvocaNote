@@ -1,0 +1,845 @@
+/* =========================================
+   ADVOCA NOTE - UNIFIED AUTH LAYOUT
+   Login | Register | Forgot Password
+========================================= */
+
+/* PAGE RESET */
+
+html:has(.auth-sync) {
+    scrollbar-gutter: auto;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+body:has(.auth-sync) {
+    display: block !important;
+    width: 100%;
+    min-width: 320px;
+    height: auto !important;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+body:has(.auth-sync) #root {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 100dvh;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    text-align: left;
+}
+
+/* MAIN PAGE */
+
+.auth-sync.login-page,
+.auth-sync.register-page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 51fr) minmax(0, 49fr) !important;
+    align-items: start;
+
+    width: 100%;
+    height: auto !important;
+    min-height: 100dvh !important;
+
+    overflow: visible !important;
+}
+
+/* =========================================
+   LEFT SIDE - SAME BACKGROUND POSITION
+========================================= */
+
+.auth-sync .login-left,
+.auth-sync .register-left {
+    position: sticky !important;
+    top: 0;
+
+    width: 100%;
+    min-width: 0;
+
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+
+    background-image:
+        linear-gradient(90deg,
+            rgba(0, 36, 28, 0.22),
+            rgba(0, 36, 28, 0.03)),
+        url("/images/legal-office.jpg") !important;
+
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+
+    overflow: hidden !important;
+}
+
+/* SAME CONTENT START POSITION */
+
+.auth-sync .login-left-content,
+.auth-sync .register-left-content {
+    width: 100%;
+
+    padding:
+        35px 28px 28px clamp(40px, 6vw, 110px) !important;
+}
+
+/* =========================================
+   LEFT LOGO - SAME POSITION AND SIZE
+========================================= */
+
+.auth-sync .login-left .login-logo,
+.auth-sync .register-left .register-logo {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+
+    width: 100%;
+    height: 65px;
+
+    gap: 16px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* COURT SYMBOL */
+
+.auth-sync .login-left .login-logo>svg,
+.auth-sync .register-left .register-logo>svg {
+    display: block;
+    width: 48px !important;
+    height: 58px !important;
+    flex-shrink: 0;
+}
+
+/* NAME CONTAINER */
+
+.auth-sync .login-left .login-logo-text,
+.auth-sync .register-left .register-logo-text {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+}
+
+/* ADVOCA NOTE NAME */
+
+.auth-sync .login-left .login-logo-text h2,
+.auth-sync .register-left .register-logo-text h2 {
+    margin: 0 !important;
+
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: 30px !important;
+    font-weight: 700 !important;
+
+    line-height: 1.2 !important;
+    letter-spacing: -1px !important;
+    white-space: nowrap;
+}
+
+/* SAME COLORS */
+
+.auth-sync .login-left .advoca-text,
+.auth-sync .register-left .register-advoca {
+    color: #ffffff !important;
+}
+
+.auth-sync .login-left .note-text,
+.auth-sync .register-left .register-note {
+    color: #f2cb93 !important;
+}
+
+/* TAGLINE */
+
+.auth-sync .login-left .login-logo-text p,
+.auth-sync .register-left .register-logo-text p {
+    margin: 2px 0 0 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    color: #ffffff !important;
+}
+
+/* =========================================
+   LEFT WELCOME CONTENT ALIGNMENT
+========================================= */
+
+.auth-sync .welcome-section,
+.auth-sync .register-welcome {
+    margin-top: 32px !important;
+}
+
+.auth-sync .gold-line,
+.auth-sync .register-gold-line {
+    width: 56px !important;
+    height: 3px !important;
+
+    margin-bottom: 22px !important;
+    background: #f2cb93 !important;
+}
+
+.auth-sync .welcome-section h1,
+.auth-sync .register-welcome h1 {
+    margin: 0 !important;
+
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: clamp(37px, 3.3vw, 60px) !important;
+
+    line-height: 1.12 !important;
+    letter-spacing: -1px !important;
+    white-space: normal !important;
+}
+
+.auth-sync .welcome-section>p,
+.auth-sync .register-welcome>p {
+    max-width: 530px;
+
+    margin-top: 18px !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+}
+
+/* FEATURES */
+
+.auth-sync .login-features,
+.auth-sync .register-benefits {
+    margin-top: 26px !important;
+    gap: 17px !important;
+}
+
+.auth-sync .login-feature,
+.auth-sync .register-benefit {
+    gap: 20px !important;
+}
+
+.auth-sync .feature-icon,
+.auth-sync .register-benefit-icon {
+    width: 56px !important;
+    height: 56px !important;
+    flex-shrink: 0;
+}
+
+.auth-sync .login-feature h3,
+.auth-sync .register-benefit-text h3 {
+    margin: 0 0 4px !important;
+
+    font-family: Georgia, serif !important;
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+}
+
+.auth-sync .login-feature p,
+.auth-sync .register-benefit-text p {
+    max-width: 340px;
+
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+}
+
+/* =========================================
+   RIGHT SIDE - SAME CARD START POSITION
+========================================= */
+
+.auth-sync .login-right,
+.auth-sync .register-right {
+    position: relative;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    width: 100%;
+    min-width: 0;
+
+    height: auto !important;
+    min-height: 100dvh !important;
+
+    padding: 110px 25px 35px !important;
+    overflow: hidden !important;
+}
+
+/* TOP NAVIGATION */
+
+.auth-sync .register-section,
+.auth-sync .register-topbar {
+    position: absolute;
+
+    top: 25px !important;
+    right: clamp(20px, 4vw, 65px) !important;
+
+    display: flex;
+    align-items: center;
+    gap: 18px !important;
+}
+
+/* =========================================
+   WHITE CARDS - SAME WIDTH AND TOP
+========================================= */
+
+.auth-sync .login-card,
+.auth-sync .register-card,
+.auth-sync .forgot-card {
+    position: relative !important;
+
+    width: 100% !important;
+    max-width: 555px !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    margin: 0 auto !important;
+    padding: 25px 35px 30px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: visible !important;
+
+    border-radius: 15px !important;
+    box-sizing: border-box;
+
+    animation: none !important;
+}
+
+/* =========================================
+   CARD LOGO - SAME EXACT ALIGNMENT
+========================================= */
+
+.auth-sync .login-card-header,
+.auth-sync .register-card-header {
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+}
+
+/* FIX LOGO CONTAINER */
+
+.auth-sync .login-card-header>.login-logo.dark,
+.auth-sync .register-card-header>.register-logo-dark {
+    position: static !important;
+
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    width: 100% !important;
+    height: 105px !important;
+
+    gap: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+/* SAME COURT SYMBOL */
+
+.auth-sync .login-card-header .login-logo>svg,
+.auth-sync .register-card-header .register-logo>svg {
+    display: block;
+
+    width: 40px !important;
+    height: 47px !important;
+
+    flex-shrink: 0;
+}
+
+/* SAME BRAND TEXT POSITION */
+
+.auth-sync .login-card-header .login-logo-text,
+.auth-sync .register-card-header .register-logo-text {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    width: 100%;
+    margin: 0 !important;
+}
+
+/* SAME BRAND FONT */
+
+.auth-sync .login-card-header .login-logo-text h2,
+.auth-sync .register-card-header .register-logo-text h2 {
+    margin: 0 !important;
+
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: 25px !important;
+    font-weight: 700 !important;
+
+    line-height: 1.2 !important;
+    letter-spacing: -1px !important;
+    white-space: nowrap !important;
+}
+
+/* SAME TAGLINE */
+
+.auth-sync .login-card-header .login-logo-text p,
+.auth-sync .register-card-header .register-logo-text p {
+    margin: 2px 0 0 !important;
+
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+
+    color: #657583 !important;
+}
+
+/* SAME BRAND COLORS */
+
+.auth-sync .login-logo.dark .advoca-text,
+.auth-sync .register-logo-dark .register-advoca {
+    color: #102c34 !important;
+}
+
+.auth-sync .login-logo.dark .note-text,
+.auth-sync .register-logo-dark .register-note {
+    color: #c89b5a !important;
+}
+
+/* SAME HEADING POSITION */
+
+.auth-sync .login-card-header>h1,
+.auth-sync .register-card-header>h2 {
+    margin: 12px 0 7px !important;
+
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: 26px !important;
+    line-height: 1.25 !important;
+}
+
+/* SAME DESCRIPTION */
+
+.auth-sync .login-card-header>p,
+.auth-sync .register-card-header>p {
+    max-width: 395px;
+    margin: 0 auto !important;
+
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
+
+/* =========================================
+   FORM ALIGNMENT
+========================================= */
+
+.auth-sync .login-card form {
+    margin-top: 25px !important;
+}
+
+.auth-sync .register-form {
+    margin-top: 20px !important;
+}
+
+.auth-sync .login-input-group,
+.auth-sync .register-input-group {
+    margin-bottom: 13px !important;
+}
+
+.auth-sync .login-input-box,
+.auth-sync .register-input-box {
+    width: 100%;
+    height: 44px !important;
+}
+
+.auth-sync .login-submit,
+.auth-sync .register-submit {
+    width: 100%;
+    min-height: 45px;
+}
+
+.auth-sync .login-security,
+.auth-sync .register-security {
+    margin-top: 16px !important;
+}
+
+/* FORGOT PASSWORD */
+
+.auth-sync.forgot-page .forgot-content {
+    margin-top: 30px !important;
+}
+
+.auth-sync.forgot-page .forgot-form {
+    margin-top: 25px !important;
+}
+
+/* =========================================
+   SMALLER LAPTOP SCREENS
+========================================= */
+
+@media (max-width: 1200px) {
+
+    .auth-sync .login-left-content,
+    .auth-sync .register-left-content {
+        padding-left: 35px !important;
+    }
+
+    .auth-sync .welcome-section h1,
+    .auth-sync .register-welcome h1 {
+        font-size: clamp(34px, 3.4vw, 48px) !important;
+    }
+
+    .auth-sync .login-card,
+    .auth-sync .register-card,
+    .auth-sync .forgot-card {
+        padding: 22px 25px 27px !important;
+    }
+}
+
+/* =========================================
+   TABLET / HIGH BROWSER ZOOM
+========================================= */
+
+@media (max-width: 1000px),
+(max-height: 680px) {
+
+    .auth-sync.login-page,
+    .auth-sync.register-page {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* BACKGROUND ON TOP */
+
+    .auth-sync .login-left,
+    .auth-sync .register-left {
+        position: relative !important;
+
+        width: 100%;
+        height: auto !important;
+        min-height: 0 !important;
+
+        background-position: center center !important;
+    }
+
+    .auth-sync .login-left-content,
+    .auth-sync .register-left-content {
+        padding: 25px 30px 30px !important;
+    }
+
+    /* FORM BELOW */
+
+    .auth-sync .login-right,
+    .auth-sync .register-right {
+        width: 100%;
+        min-height: 0 !important;
+        height: auto !important;
+
+        padding: 90px 20px 35px !important;
+    }
+
+    .auth-sync .login-card,
+    .auth-sync .register-card,
+    .auth-sync .forgot-card {
+        max-width: 555px !important;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    html:has(.auth-sync) {
+        scrollbar-gutter: auto;
+    }
+
+    .auth-sync .login-left-content,
+    .auth-sync .register-left-content {
+        padding: 22px 20px 28px !important;
+    }
+
+    .auth-sync .login-features,
+    .auth-sync .register-benefits {
+        display: none !important;
+    }
+
+    .auth-sync .login-right,
+    .auth-sync .register-right {
+        padding: 88px 15px 28px !important;
+    }
+
+    .auth-sync .login-card,
+    .auth-sync .register-card,
+    .auth-sync .forgot-card {
+        padding: 23px 20px 27px !important;
+    }
+
+    .auth-sync .welcome-section h1,
+    .auth-sync .register-welcome h1 {
+        font-size: clamp(32px, 7vw, 42px) !important;
+    }
+}
+
+
+/* =========================================
+   AUTH PAGES - STATIC LAYOUT
+   REGISTER FORM ONLY SCROLLS
+========================================= */
+
+@media (min-width: 1001px) {
+
+    /* REMOVE OUTER PAGE SCROLL */
+
+    html:has(.auth-sync),
+    body:has(.auth-sync),
+    body:has(.auth-sync) #root {
+        height: 100%;
+        overflow: hidden !important;
+    }
+
+    /* KEEP ALL AUTH PAGES INSIDE SCREEN */
+
+    .auth-sync.login-page,
+    .auth-sync.register-page {
+        display: grid !important;
+        grid-template-columns: 51% 49% !important;
+
+        width: 100%;
+        height: 100dvh !important;
+        min-height: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+    /* LEFT BACKGROUND STAYS FIXED */
+
+    .auth-sync .login-left,
+    .auth-sync .register-left {
+        position: relative !important;
+        top: auto !important;
+
+        height: 100dvh !important;
+        min-height: 0 !important;
+
+        background-size: cover !important;
+        background-position: center center !important;
+
+        overflow: hidden !important;
+    }
+
+    /* RIGHT PANEL */
+
+    .auth-sync .login-right,
+    .auth-sync .register-right {
+        height: 100dvh !important;
+        min-height: 0 !important;
+
+        padding: 84px 24px 18px !important;
+
+        align-items: flex-start !important;
+        overflow: hidden !important;
+    }
+
+    /* SAME CARD POSITION */
+
+    .auth-sync .login-card,
+    .auth-sync .register-card,
+    .auth-sync .forgot-card {
+        width: 100% !important;
+        max-width: 555px !important;
+
+        max-height: calc(100dvh - 102px) !important;
+        min-height: 0 !important;
+
+        margin: 0 auto !important;
+    }
+
+    /* LOGIN AND FORGOT PASSWORD */
+
+    .auth-sync .login-card {
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+
+    /* REGISTER WHITE CARD */
+
+    .auth-sync.register-page .register-card {
+        display: flex !important;
+        flex-direction: column !important;
+
+        height: calc(100dvh - 102px) !important;
+        min-height: 0 !important;
+
+        padding: 16px 32px !important;
+
+        overflow: hidden !important;
+    }
+
+    /* LOGO AND HEADING STAY STATIC */
+
+    .auth-sync.register-page .register-card-header {
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+    }
+
+    /* ONLY THE REGISTER FORM SCROLLS */
+
+    .auth-sync.register-page .register-form {
+        flex: 1 1 auto !important;
+
+        min-height: 0 !important;
+        margin-top: 14px !important;
+        padding-right: 8px;
+
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+
+        scrollbar-width: thin;
+        scrollbar-color: #a8b5ae transparent;
+        overscroll-behavior: contain;
+    }
+
+    /* FORM FIELDS */
+
+    .auth-sync.register-page .register-input-group {
+        margin-bottom: 12px !important;
+    }
+
+    .auth-sync.register-page .register-input-box {
+        height: 43px !important;
+    }
+
+    /* REGISTER BUTTON */
+
+    .auth-sync.register-page .register-submit {
+        min-height: 44px;
+        margin-bottom: 6px;
+    }
+
+    /* SECURITY NOTE STAYS AT BOTTOM */
+
+    .auth-sync.register-page .register-security {
+        flex: 0 0 auto !important;
+
+        min-height: 45px !important;
+        margin-top: 10px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* TERMS STAY AT BOTTOM */
+
+    .auth-sync.register-page .register-terms {
+        flex: 0 0 auto !important;
+
+        margin-top: 10px !important;
+        font-size: 11px !important;
+    }
+}
+
+/* KEEP CARD LOGO IN SAME POSITION */
+
+.auth-sync .login-card-header,
+.auth-sync .register-card-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5;
+  flex-shrink: 0;
+  background-color: #ffffff;
+}
+
+
+/* LOGIN AND REGISTER - SAME LOGO POSITION */
+
+/* Both cards start at the same height */
+
+.auth-sync .login-right,
+.auth-sync .register-right {
+  align-items: flex-start !important;
+  padding-top: 84px !important;
+}
+
+/* Both cards have identical top spacing */
+
+.auth-sync.login-page .login-right > .login-card,
+.auth-sync.register-page .register-right > .register-card {
+  margin-top: 0 !important;
+  padding-top: 20px !important;
+}
+
+/* Logo and name occupy the same space */
+
+.auth-sync .login-card-header > .login-logo.dark,
+.auth-sync .register-card-header > .register-logo-dark {
+  position: static !important;
+  transform: none !important;
+
+  width: 100% !important;
+  height: 105px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Same court symbol size */
+
+.auth-sync .login-card-header .login-logo > svg,
+.auth-sync .register-card-header .register-logo > svg {
+  width: 40px !important;
+  height: 47px !important;
+}
+
+/* Same brand text */
+
+.auth-sync .login-card-header .login-logo-text h2,
+.auth-sync .register-card-header .register-logo-text h2 {
+  margin: 0 !important;
+  font-size: 25px !important;
+  line-height: 1.2 !important;
+}
+
+/* Same tagline */
+
+.auth-sync .login-card-header .login-logo-text p,
+.auth-sync .register-card-header .register-logo-text p {
+  margin: 2px 0 0 !important;
+  font-size: 12px !important;
+}
+
+
+/* CREATE ACCOUNT - SAME SCROLL AS LOGIN */
+
+@media (min-width: 1001px) {
+
+  /* Entire white card scrolls */
+
+  .auth-sync.register-page .register-card {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    scrollbar-width: thin;
+    scrollbar-color: #999 transparent;
+  }
+
+  /* Remove separate form scrolling */
+
+  .auth-sync.register-page .register-form {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+
+    overflow: visible !important;
+  }
+
+  /* Header scrolls with the card */
+
+  .auth-sync.register-page .register-card-header {
+    position: static !important;
+  }
+
+  /* Footer stays in normal card flow */
+
+  .auth-sync.register-page .register-security,
+  .auth-sync.register-page .register-terms {
+    flex: 0 0 auto !important;
+  }
+}

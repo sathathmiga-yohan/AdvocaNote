@@ -1,0 +1,1244 @@
+
+/* ============================================
+   ADVOCANOTE ADMIN DASHBOARD
+   Premium Green / Gold / Cream Theme
+   ============================================ */
+
+.adash-page {
+  --adash-green: #064332;
+  --adash-deep: #002f25;
+  --adash-gold: #d7ad60;
+  --adash-text: #173c30;
+  --adash-muted: #7b8b86;
+  --adash-border: #e7ebe5;
+
+  width: 100%;
+  max-width: 1500px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 4px 0 28px;
+  color: var(--adash-text);
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+.adash-page * {
+  box-sizing: border-box;
+}
+
+/* ============================================
+   WELCOME
+   ============================================ */
+
+.adash-welcome {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 30px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid #e8ebe4;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 93% 20%,
+      rgba(215, 173, 96, 0.13),
+      transparent 28%
+    ),
+    linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #ffffff 56%,
+      #f3f8f3 100%
+    );
+  box-shadow: 0 5px 20px rgba(10, 55, 34, 0.025);
+}
+
+.adash-welcome > * {
+  position: relative;
+  z-index: 1;
+}
+
+.adash-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  color: #a17d3e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+
+.adash-live-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #22845d;
+  box-shadow: 0 0 0 4px #e4f4e9;
+}
+
+.adash-welcome h1 {
+  margin: 0;
+  color: #073e2e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(27px, 2.8vw, 38px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+}
+
+.adash-welcome h1 span {
+  color: #a98240;
+}
+
+.adash-welcome p {
+  max-width: 590px;
+  margin: 10px 0 0;
+  color: #788a82;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.adash-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.adash-current-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  background: #ffffff;
+  border: 1px solid #e7ebe5;
+  border-radius: 10px;
+  color: #617b70;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.adash-refresh {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #064332;
+  border-radius: 10px;
+  background: #064332;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.adash-refresh:hover:not(:disabled) {
+  background: #086146;
+}
+
+.adash-refresh:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.adash-spinning {
+  animation: adash-rotate 1s linear infinite;
+}
+
+@keyframes adash-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   ERROR NOTICE
+   ============================================ */
+
+.adash-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 15px 17px;
+  border: 1px solid #efddd2;
+  border-radius: 12px;
+  background: #fff8f1;
+  color: #956339;
+}
+
+.adash-alert > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.adash-alert div {
+  flex: 1;
+}
+
+.adash-alert strong {
+  display: block;
+  font-size: 13px;
+}
+
+.adash-alert p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.adash-alert button {
+  border: 1px solid #e9c6a9;
+  border-radius: 8px;
+  padding: 8px 13px;
+  background: white;
+  color: #86532f;
+  cursor: pointer;
+}
+
+/* ============================================
+   TOP METRIC CARDS
+   ============================================ */
+
+.adash-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.adash-metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 177px;
+  padding: 20px 21px;
+  border: 1px solid var(--adash-border);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 17px rgba(0, 38, 24, 0.035);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.adash-metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 22px rgba(0, 50, 30, 0.07);
+}
+
+.adash-metric-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.adash-metric-icon {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+}
+
+.adash-icon-green {
+  background: #e9f4ec;
+  color: #086147;
+}
+
+.adash-icon-gold {
+  background: #fff4de;
+  color: #ae863b;
+}
+
+.adash-metric-decoration {
+  color: #c4cdc7;
+}
+
+.adash-metric-title {
+  color: #78887f;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.adash-metric-value {
+  display: block;
+  max-width: 100%;
+  margin: 9px 0 7px;
+  color: #073f2d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.3vw, 29px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+}
+
+.adash-metric-caption {
+  color: #98a69d;
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+/* ============================================
+   COMMON CARD STYLING
+   ============================================ */
+
+.adash-card {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid var(--adash-border);
+  border-radius: 17px;
+  box-shadow: 0 4px 20px rgba(0, 38, 24, 0.035);
+  overflow: hidden;
+}
+
+.adash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.adash-card-header h2 {
+  margin: 6px 0 0;
+  color: #123d2e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.adash-card-header p {
+  margin: 7px 0 0;
+  color: #91a099;
+  font-size: 12px;
+}
+
+.adash-section-eyebrow {
+  color: #b18b4e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.adash-small-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: #f1f7f1;
+  color: #0b6047;
+  border-radius: 10px;
+}
+
+/* ============================================
+   ANALYTICS GRID
+   ============================================ */
+
+.adash-analytics-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.78fr)
+    minmax(290px, 0.92fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+
+.adash-revenue-card {
+  display: flex;
+  flex-direction: column;
+  padding: 23px 24px 17px;
+}
+
+.adash-period-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #e9eee9;
+  border-radius: 10px;
+  background: #f7f9f6;
+}
+
+.adash-period-controls button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #809087;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+.adash-period-controls button.active {
+  background: #07513c;
+  color: #ffffff;
+  box-shadow: 0 2px 7px rgba(0, 55, 33, 0.13);
+}
+
+.adash-revenue-overview {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.adash-muted-label {
+  color: #87968e;
+  font-size: 11px;
+}
+
+.adash-revenue-number {
+  margin-top: 7px;
+  color: #064432;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 2.6vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  overflow-wrap: anywhere;
+}
+
+.adash-chart-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 6px;
+  color: #8a9990;
+  font-size: 11px;
+}
+
+.adash-chart-legend span {
+  width: 9px;
+  height: 9px;
+  background: #0a7957;
+  border-radius: 50%;
+}
+
+.adash-chart-wrap {
+  width: 100%;
+  margin-top: 17px;
+}
+
+.adash-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 255px;
+  overflow: visible;
+}
+
+.adash-chart-empty,
+.adash-chart-loading {
+  display: flex;
+  min-height: 270px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 56px,
+      #eef2ed 57px,
+      transparent 58px
+    ),
+    linear-gradient(180deg, #fff, #fafcf9);
+  color: #87998d;
+  font-size: 12px;
+}
+
+.adash-chart-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 17px;
+  background: #eaf3ed;
+  color: #2c7856;
+}
+
+.adash-chart-empty strong {
+  color: #315745;
+  font-size: 14px;
+}
+
+.adash-chart-empty p {
+  max-width: 290px;
+  margin: 0;
+  color: #899a91;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.adash-chart-footnote {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f0f2ee;
+  color: #95a29b;
+  font-size: 10.5px;
+}
+
+.adash-chart-footnote svg {
+  color: #3a8a64;
+}
+
+/* ============================================
+   RIGHT SIDE PANELS
+   ============================================ */
+
+.adash-side-panels {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 17px;
+  min-width: 0;
+}
+
+.adash-breakdown-card {
+  padding: 21px 20px 18px;
+}
+
+.adash-donut-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 22px 0;
+}
+
+.adash-donut {
+  display: grid;
+  place-items: center;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    #edf1ed 0%,
+    #edf1ed 100%
+  );
+}
+
+.adash-donut-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: white;
+  text-align: center;
+}
+
+.adash-donut-inner strong {
+  color: #064432;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+}
+
+.adash-donut-inner span {
+  color: #91a199;
+  font-size: 10px;
+}
+
+.adash-donut-legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 100px;
+}
+
+.adash-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  color: #75897d;
+}
+
+.adash-legend-color {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.adash-legend-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adash-legend-item strong {
+  color: #244f3c;
+  font-size: 12px;
+}
+
+.adash-empty-mini {
+  color: #94a29a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.adash-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #08714e;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.adash-text-link:hover {
+  color: #00402d;
+}
+
+/* ============================================
+   GREEN MANAGEMENT BANNER
+   ============================================ */
+
+.adash-quick-card {
+  position: relative;
+  min-height: 225px;
+  padding: 22px;
+  border: 1px solid #094a38;
+  border-radius: 17px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 110% -10%,
+      rgba(213, 180, 102, 0.23),
+      transparent 42%
+    ),
+    linear-gradient(
+      130deg,
+      #063b2b 0%,
+      #064a35 65%,
+      #0d6144 100%
+    );
+  color: white;
+}
+
+.adash-quick-card > *:not(.adash-quick-decoration) {
+  position: relative;
+  z-index: 2;
+}
+
+.adash-quick-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adash-quick-symbol {
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #e9c97f;
+}
+
+.adash-quick-heading span {
+  color: #e2ca97;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+}
+
+.adash-quick-card h3 {
+  margin: 15px 0 9px;
+  color: white;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.adash-quick-card p {
+  max-width: 270px;
+  margin: 0 0 18px;
+  color: #c9e0d4;
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+.adash-quick-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 15px;
+  min-width: 135px;
+  border: 1px solid #ddba71;
+  border-radius: 9px;
+  background: #e0b96c;
+  color: #173c2b;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.adash-quick-button:hover {
+  background: #f0ce89;
+}
+
+.adash-quick-decoration {
+  position: absolute;
+  right: -55px;
+  bottom: -88px;
+  width: 230px;
+  height: 230px;
+  border: 32px solid rgba(255, 255, 255, 0.055);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ============================================
+   BOTTOM GRID
+   ============================================ */
+
+.adash-bottom-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(0, 0.95fr);
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+/* ============================================
+   TRANSACTIONS TABLE
+   ============================================ */
+
+.adash-table-card {
+  padding-top: 22px;
+}
+
+.adash-table-card > .adash-card-header {
+  padding: 0 22px 18px;
+}
+
+.adash-header-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid #e1eae1;
+  border-radius: 9px;
+  background: #f8fbf8;
+  color: #0a6144;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.adash-header-link:hover {
+  background: #ecf6ee;
+}
+
+.adash-table-toolbar {
+  padding: 0 22px 16px;
+}
+
+.adash-table-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+  height: 41px;
+  padding: 0 13px;
+  border: 1px solid #e5eae5;
+  border-radius: 10px;
+  background: #fafcf9;
+  color: #82968b;
+}
+
+.adash-table-search input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #234d38;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.adash-table-search input::placeholder {
+  color: #a2afa6;
+}
+
+.adash-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.adash-table {
+  width: 100%;
+  min-width: 590px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 11.5px;
+}
+
+.adash-table thead {
+  background: #f8faf7;
+}
+
+.adash-table th {
+  padding: 15px 15px;
+  color: #829287;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.adash-table th:first-child,
+.adash-table td:first-child {
+  padding-left: 22px;
+}
+
+.adash-table td {
+  padding: 15px;
+  color: #71857b;
+  border-bottom: 1px solid #f0f2ed;
+}
+
+.adash-table tbody tr:hover {
+  background: #fbfdfb;
+}
+
+.adash-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 145px;
+}
+
+.adash-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: #e8f3eb;
+  color: #125a41;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.adash-person > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.adash-person strong {
+  color: #284a38;
+  font-size: 11px;
+}
+
+.adash-person small {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #9aaba0;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.adash-amount {
+  color: #184f39 !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.adash-table-empty {
+  padding: 50px 20px !important;
+  text-align: center;
+  color: #9baaa0 !important;
+}
+
+/* ============================================
+   TRANSACTION STATUS
+   ============================================ */
+
+.adash-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #f0f3f0;
+  color: #73847b;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.adash-status-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.adash-status--active,
+.adash-status--succeeded,
+.adash-status--paid,
+.adash-status--completed {
+  background: #e6f5e9;
+  color: #21804e;
+}
+
+.adash-status--pending,
+.adash-status--processing,
+.adash-status--trialing {
+  background: #fff2da;
+  color: #ac7d24;
+}
+
+.adash-status--failed,
+.adash-status--cancelled,
+.adash-status--past_due {
+  background: #fff0eb;
+  color: #b85b49;
+}
+
+.adash-status--inactive,
+.adash-status--expired {
+  background: #f0f1ef;
+  color: #7e8983;
+}
+
+/* ============================================
+   RECENT LAWYERS
+   ============================================ */
+
+.adash-lawyers-card {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px 0;
+}
+
+.adash-lawyer-list {
+  flex: 1;
+  padding-top: 12px;
+}
+
+.adash-lawyer-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eff2ed;
+}
+
+.adash-avatar-lg {
+  width: 39px;
+  height: 39px;
+  border-radius: 12px;
+}
+
+.adash-lawyer-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.adash-lawyer-details strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #28503b;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.adash-lawyer-details > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #98a89f;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.adash-lawyer-details small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #acb8af;
+  font-size: 9.5px;
+}
+
+.adash-lawyer-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 200px;
+  color: #9aae9e;
+  text-align: center;
+}
+
+.adash-lawyer-empty strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.adash-lawyers-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: auto -20px 0;
+  padding: 16px 20px;
+  color: #096245;
+  border-top: 1px solid #edf1ec;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.adash-lawyers-footer:hover {
+  background: #f8fbf8;
+}
+
+/* ============================================
+   SHORTCUTS
+   ============================================ */
+
+.adash-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.adash-shortcuts a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 15px 17px;
+  border: 1px solid #e5ebe4;
+  border-radius: 13px;
+  background: #ffffff;
+  color: #2b5943;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.adash-shortcuts a > svg:first-child {
+  color: #9d7f43;
+}
+
+.adash-shortcuts a > svg:last-child {
+  margin-left: auto;
+  color: #a3b3a8;
+}
+
+.adash-shortcuts a:hover {
+  border-color: #d3b174;
+  background: #fbfdf9;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.adash-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  color: #a5afa5;
+  font-size: 10.5px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1350px) {
+  .adash-analytics-grid {
+    grid-template-columns:
+      minmax(0, 1.5fr)
+      minmax(280px, 1fr);
+  }
+
+  .adash-donut-layout {
+    gap: 13px;
+  }
+
+  .adash-donut {
+    width: 120px;
+    height: 120px;
+  }
+
+  .adash-donut-inner {
+    width: 85px;
+    height: 85px;
+  }
+
+  .adash-donut-inner strong {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .adash-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adash-analytics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adash-side-panels {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .adash-bottom-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .adash-welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 23px 20px;
+  }
+
+  .adash-welcome-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .adash-side-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adash-shortcuts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adash-revenue-card {
+    padding: 20px 15px;
+  }
+
+  .adash-card-header h2 {
+    font-size: 18px;
+  }
+
+  .adash-revenue-number {
+    font-size: 26px;
+  }
+
+  .adash-chart-svg {
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .adash-metrics {
+    gap: 10px;
+  }
+
+  .adash-metric-card {
+    min-height: 159px;
+    padding: 14px 12px;
+  }
+
+  .adash-metric-top {
+    margin-bottom: 12px;
+  }
+
+  .adash-metric-icon {
+    width: 37px;
+    height: 37px;
+  }
+
+  .adash-metric-title {
+    font-size: 11px;
+  }
+
+  .adash-metric-value {
+    font-size: 22px;
+  }
+
+  .adash-metric-caption {
+    font-size: 9.5px;
+  }
+
+  .adash-period-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .adash-period-controls button {
+    flex: 1;
+    padding: 9px 5px;
+  }
+
+  .adash-card-header {
+    width: 100%;
+  }
+
+  .adash-revenue-overview {
+    align-items: flex-start;
+  }
+
+  .adash-donut-layout {
+    justify-content: center;
+  }
+
+  .adash-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,338 @@
+
+/* =====================================
+   ADVOCANOTE ADMIN SIDEBAR
+   SAME AS LAWYER SIDEBAR DESIGN
+===================================== */
+
+.adms-sidebar {
+  --adms-gold: #e7b960;
+
+  width: 255px;
+  min-width: 255px;
+  height: 100vh;
+
+  position: relative;
+  isolation: isolate;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  background-color: #002c22;
+
+  background-image:
+    url("/images/AdvocaNote_image1_sidebar_background.png");
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  border-right: 1px solid #c8a254;
+
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Background overlay */
+
+.adms-sidebar::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 0;
+
+  background: linear-gradient(
+    115deg,
+    rgba(0, 36, 34, 0.42) 0%,
+    rgba(0, 49, 43, 0.20) 50%,
+    rgba(0, 28, 29, 0.32) 100%
+  );
+
+  pointer-events: none;
+}
+
+/* Main content */
+
+.adms-sidebar-main {
+  position: relative;
+  z-index: 2;
+}
+
+/* =====================================
+   BRAND / LOGO
+===================================== */
+
+.adms-sidebar-brand {
+  text-align: center;
+  padding: 23px 14px 0;
+}
+
+.adms-brand-icon {
+  width: 43px;
+  height: 43px;
+
+  display: block;
+
+  margin: 0 auto 5px;
+
+  color: #ffffff;
+}
+
+.adms-brand-wordmark {
+  color: #ffffff;
+
+  font: 700 25px/1.1 Georgia,
+    "Times New Roman", serif;
+
+  letter-spacing: -1.1px;
+}
+
+.adms-brand-wordmark span {
+  color: #f0c16c;
+}
+
+.adms-brand-subtitle {
+  margin-top: 3px;
+
+  color: #faf8f5;
+
+  font-size: 13px;
+}
+
+.adms-brand-line {
+  width: 95px;
+  height: 1px;
+
+  background: var(--adms-gold);
+
+  margin: 18px auto 16px;
+}
+
+/* =====================================
+   NAVIGATION
+===================================== */
+
+.adms-nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 0 12px;
+}
+
+.adms-nav-item {
+  width: 100%;
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 0 13px;
+
+  border: 1px solid transparent;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.17s ease,
+    border-color 0.17s ease;
+
+  box-sizing: border-box;
+}
+
+/* Gold navigation icons */
+
+.adms-nav-item > svg:first-child {
+  width: 23px;
+  height: 23px;
+
+  color: #f2c567;
+
+  flex: 0 0 auto;
+}
+
+/* Navigation text */
+
+.adms-nav-item > span {
+  flex: 1;
+  min-width: 0;
+
+  white-space: nowrap;
+}
+
+/* Smaller text for long labels */
+
+.adms-nav-item:nth-child(3),
+.adms-nav-item:nth-child(4) {
+  font-size: 12px;
+}
+
+/* Right chevron */
+
+.adms-nav-item > svg:last-child:not(:first-child) {
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Hover */
+
+.adms-nav-item:hover {
+  background: rgba(255, 255, 255, 0.085);
+}
+
+/* Active page */
+
+.adms-nav-item--active,
+.adms-nav-item--active:hover {
+  border: 1px solid #d6ac49;
+
+  background: linear-gradient(
+    97deg,
+    rgba(7, 91, 65, 0.9),
+    rgba(0, 54, 38, 0.75)
+  );
+
+  box-shadow:
+    inset 0 0 11px rgba(9, 118, 78, 0.25);
+}
+
+/* Keyboard accessibility */
+
+.adms-nav-item:focus-visible {
+  outline: 2px solid #f2c567;
+  outline-offset: 2px;
+}
+
+/* =====================================
+   BOTTOM IMAGE
+===================================== */
+
+/* Books and justice scale are already
+   inside the background image */
+
+.adms-sidebar-bottom-art {
+  display: none;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 1300px) {
+  .adms-sidebar {
+    width: 245px;
+    min-width: 245px;
+  }
+
+  .adms-nav {
+    padding: 0 10px;
+  }
+
+  .adms-nav-item {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1020px) {
+  .adms-sidebar {
+    width: 225px;
+    min-width: 225px;
+  }
+
+  .adms-brand-wordmark {
+    font-size: 23px;
+  }
+
+  .adms-sidebar-brand {
+    padding-top: 26px;
+  }
+
+  .adms-nav-item {
+    gap: 10px;
+    padding: 0 9px;
+    font-size: 13px;
+  }
+
+  .adms-nav-item:nth-child(3),
+  .adms-nav-item:nth-child(4) {
+    font-size: 11px;
+  }
+}
+
+/* Mobile Sidebar */
+
+@media (max-width: 900px) {
+  .adms-sidebar {
+    position: fixed;
+
+    inset: 0 auto 0 0;
+
+    z-index: 60;
+
+    width: 280px;
+    min-width: 280px;
+
+    transition: transform 0.25s ease;
+
+    transform: translateX(-100%);
+  }
+
+  .adms-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .adms-mobile-overlay {
+    display: block;
+
+    position: fixed;
+    inset: 0;
+
+    z-index: 55;
+
+    background: rgba(0, 19, 14, 0.43);
+
+    border: 0;
+  }
+}
+
+@media (min-width: 901px) {
+  .adms-mobile-overlay {
+    display: none;
+  }
+}
+
+/* Short laptop screens */
+
+@media (max-height: 800px) and (min-width: 901px) {
+  .adms-sidebar-brand {
+    padding-top: 17px;
+  }
+
+  .adms-brand-line {
+    margin: 12px auto;
+  }
+
+  .adms-nav {
+    gap: 3px;
+  }
+
+  .adms-nav-item {
+    min-height: 41px;
+  }
+}
