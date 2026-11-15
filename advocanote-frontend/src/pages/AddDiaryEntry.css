@@ -1136,3 +1136,65 @@ label[for="next-hearing-purpose"] {
   line-height: 1.5;
 }
 
+
+/* ADVOCANOTE - VOICE AI */
+
+.ade2-voice-ai {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ade2-voice-ai > div > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 37px;
+  padding: 9px 13px;
+  background: #004535;
+  color: #fff;
+  border: 1px solid #004535;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ade2-voice-ai > div > button:hover:not(:disabled) {
+  background: #006049;
+}
+
+.ade2-voice-ai button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ade2-voice-ai audio {
+  display: block;
+  max-width: 100%;
+  height: 38px;
+}
+
+.ade2-voice-ai input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  font-size: 11px;
+}
+
+.ade2-voice-ai input[type="file"]::file-selector-button {
+  padding: 7px 10px;
+  border: 1px solid #ddc99b;
+  border-radius: 7px;
+  background: #fff8e8;
+  color: #004535;
+  cursor: pointer;
+}
+
+.ade2-voice-ai > div {
+  min-width: 0;
+}
+
+.ade2-voice-ai > div > label {
+  min-width: 0;
+  flex-wrap: wrap;
+}

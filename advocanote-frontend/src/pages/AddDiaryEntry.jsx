@@ -1,11 +1,5 @@
 
-import {
-  useLawyerLayout,
-  LawyerTopbarPortal,
-  LawyerTopbarAvatar,
-} from "../components/LawyerLayout";
-
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -24,9 +18,14 @@ import {
   Search,
   Sparkles,
   Square,
+  Upload,
 } from "lucide-react";
 
-import { logoutUser } from "../services/auth";
+import {
+  useLawyerLayout,
+  LawyerTopbarPortal,
+  LawyerTopbarAvatar,
+} from "../components/LawyerLayout";
 
 import {
   createDiaryEntry,
@@ -34,19 +33,51 @@ import {
   getLawyerCases,
 } from "../services/diary";
 
+import SriLankaCourtFields from "./SriLankaCourtFields";
+import StructuredLegalNotes from "../components/StructuredLegalNotes";
+
 import "./MyLegalDiary.css";
 import "./AddDiaryEntry.css";
 
-import SriLankaCourtFields from "./SriLankaCourtFields";
+// =====================================
+// ADVOCANOTE API CONFIGURATION
+// =====================================
 
-const toISO = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 
-const fromISO = (d) => new Date(`${d}T12:00:00`);
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
 
-const goodISO = (s) =>
-  /^\d{4}-\d{2}-\d{2}$/.test(s || "") &&
-  !Number.isNaN(fromISO(s).getTime());
+const AUDIO_EXTENSIONS = new Set([
+  ".wav",
+  ".mp3",
+  ".m4a",
+  ".mp4",
+  ".webm",
+  ".ogg",
+  ".flac",
+]);
+
+// =====================================
+// DATE HELPERS
+// =====================================
+
+const toISO = (date) =>
+  `${date.getFullYear()}-${String(
+    date.getMonth() + 1
+  ).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+
+const fromISO = (value) =>
+  new Date(`${value}T12:00:00`);
+
+const goodISO = (value) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(value || "") &&
+  !Number.isNaN(fromISO(value).getTime()) &&
+  toISO(fromISO(value)) === value;
 
 const emptyDraft = () => ({
   case_number: "",
@@ -62,21 +93,9 @@ const emptyDraft = () => ({
   next_hearing_purpose: "",
 });
 
-const toPoints = (text) =>
-  text
-    .split(/\n+|(?<=[.!?])\s+/)
-    .map((x) => x.trim())
-    .filter(Boolean)
-    .map((x) => `• ${x}`)
-    .join("\n");
-
-const actionSentence = (text) =>
-  text
-    .split(/\n+|(?<=[.!?])\s+/)
-    .map((x) => x.trim())
-    .find((x) =>
-      /\b(file|submit|prepare|draft|serve|send|produce|review|obtain|collect)\b/i.test(x)
-    ) || "";
+// =====================================
+// MONTH CALENDAR
+// =====================================
 
 function MonthCalendar({ date, onPick }) {
   const selected = fromISO(date);
@@ -91,10 +110,12 @@ function MonthCalendar({ date, onPick }) {
   );
 
   useEffect(() => {
+    const current = fromISO(date);
+
     setViewMonth(
       new Date(
-        selected.getFullYear(),
-        selected.getMonth(),
+        current.getFullYear(),
+        current.getMonth(),
         1
       )
     );
@@ -102,7 +123,7 @@ function MonthCalendar({ date, onPick }) {
 
   const first = (viewMonth.getDay() + 6) % 7;
 
-  const count = new Date(
+  const days = new Date(
     viewMonth.getFullYear(),
     viewMonth.getMonth() + 1,
     0
@@ -110,7 +131,10 @@ function MonthCalendar({ date, onPick }) {
 
   const cells = [
     ...Array(first).fill(null),
-    ...Array.from({ length: count }, (_, i) => i + 1),
+    ...Array.from(
+      { length: days },
+      (_, index) => index + 1
+    ),
   ];
 
   return (
@@ -121,6 +145,7 @@ function MonthCalendar({ date, onPick }) {
       <div className="ade2-calendar-top">
         <button
           type="button"
+          aria-label="Previous month"
           onClick={() =>
             setViewMonth(
               new Date(
@@ -130,7 +155,6 @@ function MonthCalendar({ date, onPick }) {
               )
             )
           }
-          aria-label="Previous month"
         >
           <ChevronLeft size={17} />
         </button>
@@ -146,6 +170,7 @@ function MonthCalendar({ date, onPick }) {
 
         <button
           type="button"
+          aria-label="Next month"
           onClick={() =>
             setViewMonth(
               new Date(
@@ -155,7 +180,6 @@ function MonthCalendar({ date, onPick }) {
               )
             )
           }
-          aria-label="Next month"
         >
           <ChevronRight size={17} />
         </button>
@@ -163,16 +187,21 @@ function MonthCalendar({ date, onPick }) {
 
       <div className="ade2-calendar-grid">
         {["M", "T", "W", "T", "F", "S", "S"].map(
-          (s, i) => (
-            <span className="ade2-weekday" key={i}>
-              {s}
+          (day, index) => (
+            <span
+              key={`${day}-${index}`}
+              className="ade2-weekday"
+            >
+              {day}
             </span>
           )
         )}
 
-        {cells.map((day, i) => {
+        {cells.map((day, index) => {
           if (!day) {
-            return <span key={`empty-${i}`} />;
+            return (
+              <span key={`empty-${index}`} />
+            );
           }
 
           const iso = toISO(
@@ -188,7 +217,9 @@ function MonthCalendar({ date, onPick }) {
               key={iso}
               type="button"
               className={
-                iso === date ? "ade2-day-active" : ""
+                iso === date
+                  ? "ade2-day-active"
+                  : ""
               }
               onClick={() => onPick(iso)}
             >
@@ -201,131 +232,569 @@ function MonthCalendar({ date, onPick }) {
   );
 }
 
+// =====================================
+// ADD DIARY ENTRY
+// =====================================
+
 export default function AddDiaryEntry() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const urlParams = new URLSearchParams(location.search);
-  const urlDate = urlParams.get("date");
-  const selectedCaseId = urlParams.get("caseId");
-
-  const [entryDate, setEntryDate] = useState(
-    goodISO(urlDate) ? urlDate : toISO(new Date())
-  );
-
   const { user, openSidebar } = useLawyerLayout();
 
+  const params = new URLSearchParams(
+    location.search
+  );
+
+  const urlDate = params.get("date");
+  const selectedCaseId = params.get("caseId");
+
+  const [entryDate, setEntryDate] = useState(
+    goodISO(urlDate)
+      ? urlDate
+      : toISO(new Date())
+  );
+
+  // =====================================
+  // DIARY STATE
+  // =====================================
+
   const [cases, setCases] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] =
+    useState([]);
+
   const [dateCount, setDateCount] = useState(0);
+  const [globalQuery, setGlobalQuery] =
+    useState("");
 
-  const [globalQuery, setGlobalQuery] = useState("");
   const [draft, setDraft] = useState(emptyDraft);
-
   const [pickedCase, setPickedCase] = useState(null);
   const [newCase, setNewCase] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
-
   const [listLoading, setListLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
+  const [success, setSuccess] = useState(null);
   const [bellOpen, setBellOpen] = useState(false);
-
-  // Voice recording state
-  const [recording, setRecording] = useState(false);
-
-  // Tamil selected by default
-  const [language, setLanguage] = useState("ta-IN");
-
   const [showPoints, setShowPoints] = useState(true);
 
-  const [taskStatus, setTaskStatus] = useState("pending");
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDue, setTaskDue] = useState("");
-  const [taskPriority, setTaskPriority] = useState("Medium");
-  const [editTask, setEditTask] = useState(false);
-  const [manualTask, setManualTask] = useState(false);
+  // =====================================
+  // VOICE + AI STATE
+  // =====================================
 
-  const [success, setSuccess] = useState(null);
+  const [recording, setRecording] = useState(false);
 
-  const speechRef = useRef(null);
+  const [analyzingVoice, setAnalyzingVoice] =
+    useState(false);
+
+  const [
+    voiceProcessingStep,
+    setVoiceProcessingStep,
+  ] = useState("");
+
+  const [recordedAudio, setRecordedAudio] =
+    useState(null);
+
+  const [audioUrl, setAudioUrl] = useState("");
+
+  const [aiAnalysis, setAiAnalysis] =
+    useState(null);
+
+  const [
+    originalTranscript,
+    setOriginalTranscript,
+  ] = useState("");
+
+  const [tasks, setTasks] = useState([]);
+  // Voice-to-Text Language
+  const [voiceLanguage, setVoiceLanguage] = useState("ta");
+
+  // AI Analysis Output Language
+  const [aiLanguage, setAiLanguage] = useState("ta");
+  const [
+    pendingVoiceEntry,
+    setPendingVoiceEntry,
+  ] = useState(null);
+
+  // =====================================
+  // LIVE VOICE STATUS
+  // =====================================
+
+  const [liveSpeechState, setLiveSpeechState] =
+    useState("idle");
+
+  // =====================================
+  // REFS
+  // =====================================
+
   const caseBoxRef = useRef(null);
 
-  // Voice session management
-  const keepListeningRef = useRef(false);
-  const voiceRetryTimerRef = useRef(null);
-  const voiceRetryCountRef = useRef(0);
-  const voiceSessionRef = useRef(0);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const chunksRef = useRef([]);
 
-  const stopVoice = (discardPending = false) => {
-    keepListeningRef.current = false;
+  const audioUrlRef = useRef("");
+  const abortRef = useRef(null);
+  const mountedRef = useRef(true);
+  const taskIdRef = useRef(0);
 
-    if (voiceRetryTimerRef.current !== null) {
-      clearTimeout(voiceRetryTimerRef.current);
-      voiceRetryTimerRef.current = null;
+  // Browser SpeechRecognition refs
+
+  const liveSpeechRef = useRef(null);
+
+  const liveSpeechActiveRef = useRef(false);
+
+  const liveSpeechTimerRef = useRef(null);
+
+  const liveSpeechSessionRef = useRef(0);
+
+  const liveSpeechAccumulatedRef = useRef("");
+
+  const liveSpeechVisibleRef = useRef("");
+
+  // =====================================
+  // UPDATE DIARY FIELD
+  // =====================================
+
+  const setField = (field, value) => {
+    setDraft((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  // =====================================
+  // MICROPHONE CLEANUP
+  // =====================================
+
+  const cleanupStream = () => {
+    streamRef.current
+      ?.getTracks()
+      .forEach((track) => track.stop());
+
+    streamRef.current = null;
+  };
+
+  // =====================================
+  // STOP LIVE SPEECH RECOGNITION
+  // =====================================
+
+  const stopLiveSpeech = (discard = false) => {
+    liveSpeechActiveRef.current = false;
+
+    if (liveSpeechTimerRef.current) {
+      clearTimeout(
+        liveSpeechTimerRef.current
+      );
+
+      liveSpeechTimerRef.current = null;
     }
 
-    if (discardPending) {
-      voiceSessionRef.current += 1;
+    if (discard) {
+      liveSpeechSessionRef.current += 1;
     }
 
-    try {
-      speechRef.current?.stop();
-    } catch {
-      // Recognition may already be stopped.
+    const speech = liveSpeechRef.current;
+
+    if (speech) {
+      try {
+        if (discard) {
+          speech.abort();
+        } else {
+          speech.stop();
+        }
+      } catch {
+        // Recognition already stopped.
+      }
     }
 
-    if (discardPending) {
-      setRecording(false);
+    if (discard) {
+      liveSpeechRef.current = null;
+
+      liveSpeechAccumulatedRef.current = "";
+      liveSpeechVisibleRef.current = "";
+
+      setLiveSpeechState("idle");
+    } else {
+      setLiveSpeechState((old) =>
+        old === "fallback"
+          ? old
+          : "completed"
+      );
     }
   };
 
-  const setField = (field, value) =>
-    setDraft((old) => ({
-      ...old,
-      [field]: value,
-    }));
+  // =====================================
+  // LIVE TAMIL VOICE TO TEXT
+  // =====================================
 
-  const rawSuggestedTask = useMemo(
-    () => actionSentence(draft.step_notes),
-    [draft.step_notes]
-  );
+  const startLiveSpeech = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
-  const suggestedTitle = manualTask
-    ? taskTitle
-    : taskTitle || rawSuggestedTask;
+    if (!SpeechRecognition) {
+      setLiveSpeechState("fallback");
 
-  const filteredCases = cases
-    .filter((c) => {
-      const name = `${c.case_number || ""} ${c.case_title || ""
-        } ${c.court_name || ""} ${c.location || ""
-        }`.toLowerCase();
-
-      return (
-        (c.case_number || "")
-          .toLowerCase()
-          .includes(draft.case_number.toLowerCase()) &&
-        name.includes(globalQuery.toLowerCase())
+      setError(
+        "Live Tamil voice typing is not supported in this browser. Finish recording and use the Whisper fallback."
       );
-    })
-    .slice(0, 8);
 
-  const fullName = user?.full_name || "Lawyer";
+      return;
+    }
 
-  const initials = fullName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((x) => x[0])
-    .join("")
-    .toUpperCase();
+    const session =
+      ++liveSpeechSessionRef.current;
 
-  // Load cases and diary overview
+    liveSpeechActiveRef.current = true;
+
+    liveSpeechAccumulatedRef.current = "";
+    liveSpeechVisibleRef.current = "";
+
+    setLiveSpeechState("listening");
+
+    const listen = () => {
+      if (
+        !liveSpeechActiveRef.current ||
+        session !==
+        liveSpeechSessionRef.current
+      ) {
+        return;
+      }
+
+      const recognition =
+        new SpeechRecognition();
+
+      liveSpeechRef.current =
+        recognition;
+
+      recognition.lang =
+        voiceLanguage === "en"
+          ? "en-US"
+          : "ta-IN";
+
+      recognition.continuous = true;
+
+      recognition.interimResults = true;
+
+      let latestFinal = "";
+      let latestInterim = "";
+
+      // =================================
+      // SHOW TEXT WHILE SPEAKING
+      // =================================
+
+      recognition.onresult = (event) => {
+        if (
+          !mountedRef.current ||
+          session !==
+          liveSpeechSessionRef.current
+        ) {
+          return;
+        }
+
+        const confirmed = [];
+        const provisional = [];
+
+        for (
+          let index = 0;
+          index < event.results.length;
+          index += 1
+        ) {
+          const item =
+            event.results[index];
+
+          const words =
+            item[0]?.transcript?.trim();
+
+          if (!words) continue;
+
+          if (item.isFinal) {
+            confirmed.push(words);
+          } else {
+            provisional.push(words);
+          }
+        }
+
+        latestFinal =
+          confirmed.join(" ");
+
+        latestInterim =
+          provisional.join(" ");
+
+        const visibleText = [
+          liveSpeechAccumulatedRef.current,
+          latestFinal,
+          latestInterim,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+
+        liveSpeechVisibleRef.current =
+          visibleText;
+
+        // Update textarea immediately.
+
+        setDraft((old) => ({
+          ...old,
+
+          input_method: "voice",
+
+          step_notes: visibleText,
+        }));
+
+        // Keep original recognised text
+        // separately from later lawyer edits.
+
+        setOriginalTranscript(
+          visibleText
+        );
+      };
+
+      // =================================
+      // LIVE SPEECH ERRORS
+      // =================================
+
+      recognition.onerror = (event) => {
+        if (
+          session !==
+          liveSpeechSessionRef.current
+        ) {
+          return;
+        }
+
+        const permanentErrors = [
+          "not-allowed",
+          "service-not-allowed",
+          "audio-capture",
+          "network",
+          "language-not-supported",
+        ];
+
+        if (
+          permanentErrors.includes(
+            event.error
+          )
+        ) {
+          liveSpeechActiveRef.current =
+            false;
+
+          setLiveSpeechState(
+            "fallback"
+          );
+
+          setError(
+            "Live Tamil voice typing is unavailable. Finish recording, then use Convert with Whisper (Fallback)."
+          );
+        }
+      };
+
+      // =================================
+      // FINALISE SPEECH SEGMENT
+      // =================================
+
+      recognition.onend = () => {
+        if (
+          session !==
+          liveSpeechSessionRef.current
+        ) {
+          return;
+        }
+
+        const segment = [
+          latestFinal,
+          latestInterim,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        if (segment) {
+          const completeText = [
+            liveSpeechAccumulatedRef.current,
+            segment,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+
+          liveSpeechAccumulatedRef.current =
+            completeText;
+
+          liveSpeechVisibleRef.current =
+            completeText;
+
+          setOriginalTranscript(
+            completeText
+          );
+
+          setDraft((old) => ({
+            ...old,
+
+            input_method: "voice",
+
+            step_notes: completeText,
+          }));
+        }
+
+        if (
+          liveSpeechRef.current ===
+          recognition
+        ) {
+          liveSpeechRef.current = null;
+        }
+
+        // Browsers sometimes stop after
+        // a short pause. Restart if the
+        // recording is still active.
+
+        if (
+          liveSpeechActiveRef.current
+        ) {
+          liveSpeechTimerRef.current =
+            setTimeout(
+              listen,
+              300
+            );
+        } else {
+          setLiveSpeechState((old) =>
+            old === "fallback"
+              ? old
+              : "completed"
+          );
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch {
+        liveSpeechActiveRef.current =
+          false;
+
+        setLiveSpeechState(
+          "fallback"
+        );
+
+        setError(
+          "Could not start live Tamil voice typing. Finish recording and use the Whisper fallback."
+        );
+      }
+    };
+
+    listen();
+  };
+
+  // =====================================
+  // CLEAR AUDIO
+  // =====================================
+
+  const clearAudio = () => {
+    stopLiveSpeech(true);
+
+    if (
+      mediaRecorderRef.current?.state ===
+      "recording"
+    ) {
+      mediaRecorderRef.current.onstop =
+        null;
+
+      mediaRecorderRef.current.stop();
+    }
+
+    cleanupStream();
+
+    abortRef.current?.abort();
+
+    abortRef.current = null;
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(
+        audioUrlRef.current
+      );
+    }
+
+    audioUrlRef.current = "";
+
+    setAudioUrl("");
+    setRecordedAudio(null);
+
+    setRecording(false);
+
+    setAnalyzingVoice(false);
+
+    setVoiceProcessingStep("");
+
+    setAiAnalysis(null);
+
+    setOriginalTranscript("");
+
+    setTasks([]);
+  };
+
+  // =====================================
+  // CLEANUP ON PAGE UNMOUNT
+  // =====================================
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+
+      liveSpeechActiveRef.current =
+        false;
+
+      liveSpeechSessionRef.current += 1;
+
+      if (
+        liveSpeechTimerRef.current
+      ) {
+        clearTimeout(
+          liveSpeechTimerRef.current
+        );
+      }
+
+      try {
+        liveSpeechRef.current?.abort();
+      } catch {
+        // Already stopped.
+      }
+
+      if (
+        mediaRecorderRef.current?.state ===
+        "recording"
+      ) {
+        mediaRecorderRef.current.onstop =
+          null;
+
+        mediaRecorderRef.current.stop();
+      }
+
+      streamRef.current
+        ?.getTracks()
+        .forEach((track) =>
+          track.stop()
+        );
+
+      abortRef.current?.abort();
+
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(
+          audioUrlRef.current
+        );
+      }
+    };
+  }, []);
+
+  // =====================================
+  // LOAD CASES AND DIARY OVERVIEW
+  // =====================================
+
   useEffect(() => {
     if (!user) return;
 
     let active = true;
+
     setListLoading(true);
 
     Promise.all([
@@ -335,83 +804,98 @@ export default function AddDiaryEntry() {
       .then(([myCases, overview]) => {
         if (!active) return;
 
-        const loadedCases = Array.isArray(myCases)
-          ? myCases
-          : myCases?.cases || [];
+        const loaded =
+          Array.isArray(myCases)
+            ? myCases
+            : myCases?.cases || [];
 
-        setCases(loadedCases);
-        setNotifications(overview.notifications || []);
-        setDateCount((overview.entries || []).length);
+        setCases(loaded);
+
+        setNotifications(
+          overview?.notifications || []
+        );
+
+        setDateCount(
+          (overview?.entries || [])
+            .length
+        );
 
         if (selectedCaseId) {
-          const match = loadedCases.find(
-            (c) =>
-              String(c.id) === String(selectedCaseId)
+          const match = loaded.find(
+            (item) =>
+              String(item.id) ===
+              String(selectedCaseId)
           );
 
           if (!match) {
             setPickedCase(null);
+
             setError(
               "Selected case was not found. Return to My Cases."
             );
+
             return;
           }
 
           setPickedCase(match);
+
           setNewCase(false);
           setCaseOpen(false);
 
           setDraft((old) => ({
             ...old,
-            case_number: match.case_number || "",
-            case_title: match.case_title || "",
-            case_type: match.case_type || "",
-            court_name: match.court_name || "",
-            location: match.location || "",
+
+            case_number:
+              match.case_number || "",
+
+            case_title:
+              match.case_title || "",
+
+            case_type:
+              match.case_type || "",
+
+            court_name:
+              match.court_name || "",
+
+            location:
+              match.location || "",
           }));
         }
-
-        setError("");
       })
-      .catch((e) => {
+      .catch((err) => {
         if (active) {
           setError(
-            e.message || "Could not load lawyer cases."
+            err.message ||
+            "Could not load lawyer cases."
           );
         }
       })
       .finally(() => {
-        if (active) setListLoading(false);
+        if (active) {
+          setListLoading(false);
+        }
       });
 
     return () => {
       active = false;
     };
-  }, [user, entryDate, selectedCaseId]);
+  }, [
+    user,
+    entryDate,
+    selectedCaseId,
+  ]);
 
-  // Cleanup microphone on page exit
-  useEffect(() => {
-    return () => {
-      keepListeningRef.current = false;
-      voiceSessionRef.current += 1;
-
-      if (voiceRetryTimerRef.current !== null) {
-        clearTimeout(voiceRetryTimerRef.current);
-      }
-
-      try {
-        speechRef.current?.abort();
-      } catch {
-        // No active microphone.
-      }
-    };
-  }, []);
+  // =====================================
+  // CLOSE CASE DROPDOWN
+  // =====================================
 
   useEffect(() => {
-    const closeOnOutside = (event) => {
+    const close = (event) => {
       if (
         caseBoxRef.current &&
-        !caseBoxRef.current.contains(event.target)
+        !caseBoxRef.current.contains(
+          event.target
+        )
       ) {
         setCaseOpen(false);
       }
@@ -419,80 +903,150 @@ export default function AddDiaryEntry() {
 
     document.addEventListener(
       "pointerdown",
-      closeOnOutside
+      close
     );
 
     return () =>
       document.removeEventListener(
         "pointerdown",
-        closeOnOutside
+        close
       );
   }, []);
 
-  // Select existing case
-  const chooseExistingCase = (c) => {
-    setPickedCase(c);
+  // =====================================
+  // FILTER EXISTING CASES
+  // =====================================
+
+  const filteredCases = cases
+    .filter((item) => {
+      const value = `
+        ${item.case_number || ""}
+        ${item.case_title || ""}
+        ${item.court_name || ""}
+        ${item.location || ""}
+      `.toLowerCase();
+
+      return (
+        (item.case_number || "")
+          .toLowerCase()
+          .includes(
+            draft.case_number.toLowerCase()
+          ) &&
+        value.includes(
+          globalQuery.toLowerCase()
+        )
+      );
+    })
+    .slice(0, 8);
+
+  // =====================================
+  // SELECT EXISTING CASE
+  // =====================================
+
+  const chooseExistingCase = (item) => {
+    setPickedCase(item);
+
     setNewCase(false);
     setCaseOpen(false);
 
     setDraft((old) => ({
       ...old,
-      case_number: c.case_number,
-      case_title: c.case_title || "",
-      case_type: c.case_type || "",
-      court_name: c.court_name || "",
-      location: c.location || "",
+
+      case_number:
+        item.case_number || "",
+
+      case_title:
+        item.case_title || "",
+
+      case_type:
+        item.case_type || "",
+
+      court_name:
+        item.court_name || "",
+
+      location:
+        item.location || "",
     }));
   };
 
-  // Create new case
+  // =====================================
+  // SELECT NEW CASE
+  // =====================================
+
   const chooseNewCase = () => {
     setPickedCase(null);
+
     setNewCase(true);
+
     setCaseOpen(false);
 
     setDraft((old) => ({
       ...old,
+
       court_name: "",
+
       location: "",
+
       case_title: "",
     }));
   };
 
-  // Change selected diary date
-  const changeDate = (next) => {
-    if (next === entryDate || !goodISO(next)) return;
+  // =====================================
+  // CHANGE DIARY DATE
+  // =====================================
 
-    const dirty =
+  const changeDate = (next) => {
+    if (pendingVoiceEntry) {
+      setError(
+        "Voice diary was created, but audio upload is incomplete. Retry Save Diary Entry before changing the date."
+      );
+      return;
+    }
+
+    if (
+      !goodISO(next) ||
+      next === entryDate ||
+      recording ||
+      analyzingVoice
+    ) {
+      return;
+    }
+
+    const hasUnsaved = Boolean(
       draft.case_number ||
       draft.step_notes ||
       draft.previous_date ||
-      draft.next_date;
+      draft.next_date ||
+      recordedAudio ||
+      tasks.length
+    );
 
     if (
-      dirty &&
+      hasUnsaved &&
       !window.confirm(
-        "Change date? Unsaved diary entry will be cleared."
+        "Change date? Unsaved diary entry and audio will be discarded."
       )
     ) {
       return;
     }
 
-    stopVoice(true);
+    clearAudio();
 
     setDraft(emptyDraft());
-    setPickedCase(null);
-    setNewCase(false);
 
-    setTaskTitle("");
-    setTaskStatus("pending");
-    setTaskDue("");
+    setPickedCase(null);
+
+    setNewCase(false);
 
     setEntryDate(next);
 
+    setError("");
+
     navigate(
       `/add-diary-entry?date=${next}${selectedCaseId
-        ? `&caseId=${encodeURIComponent(selectedCaseId)}`
+        ? `&caseId=${encodeURIComponent(
+          selectedCaseId
+        )}`
         : ""
       }`,
       { replace: true }
@@ -500,181 +1054,852 @@ export default function AddDiaryEntry() {
   };
 
   // =====================================
-  // TAMIL / ENGLISH VOICE RECOGNITION
+  // ACCEPT AUDIO FILE
   // =====================================
 
-  const toggleVoice = () => {
-    if (recording) {
-      stopVoice();
-      return;
-    }
+  const acceptAudioFile = (
+    file,
+    preserveTranscript = false
+  ) => {
+    if (!file) return;
 
-    const Speech =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
-
-    if (!Speech) {
+    if (pendingVoiceEntry) {
       setError(
-        "Voice-to-text is unavailable in this browser. Please use Google Chrome or Manual Typing."
+        "Complete the pending audio upload before changing your recording."
       );
       return;
     }
 
-    const rec = new Speech();
+    const extension = `.${(
+      file.name.split(".").pop() || ""
+    ).toLowerCase()}`;
 
-    const sessionId = ++voiceSessionRef.current;
+    if (
+      !AUDIO_EXTENSIONS.has(
+        extension
+      )
+    ) {
+      setError(
+        "Choose a WAV, MP3, M4A, MP4, WEBM, OGG or FLAC audio file."
+      );
 
-    keepListeningRef.current = true;
-    voiceRetryCountRef.current = 0;
+      return;
+    }
 
-    rec.lang = language;
-    rec.continuous = true;
-    rec.interimResults = false;
+    if (
+      !file.size ||
+      file.size > MAX_AUDIO_BYTES
+    ) {
+      setError(
+        "Audio must be non-empty and less than 20 MB."
+      );
 
-    // Receive final speech transcript
-    rec.onresult = (event) => {
-      if (sessionId !== voiceSessionRef.current) {
+      return;
+    }
+
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(
+        audioUrlRef.current
+      );
+    }
+
+    const url =
+      URL.createObjectURL(file);
+
+    audioUrlRef.current = url;
+
+    setAudioUrl(url);
+
+    setRecordedAudio(file);
+
+    setAiAnalysis(null);
+
+    if (!preserveTranscript) {
+      setOriginalTranscript("");
+
+      setDraft((old) => ({
+        ...old,
+
+        input_method: "voice",
+
+        step_notes: "",
+      }));
+
+      setLiveSpeechState("idle");
+    }
+
+    setTasks((old) =>
+      old.filter((task) =>
+        task.id.startsWith(
+          "manual-"
+        )
+      )
+    );
+
+    setError("");
+  };
+
+  // =====================================
+  // START VOICE RECORDING
+  // =====================================
+
+  const startRecording = async () => {
+    if (
+      recording ||
+      analyzingVoice ||
+      saving ||
+      pendingVoiceEntry
+    ) {
+      return;
+    }
+
+    if (
+      (draft.step_notes.trim() ||
+        recordedAudio) &&
+      !window.confirm(
+        "Start a new recording? The existing transcript and unsaved audio will be replaced."
+      )
+    ) {
+      return;
+    }
+
+    if (
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder ===
+      "undefined"
+    ) {
+      setError(
+        "Recording is not available in this browser. Use Chrome on localhost or upload audio."
+      );
+
+      return;
+    }
+
+    try {
+      setError("");
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+      if (!mountedRef.current) {
+        stream
+          .getTracks()
+          .forEach((track) =>
+            track.stop()
+          );
+
         return;
       }
 
-      const spoken = Array.from(event.results)
-        .slice(event.resultIndex)
-        .filter((item) => item.isFinal)
-        .map((item) => item[0].transcript.trim())
-        .filter(Boolean)
-        .join(" ");
+      streamRef.current = stream;
 
-      if (spoken) {
-        voiceRetryCountRef.current = 0;
+      chunksRef.current = [];
 
-        setDraft((old) => ({
-          ...old,
-          step_notes: [
-            old.step_notes.trim(),
-            spoken,
-          ]
-            .filter(Boolean)
-            .join(" "),
-          input_method: "voice",
-        }));
-      }
-    };
+      const type = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+      ].find((value) =>
+        MediaRecorder.isTypeSupported(
+          value
+        )
+      );
 
-    // Handle microphone and speech errors
-    rec.onerror = (event) => {
-      if (sessionId !== voiceSessionRef.current) {
-        return;
-      }
+      const recorder = type
+        ? new MediaRecorder(
+          stream,
+          {
+            mimeType: type,
+          }
+        )
+        : new MediaRecorder(stream);
 
-      if (event.error === "no-speech") {
-        return;
-      }
+      mediaRecorderRef.current =
+        recorder;
 
-      keepListeningRef.current = false;
+      // Collect original audio.
 
-      const messages = {
-        "not-allowed":
-          "Microphone permission denied. Please allow microphone access.",
-        "audio-capture":
-          "Microphone not found. Check your microphone.",
-        network:
-          "Speech recognition network error. Check your internet connection.",
-        "language-not-supported":
-          "Selected language is unavailable in this browser.",
-        "service-not-allowed":
-          "Speech recognition service is not available.",
+      recorder.ondataavailable = (
+        event
+      ) => {
+        if (event.data?.size) {
+          chunksRef.current.push(
+            event.data
+          );
+        }
       };
 
-      setError(
-        messages[event.error] ||
-        `Voice recognition failed: ${event.error}`
-      );
-    };
+      recorder.onerror = () => {
+        stopLiveSpeech(true);
 
-    // Handle automatic browser stop
-    rec.onend = () => {
-      if (sessionId !== voiceSessionRef.current) {
-        return;
-      }
+        cleanupStream();
 
-      // User intentionally stopped
-      if (!keepListeningRef.current) {
-        setRecording(false);
-        return;
-      }
-
-      // Limit automatic retries
-      if (voiceRetryCountRef.current >= 3) {
-        keepListeningRef.current = false;
-        setRecording(false);
-
-        setError(
-          "Voice recognition stopped. Review your transcript and click Voice Note to continue."
-        );
-        return;
-      }
-
-      voiceRetryCountRef.current += 1;
-
-      voiceRetryTimerRef.current = setTimeout(() => {
-        voiceRetryTimerRef.current = null;
-
-        if (
-          !keepListeningRef.current ||
-          sessionId !== voiceSessionRef.current
-        ) {
-          return;
-        }
-
-        try {
-          rec.start();
-        } catch {
-          keepListeningRef.current = false;
+        if (mountedRef.current) {
           setRecording(false);
 
           setError(
-            "Could not resume the microphone. Review your transcript and try again."
+            "Voice recording failed. Please try again."
           );
         }
-      }, 400);
-    };
+      };
 
-    speechRef.current = rec;
+      recorder.onstop = () => {
+        cleanupStream();
 
-    try {
-      rec.start();
+        if (!mountedRef.current) {
+          return;
+        }
+
+        setRecording(false);
+
+        const mime =
+          recorder.mimeType ||
+          "audio/webm";
+
+        const extension =
+          mime.includes("mp4")
+            ? "mp4"
+            : "webm";
+
+        const blob = new Blob(
+          chunksRef.current,
+          {
+            type: mime,
+          }
+        );
+
+        const file = new File(
+          [blob],
+          `advocanote-voice.${extension}`,
+          {
+            type: mime,
+          }
+        );
+
+        // IMPORTANT:
+        // Preserve live transcript and
+        // attach original recording.
+
+        acceptAudioFile(
+          file,
+          true
+        );
+      };
+
+      // Start saving original audio.
+
+      recorder.start(1000);
+
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(
+          audioUrlRef.current
+        );
+
+        audioUrlRef.current = "";
+      }
+
+      setAudioUrl("");
+
+      setRecordedAudio(null);
+
+      setOriginalTranscript("");
+
+      setAiAnalysis(null);
+
+      setTasks((old) =>
+        old.filter((task) =>
+          task.id.startsWith(
+            "manual-"
+          )
+        )
+      );
+
+      setDraft((old) => ({
+        ...old,
+
+        input_method: "voice",
+
+        step_notes: "",
+      }));
+
       setRecording(true);
-      setError("");
-    } catch {
-      keepListeningRef.current = false;
+
+      // Start live browser transcription.
+      // No Whisper CPU request here.
+
+      startLiveSpeech();
+    } catch (err) {
+      stopLiveSpeech(true);
+
+      cleanupStream();
+
       setRecording(false);
-      setError("Could not start microphone.");
+
+      setError(
+        err.message ||
+        "Microphone permission denied."
+      );
     }
   };
 
   // =====================================
-  // SAVE DIARY ENTRY
+  // STOP RECORDING
   // =====================================
 
-  const handleSave = async () => {
-    if (saving) return;
+  const stopRecording = () => {
+    // Finalize live Tamil text.
 
-    stopVoice();
+    stopLiveSpeech();
+
+    // Stop original audio capture.
 
     if (
-      selectedCaseId &&
-      String(pickedCase?.id) !== selectedCaseId
+      mediaRecorderRef.current?.state ===
+      "recording"
+    ) {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  // =====================================
+  // WHISPER FALLBACK
+  // =====================================
+
+  const convertVoiceToText = async () => {
+    if (
+      !recordedAudio ||
+      recording ||
+      analyzingVoice ||
+      saving ||
+      pendingVoiceEntry
+    ) {
+      return;
+    }
+
+    const token =
+      sessionStorage.getItem(
+        "advocanote_access_token"
+      );
+
+    if (!token) {
+      setError(
+        "Please log in again."
+      );
+
+      return;
+    }
+
+    if (
+      draft.step_notes.trim() &&
+      !window.confirm(
+        "Replace the existing proceedings text with the new Whisper transcript?"
+      )
+    ) {
+      return;
+    }
+
+    const controller =
+      new AbortController();
+
+    abortRef.current = controller;
+
+    setAnalyzingVoice(true);
+
+    setVoiceProcessingStep(
+      "transcribing"
+    );
+
+    setError("");
+
+    try {
+      const formData =
+        new FormData();
+
+      formData.append(
+        "file",
+        recordedAudio,
+        recordedAudio.name
+      );
+      formData.append("language", voiceLanguage);
+
+      const response =
+        await fetch(
+          `${API_URL}/voice-ai/transcribe`,
+          {
+            method: "POST",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+
+            body: formData,
+
+            signal:
+              controller.signal,
+          }
+        );
+
+      const result =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof result.detail ===
+            "string"
+            ? result.detail
+            : "Voice transcription failed."
+        );
+      }
+
+      const transcript =
+        typeof result.transcript ===
+          "string"
+          ? result.transcript.trim()
+          : "";
+
+      if (!transcript) {
+        throw new Error(
+          "No speech detected."
+        );
+      }
+
+      setOriginalTranscript(
+        transcript
+      );
+
+      setDraft((old) => ({
+        ...old,
+
+        input_method: "voice",
+
+        step_notes: transcript,
+      }));
+
+      setAiAnalysis(null);
+
+      setTasks((old) =>
+        old.filter((task) =>
+          task.id.startsWith(
+            "manual-"
+          )
+        )
+      );
+
+      setLiveSpeechState(
+        "completed"
+      );
+    } catch (err) {
+      if (
+        err.name !==
+        "AbortError"
+      ) {
+        setError(
+          err.message ||
+          "Cannot connect to the transcription server."
+        );
+      }
+    } finally {
+      if (mountedRef.current) {
+        setAnalyzingVoice(false);
+
+        setVoiceProcessingStep("");
+
+        abortRef.current = null;
+      }
+    }
+  };
+
+  // =====================================
+  // ANALYSE TEXT WITH QWEN
+  // =====================================
+
+  const analyzeText = async () => {
+    if (
+      recording ||
+      analyzingVoice ||
+      saving ||
+      pendingVoiceEntry
+    ) {
+      return;
+    }
+
+    // Use the latest edited transcript.
+
+    const transcript =
+      draft.step_notes.trim();
+
+    if (!transcript) {
+      setError(
+        "Enter or convert text before analysing."
+      );
+
+      return;
+    }
+
+    const token =
+      sessionStorage.getItem(
+        "advocanote_access_token"
+      );
+
+    if (!token) {
+      setError(
+        "Please log in again."
+      );
+
+      return;
+    }
+
+    const controller =
+      new AbortController();
+
+    abortRef.current = controller;
+
+    setAnalyzingVoice(true);
+
+    setVoiceProcessingStep(
+      "analyzing"
+    );
+
+    setError("");
+
+    setAiAnalysis(null);
+
+    // Keep manually created tasks.
+
+    setTasks((old) =>
+      old.filter((task) =>
+        task.id.startsWith(
+          "manual-"
+        )
+      )
+    );
+
+    try {
+      const response =
+        await fetch(
+          `${API_URL}/voice-ai/analyze-text`,
+          {
+            method: "POST",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              text: transcript,
+              language: aiLanguage,
+            }),
+
+            signal:
+              controller.signal,
+          }
+        );
+
+      const result =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof result.detail ===
+            "string"
+            ? result.detail
+            : "AI text analysis failed."
+        );
+      }
+
+      // Legal notes and highlights.
+
+      setAiAnalysis({
+        notes: Array.isArray(
+          result.notes
+        )
+          ? result.notes
+          : [],
+
+        criticalHighlights:
+          Array.isArray(
+            result.critical_highlights
+          )
+            ? result.critical_highlights
+            : [],
+
+        analysisIncomplete:
+          Boolean(
+            result.analysis_incomplete
+          ),
+      });
+
+      // Task suggestions must be approved.
+
+      const suggestions =
+        Array.isArray(
+          result.suggested_tasks
+        )
+          ? result.suggested_tasks
+          : [];
+
+      const preparedTasks =
+        suggestions
+          .filter(
+            (title) =>
+              typeof title ===
+              "string" &&
+              title.trim()
+          )
+          .map((title) => ({
+            id:
+              `ai-${++taskIdRef.current}`,
+
+            title:
+              title.trim(),
+
+            deadline: "",
+
+            priority:
+              "Medium",
+
+            status:
+              "pending",
+
+            editing: false,
+          }));
+
+      setTasks((old) => [
+        ...old.filter(
+          (task) =>
+            task.id.startsWith(
+              "manual-"
+            )
+        ),
+
+        ...preparedTasks,
+      ]);
+
+      setShowPoints(true);
+    } catch (err) {
+      if (
+        err.name !==
+        "AbortError"
+      ) {
+        setError(
+          err.message ||
+          "Cannot connect to the AI server."
+        );
+      }
+    } finally {
+      if (mountedRef.current) {
+        setAnalyzingVoice(false);
+
+        setVoiceProcessingStep("");
+
+        abortRef.current = null;
+      }
+    }
+  };
+
+  // =====================================
+  // SWITCH TO MANUAL TYPING
+  // =====================================
+
+  const switchToManual = () => {
+    if (
+      recording ||
+      analyzingVoice ||
+      saving ||
+      pendingVoiceEntry
+    ) {
+      return;
+    }
+
+    if (
+      recordedAudio &&
+      !window.confirm(
+        "Switch to manual typing? Unsaved audio will be discarded. The transcript text will remain."
+      )
+    ) {
+      return;
+    }
+
+    clearAudio();
+
+    setField(
+      "input_method",
+      "manual"
+    );
+
+    setError("");
+  };
+
+  // =====================================
+  // EDIT COURT PROCEEDINGS
+  // =====================================
+
+  const editProceedings = (
+    value
+  ) => {
+    setField(
+      "step_notes",
+      value
+    );
+
+    // Previous AI results are invalid
+    // when the source text changes.
+
+    if (aiAnalysis) {
+      setAiAnalysis(null);
+
+      setTasks((old) =>
+        old.filter((task) =>
+          task.id.startsWith(
+            "manual-"
+          )
+        )
+      );
+    }
+  };
+
+  // =====================================
+  // UPDATE TASK
+  // =====================================
+
+  const updateTask = (
+    id,
+    changes
+  ) => {
+    setTasks((previous) =>
+      previous.map((task) =>
+        task.id === id
+          ? {
+            ...task,
+            ...changes,
+          }
+          : task
+      )
+    );
+  };
+
+  // =====================================
+  // APPROVE TASK
+  // =====================================
+
+
+  const approveTask = (id) => {
+    const target = tasks.find(
+      (task) => task.id === id
+    );
+
+    if (
+      !target?.title?.trim() ||
+      target.title.trim().length < 3
     ) {
       setError(
-        "Selected case could not be verified. Return to My Cases."
+        "Enter a valid task title before approval."
       );
       return;
     }
 
-    if (!pickedCase && !newCase) {
+    setTasks((previous) =>
+      previous.map((task) =>
+        task.id === id
+          ? {
+            ...task,
+            status: "approved",
+            editing: false,
+          }
+          : task
+      )
+    );
+
+    setError("");
+  };
+
+
+  // =====================================
+  // ADD MANUAL TASK
+  // =====================================
+
+  const addManualTask = () => {
+    setTasks((previous) => [
+      ...previous,
+
+      {
+        id:
+          `manual-${++taskIdRef.current}`,
+
+        title: "",
+
+        deadline: "",
+
+        priority:
+          "Medium",
+
+        status:
+          "pending",
+
+        editing: true,
+      },
+    ]);
+  };
+
+  // =====================================
+  // SAVE DIARY + ORIGINAL AUDIO
+  // =====================================
+
+  const handleSave = async () => {
+    if (
+      saving ||
+      recording ||
+      analyzingVoice ||
+      listLoading
+    ) {
+      return;
+    }
+
+    // If an audio is attached,
+    // its original transcript is required.
+
+    if (
+      recordedAudio &&
+      !originalTranscript.trim()
+    ) {
+      setError(
+        "Voice text is missing. Use live transcription or Convert with Whisper (Fallback) before saving."
+      );
+
+      return;
+    }
+
+    if (
+      selectedCaseId &&
+      String(pickedCase?.id) !==
+      String(selectedCaseId)
+    ) {
+      setError(
+        "Selected case could not be verified."
+      );
+
+      return;
+    }
+
+    if (
+      !pickedCase &&
+      !newCase
+    ) {
       setError(
         "Select an existing case or choose + New Case."
       );
+
       return;
     }
 
@@ -687,110 +1912,360 @@ export default function AddDiaryEntry() {
       setError(
         "Case No, Court, Location and Step are required."
       );
+
       return;
     }
 
+    const approvedTasks = tasks.filter(
+      (task) => task.status === "approved"
+    );
+
     if (
-      taskStatus === "approved" &&
-      suggestedTitle.trim().length < 3
+      approvedTasks.some(
+        (task) => !task.title?.trim() ||
+          task.title.trim().length < 3
+      )
     ) {
-      setError("Check the approved task title.");
+      setError("Check approved task titles.");
+      return;
+    }
+
+    const token =
+      sessionStorage.getItem(
+        "advocanote_access_token"
+      );
+
+    if (
+      recordedAudio &&
+      !token
+    ) {
+      setError(
+        "Please log in again."
+      );
+
       return;
     }
 
     setSaving(true);
+
     setError("");
 
+    // Saved diary result is kept
+    // for retrying a failed audio upload.
+
+    let diaryResult =
+      pendingVoiceEntry;
+
     try {
-      const result = await createDiaryEntry({
-        ...draft,
-        entry_date: entryDate,
-        case_number: draft.case_number.trim(),
-        case_title:
-          draft.case_title.trim() || "Untitled Case",
-        court_name: draft.court_name.trim(),
-        location: draft.location.trim(),
-        step_notes: draft.step_notes.trim(),
-        previous_date: draft.previous_date || null,
-        next_date: draft.next_date || null,
-        step_type: "Other",
+      // ===============================
+      // 1. CREATE DIARY ENTRY
+      // ===============================
 
-        // AI point-wise notes must remain preview-only.
-        point_notes: null,
+      if (!diaryResult) {
+        diaryResult =
+          await createDiaryEntry({
+            ...draft,
 
-        approved_task:
-          taskStatus === "approved" &&
-            suggestedTitle.trim()
-            ? {
-              title: suggestedTitle.trim(),
-              deadline: taskDue || null,
-              priority: taskPriority,
+            entry_date:
+              entryDate,
+
+            case_number:
+              draft.case_number.trim(),
+
+            case_title:
+              draft.case_title.trim() ||
+              "Untitled Case",
+
+            court_name:
+              draft.court_name.trim(),
+
+            location:
+              draft.location.trim(),
+
+            step_notes:
+              draft.step_notes.trim(),
+
+            previous_date:
+              draft.previous_date ||
+              null,
+
+            next_date:
+              draft.next_date ||
+              null,
+
+            step_type:
+              "Other",
+
+            point_notes:
+              null,
+
+            approved_tasks: approvedTasks.map((task) => ({
+              title: task.title.trim(),
+              deadline: task.deadline || null,
+            })),
+          });
+
+        if (recordedAudio) {
+          setPendingVoiceEntry(
+            diaryResult
+          );
+        }
+      }
+
+      // ===============================
+      // 2. SAVE ORIGINAL AUDIO
+      // ===============================
+
+      if (recordedAudio) {
+        const rawEntryId =
+          diaryResult?.diary_entry_id ??
+          diaryResult?.entry_id ??
+          diaryResult?.id ??
+          diaryResult?.entry?.id ??
+          diaryResult?.diary_entry?.id ??
+          diaryResult?.data?.id;
+
+        const entryId =
+          Number(rawEntryId);
+
+        if (
+          !Number.isInteger(
+            entryId
+          ) ||
+          entryId < 1
+        ) {
+          throw new Error(
+            "Diary was created, but its ID was not returned. Check the createDiaryEntry API response before retrying."
+          );
+        }
+
+        const formData =
+          new FormData();
+
+        // Original audio file.
+
+        formData.append(
+          "audio",
+          recordedAudio,
+          recordedAudio.name
+        );
+
+        // Browser or Whisper source transcript.
+
+        formData.append(
+          "source_transcript",
+          originalTranscript
+        );
+
+        // Lawyer-reviewed transcript.
+
+        formData.append(
+          "reviewed_transcript",
+          draft.step_notes.trim()
+        );
+
+        // AI notes.
+
+        formData.append(
+          "notes_json",
+          JSON.stringify(
+            aiAnalysis?.notes ||
+            []
+          )
+        );
+
+        // Important highlights.
+
+        formData.append(
+          "highlights_json",
+          JSON.stringify(
+            aiAnalysis?.criticalHighlights ||
+            []
+          )
+        );
+
+        // No notes are auto-approved.
+
+        formData.append(
+          "approved_notes_json",
+          JSON.stringify([])
+        );
+
+        const uploadResponse =
+          await fetch(
+            `${API_URL}/voice-ai/recordings/${entryId}`,
+            {
+              method:
+                "POST",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+
+              body:
+                formData,
             }
-            : null,
-      });
+          );
 
-      setSuccess(result);
-      setDateCount((x) => x + 1);
-    } catch (e) {
-      setError(e.message || "Save failed.");
+        const uploadData =
+          await uploadResponse
+            .json()
+            .catch(() => ({}));
+
+        if (
+          !uploadResponse.ok
+        ) {
+          const message =
+            typeof uploadData.detail ===
+              "string"
+              ? uploadData.detail
+              : "Audio upload failed.";
+
+          throw new Error(
+            message
+          );
+        }
+
+        if (
+          uploadData.audio_saved !==
+          true
+        ) {
+          throw new Error(
+            "Audio storage was not confirmed."
+          );
+        }
+      }
+
+      // ===============================
+      // 3. SUCCESS
+      // ===============================
+
+      setPendingVoiceEntry(
+        null
+      );
+
+      setSuccess(
+        diaryResult
+      );
+
+      setDateCount(
+        (count) =>
+          count + 1
+      );
+
+      setError("");
+    } catch (err) {
+      if (
+        recordedAudio &&
+        diaryResult
+      ) {
+        setError(
+          `Diary entry was created, but audio saving is incomplete. ${err.message} Do not refresh or create another entry. Click Save Diary Entry again to retry the audio upload.`
+        );
+      } else {
+        setError(
+          err.message ||
+          "Diary save failed."
+        );
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  // Reset for another entry
+  // =====================================
+  // RESET ENTRY
+  // =====================================
+
   const resetEntry = () => {
+    clearAudio();
+
+    setPendingVoiceEntry(
+      null
+    );
+
     setSuccess(null);
 
-    const keepCase = selectedCaseId
-      ? pickedCase
-      : null;
+    const keepCase =
+      selectedCaseId
+        ? pickedCase
+        : null;
 
     setDraft(
       keepCase
         ? {
           ...emptyDraft(),
-          case_number: keepCase.case_number || "",
-          case_title: keepCase.case_title || "",
-          case_type: keepCase.case_type || "",
-          court_name: keepCase.court_name || "",
-          location: keepCase.location || "",
+
+          case_number:
+            keepCase.case_number ||
+            "",
+
+          case_title:
+            keepCase.case_title ||
+            "",
+
+          case_type:
+            keepCase.case_type ||
+            "",
+
+          court_name:
+            keepCase.court_name ||
+            "",
+
+          location:
+            keepCase.location ||
+            "",
         }
         : emptyDraft()
     );
 
-    setPickedCase(keepCase);
+    setPickedCase(
+      keepCase
+    );
+
     setNewCase(false);
 
-    setTaskStatus("pending");
-    setTaskTitle("");
-    setTaskDue("");
-    setTaskPriority("Medium");
-    setManualTask(false);
+    setError("");
   };
 
-  const back = () =>
-    navigate(`/my-legal-diary?date=${entryDate}`);
+  // =====================================
+  // BACK TO LEGAL DIARY
+  // =====================================
 
-  const logout = async () => {
-    try {
-      await logoutUser();
-    } catch {
-      // Clear session anyway
+  const back = () => {
+    if (
+      pendingVoiceEntry
+    ) {
+      setError(
+        "Audio upload is incomplete. Retry Save Diary Entry before leaving."
+      );
+
+      return;
     }
 
-    sessionStorage.removeItem(
-      "advocanote_access_token"
-    );
+    if (
+      recordedAudio &&
+      !success &&
+      !window.confirm(
+        "Leave this page? Your unsaved voice recording will be lost."
+      )
+    ) {
+      return;
+    }
 
-    sessionStorage.removeItem(
-      "advocanote_refresh_token"
+    navigate(
+      `/my-legal-diary?date=${entryDate}`
     );
-
-    navigate("/login", {
-      replace: true,
-    });
   };
+
+  const fullName =
+    user?.full_name ||
+    "Lawyer";
+
+  // =====================================
+  // MAIN JSX
+  // =====================================
 
   return (
     <>
@@ -813,8 +2288,10 @@ export default function AddDiaryEntry() {
             aria-label="Search existing cases"
             placeholder="Search your existing cases by number, court or title..."
             value={globalQuery}
-            onChange={(e) =>
-              setGlobalQuery(e.target.value)
+            onChange={(event) =>
+              setGlobalQuery(
+                event.target.value
+              )
             }
           />
         </div>
@@ -825,7 +2302,9 @@ export default function AddDiaryEntry() {
               type="button"
               className="ald-notify"
               onClick={() =>
-                setBellOpen((x) => !x)
+                setBellOpen(
+                  (old) => !old
+                )
               }
               aria-label="Bell reminders"
             >
@@ -834,16 +2313,24 @@ export default function AddDiaryEntry() {
 
             {bellOpen && (
               <div className="ald-top-popover ald-notifications-popover">
-                <strong>Reminders</strong>
+                <strong>
+                  Reminders
+                </strong>
 
                 {notifications.length ? (
-                  notifications.map((x) => (
-                    <p key={x.id}>
-                      {x.title} — {x.date}
-                    </p>
-                  ))
+                  notifications.map(
+                    (item) => (
+                      <p key={item.id}>
+                        {item.title}
+                        {" — "}
+                        {item.date}
+                      </p>
+                    )
+                  )
                 ) : (
-                  <p>No reminders yet.</p>
+                  <p>
+                    No reminders yet.
+                  </p>
                 )}
               </div>
             )}
@@ -855,11 +2342,18 @@ export default function AddDiaryEntry() {
             <LawyerTopbarAvatar />
 
             <span className="ald-account-text">
-              <strong>{fullName}</strong>
-              <small>Attorney-at-Law</small>
+              <strong>
+                {fullName}
+              </strong>
+
+              <small>
+                Attorney-at-Law
+              </small>
             </span>
 
-            <ChevronDown size={18} />
+            <ChevronDown
+              size={18}
+            />
           </div>
         </div>
       </LawyerTopbarPortal>
@@ -870,12 +2364,15 @@ export default function AddDiaryEntry() {
         <div className="ade2-content">
           <div className="ade2-heading">
             <div>
-              <h1>Add Diary Entry</h1>
+              <h1>
+                Add Diary Entry
+              </h1>
 
               <p>
-                Record today's hearing, next dates and
-                steps — with voice or typing, all in one
-                place.
+                Record today's hearing,
+                next dates and steps —
+                with voice or typing,
+                all in one place.
               </p>
             </div>
 
@@ -884,7 +2381,10 @@ export default function AddDiaryEntry() {
               className="ade2-back"
               onClick={back}
             >
-              <ArrowLeft size={17} />
+              <ArrowLeft
+                size={17}
+              />
+
               Back to My Legal Diary
             </button>
           </div>
@@ -898,20 +2398,58 @@ export default function AddDiaryEntry() {
             <div className="ade2-sheet-scroll">
               <table className="ade2-diary-table">
                 <colgroup>
-                  <col style={{ width: "17%" }} />
-                  <col style={{ width: "19%" }} />
-                  <col style={{ width: "16%" }} />
-                  <col style={{ width: "32%" }} />
-                  <col style={{ width: "16%" }} />
+                  <col
+                    style={{
+                      width: "17%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "19%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "16%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "32%",
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: "16%",
+                    }}
+                  />
                 </colgroup>
 
                 <thead>
                   <tr>
-                    <th>Case No</th>
-                    <th>Court</th>
-                    <th>Previous Date</th>
-                    <th>Step (Court Proceedings)</th>
-                    <th>Next Date</th>
+                    <th>
+                      Case No
+                    </th>
+
+                    <th>
+                      Court
+                    </th>
+
+                    <th>
+                      Previous Date
+                    </th>
+
+                    <th>
+                      Step (Court Proceedings)
+                    </th>
+
+                    <th>
+                      Next Date
+                    </th>
                   </tr>
                 </thead>
 
@@ -925,90 +2463,131 @@ export default function AddDiaryEntry() {
                         ref={caseBoxRef}
                       >
                         <div className="ade2-control ade2-case-control">
-                          <Search size={16} />
+                          <Search
+                            size={16}
+                          />
 
                           <input
                             aria-label="Search case number"
                             placeholder="Search case number"
-                            value={draft.case_number}
-                            readOnly={Boolean(selectedCaseId)}
+                            value={
+                              draft.case_number
+                            }
+                            readOnly={Boolean(
+                              selectedCaseId
+                            )}
                             onFocus={() => {
-                              if (!selectedCaseId) {
-                                setCaseOpen(true);
+                              if (
+                                !selectedCaseId
+                              ) {
+                                setCaseOpen(
+                                  true
+                                );
                               }
                             }}
-                            onChange={(e) => {
+                            onChange={(event) => {
                               setField(
                                 "case_number",
-                                e.target.value
+                                event.target.value
                               );
-                              setPickedCase(null);
-                              setCaseOpen(!newCase);
+
+                              setPickedCase(
+                                null
+                              );
+
+                              setCaseOpen(
+                                !newCase
+                              );
                             }}
                           />
                         </div>
 
-                        {caseOpen && !selectedCaseId && (
-                          <div className="ade2-case-list">
-                            {filteredCases.map((c) => (
+                        {caseOpen &&
+                          !selectedCaseId && (
+                            <div className="ade2-case-list">
+                              {filteredCases.map(
+                                (item) => (
+                                  <button
+                                    type="button"
+                                    key={item.id}
+                                    onClick={() =>
+                                      chooseExistingCase(
+                                        item
+                                      )
+                                    }
+                                  >
+                                    <strong>
+                                      {
+                                        item.case_number
+                                      }
+                                    </strong>
+
+                                    <small>
+                                      {
+                                        item.court_name
+                                      }
+                                      {" — "}
+                                      {
+                                        item.location
+                                      }
+                                    </small>
+                                  </button>
+                                )
+                              )}
+
+                              {!filteredCases.length && (
+                                <p>
+                                  No matching
+                                  case yet.
+                                </p>
+                              )}
+
                               <button
                                 type="button"
-                                key={c.id}
-                                onClick={() =>
-                                  chooseExistingCase(c)
+                                className="ade2-new-case"
+                                onClick={
+                                  chooseNewCase
                                 }
                               >
-                                <strong>
-                                  {c.case_number}
-                                </strong>
+                                <Plus
+                                  size={14}
+                                />
 
-                                <small>
-                                  {c.court_name} —{" "}
-                                  {c.location}
-                                </small>
+                                New Case
                               </button>
-                            ))}
-
-                            {!filteredCases.length && (
-                              <p>No matching case yet.</p>
-                            )}
-
-                            <button
-                              type="button"
-                              className="ade2-new-case"
-                              onClick={chooseNewCase}
-                            >
-                              <Plus size={14} />
-                              New Case
-                            </button>
-                          </div>
-                        )}
+                            </div>
+                          )}
                       </div>
 
                       {pickedCase && (
                         <small className="ade2-helper">
-                          Existing case selected
+                          Existing case
+                          selected
                         </small>
                       )}
 
                       {newCase && (
                         <div className="ade2-new-details">
                           <small>
-                            New case — created when saved
+                            New case —
+                            created when saved
                           </small>
 
                           <label>
-                            Case Title (Optional)
+                            Case Title
+                            (Optional)
 
                             <input
                               type="text"
                               aria-label="New case title"
                               placeholder="e.g., Perera v. Silva"
-                              value={draft.case_title}
-                              onChange={(e) =>
+                              value={
+                                draft.case_title
+                              }
+                              onChange={(event) =>
                                 setField(
                                   "case_title",
-                                  e.target.value
+                                  event.target.value
                                 )
                               }
                             />
@@ -1019,11 +2598,14 @@ export default function AddDiaryEntry() {
 
                             <select
                               aria-label="Case type"
-                              value={draft.case_type || ""}
-                              onChange={(e) => {
+                              value={
+                                draft.case_type ||
+                                ""
+                              }
+                              onChange={(event) => {
                                 setField(
                                   "case_type",
-                                  e.target.value
+                                  event.target.value
                                 );
 
                                 setField(
@@ -1032,62 +2614,62 @@ export default function AddDiaryEntry() {
                                 );
                               }}
                             >
-                              <option value="" disabled>
+                              <option
+                                value=""
+                                disabled
+                              >
                                 Select Case Type
                               </option>
-                              <option value="Civil">
-                                Civil
-                              </option>
-                              <option value="Criminal">
-                                Criminal
-                              </option>
-                              <option value="Family">
-                                Family
-                              </option>
-                              <option value="Land">
-                                Land
-                              </option>
-                              <option value="Labour">
-                                Labour
-                              </option>
-                              <option value="Commercial">
-                                Commercial
-                              </option>
-                              <option value="Fundamental Rights">
-                                Fundamental Rights
-                              </option>
-                              <option value="Writ">
-                                Writ
-                              </option>
-                              <option value="Testamentary">
-                                Testamentary
-                              </option>
-                              <option value="Other">
-                                Other
-                              </option>
+
+                              {[
+                                "Civil",
+                                "Criminal",
+                                "Family",
+                                "Land",
+                                "Labour",
+                                "Commercial",
+                                "Fundamental Rights",
+                                "Writ",
+                                "Testamentary",
+                                "Other",
+                              ].map(
+                                (type) => (
+                                  <option
+                                    value={
+                                      type
+                                    }
+                                    key={type}
+                                  >
+                                    {type}
+                                  </option>
+                                )
+                              )}
                             </select>
                           </label>
 
-                          {draft.case_type === "Other" && (
-                            <label>
-                              Specify Other Case Type
+                          {draft.case_type ===
+                            "Other" && (
+                              <label>
+                                Specify Other
+                                Case Type
 
-                              <input
-                                type="text"
-                                aria-label="Other case type"
-                                placeholder="Enter your case type..."
-                                value={
-                                  draft.other_case_type || ""
-                                }
-                                onChange={(e) =>
-                                  setField(
-                                    "other_case_type",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </label>
-                          )}
+                                <input
+                                  type="text"
+                                  aria-label="Other case type"
+                                  placeholder="Enter your case type..."
+                                  value={
+                                    draft.other_case_type ||
+                                    ""
+                                  }
+                                  onChange={(event) =>
+                                    setField(
+                                      "other_case_type",
+                                      event.target.value
+                                    )
+                                  }
+                                />
+                              </label>
+                            )}
                         </div>
                       )}
                     </td>
@@ -1097,15 +2679,27 @@ export default function AddDiaryEntry() {
                     <td>
                       <SriLankaCourtFields
                         key={`${entryDate}-${newCase}-${pickedCase?.id ?? "none"}`}
-                        court={draft.court_name}
-                        location={draft.location}
+                        court={
+                          draft.court_name
+                        }
+                        location={
+                          draft.location
+                        }
                         onCourtChange={(value) =>
-                          setField("court_name", value)
+                          setField(
+                            "court_name",
+                            value
+                          )
                         }
                         onLocationChange={(value) =>
-                          setField("location", value)
+                          setField(
+                            "location",
+                            value
+                          )
                         }
-                        readOnly={Boolean(pickedCase)}
+                        readOnly={Boolean(
+                          pickedCase
+                        )}
                       />
                     </td>
 
@@ -1114,13 +2708,15 @@ export default function AddDiaryEntry() {
                     <td>
                       <input
                         className="ade2-control"
-                        aria-label="Previous hearing date"
                         type="date"
-                        value={draft.previous_date}
-                        onChange={(e) =>
+                        aria-label="Previous hearing date"
+                        value={
+                          draft.previous_date
+                        }
+                        onChange={(event) =>
                           setField(
                             "previous_date",
-                            e.target.value
+                            event.target.value
                           )
                         }
                       />
@@ -1133,121 +2729,599 @@ export default function AddDiaryEntry() {
                         <button
                           type="button"
                           className={
-                            draft.input_method === "voice"
-                              ? "ade2-tab-active"
-                              : ""
-                          }
-                          onClick={toggleVoice}
-                        >
-                          {recording ? (
-                            <Square size={16} />
-                          ) : (
-                            <Mic size={17} />
-                          )}
-
-                          {recording
-                            ? "Stop Recording"
-                            : "Voice Note"}
-                        </button>
-
-                        <button
-                          type="button"
-                          className={
-                            draft.input_method === "manual"
-                              ? "ade2-tab-active"
-                              : ""
-                          }
-                          onClick={() => {
-                            stopVoice(true);
-                            setField(
-                              "input_method",
+                            draft.input_method ===
                               "manual"
-                            );
-                          }}
+                              ? "ade2-tab-active"
+                              : ""
+                          }
+                          disabled={
+                            recording ||
+                            analyzingVoice ||
+                            saving ||
+                            Boolean(
+                              pendingVoiceEntry
+                            )
+                          }
+                          onClick={
+                            switchToManual
+                          }
                         >
-                          <BookOpen size={17} />
+                          <BookOpen
+                            size={17}
+                          />
+
                           Manual Typing
                         </button>
 
-                        <select
-                          aria-label="Voice language"
-                          value={language}
-                          onChange={(e) =>
-                            setLanguage(e.target.value)
-                          }
-                        >
-                          <option value="en-LK">
-                            English
-                          </option>
-                          <option value="ta-IN">
-                            Tamil
-                          </option>
-                        </select>
+                        <span className="ade2-helper">
+                          {voiceLanguage === "en"
+                            ? "English • Live Voice Typing"
+                            : "Tamil • Live Voice Typing"}
+                        </span>
                       </div>
 
-                      {recording && (
-                        <div className="ade2-recording">
-                          <span className="ade2-rec-dot" />
-                          Listening...
+                      {/* VOICE RECORDER */}
 
-                          <span
-                            className="ade2-wave"
-                            aria-hidden="true"
+                      <div
+                        className="ade2-voice-ai"
+                        style={{
+                          background:
+                            "#fffdf8",
+
+                          border:
+                            "1px solid #e7e1d4",
+
+                          borderRadius: 10,
+
+                          padding: 12,
+
+                          marginTop: 10,
+                        }}
+                      >
+                        <strong
+                          style={{
+                            display:
+                              "block",
+
+                            fontSize:
+                              13,
+
+                            marginBottom:
+                              10,
+                          }}
+                        >
+                          Voice Recording
+                        </strong>
+
+                        <div
+                          style={{
+                            display:
+                              "flex",
+
+                            flexWrap:
+                              "wrap",
+
+                            gap: 8,
+
+                            alignItems:
+                              "center",
+                          }}
+                        >
+                          {/* VOICE LANGUAGE SELECTION */}
+
+                          <label
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 8,
+                              fontSize: 12,
+                              fontWeight: 500,
+                            }}
                           >
-                            ▁▅▂▆▃▇▃▅▂▆▁▅▃▇
-                          </span>
+                            Language
+
+                            <select
+                              value={voiceLanguage}
+                              onChange={(event) =>
+                                setVoiceLanguage(event.target.value)
+                              }
+                              disabled={
+                                recording ||
+                                analyzingVoice ||
+                                saving ||
+                                Boolean(pendingVoiceEntry)
+                              }
+                              style={{
+                                padding: "8px 10px",
+                                borderRadius: 7,
+                                border: "1px solid #d8d2c5",
+                                background: "#ffffff",
+                                color: "#004535",
+                                fontSize: 12,
+                              }}
+                            >
+                              <option value="ta">Tamil</option>
+                              <option value="en">English</option>
+                            </select>
+                          </label>
+                          {/* START / STOP RECORDING */}
+
+                          <button
+                            type="button"
+                            onClick={
+                              recording
+                                ? stopRecording
+                                : startRecording
+                            }
+                            disabled={
+                              analyzingVoice ||
+                              saving ||
+                              Boolean(
+                                pendingVoiceEntry
+                              )
+                            }
+                            className={
+                              recording
+                                ? "ade2-tab-active"
+                                : ""
+                            }
+                          >
+                            {recording ? (
+                              <Square
+                                size={16}
+                              />
+                            ) : (
+                              <Mic
+                                size={17}
+                              />
+                            )}
+
+                            {recording
+                              ? "Stop Recording"
+                              : "Record Voice"}
+                          </button>
+
+                          {/* UPLOAD AUDIO */}
+
+                          <label
+                            style={{
+                              display:
+                                "inline-flex",
+
+                              gap: 6,
+
+                              alignItems:
+                                "center",
+
+                              cursor:
+                                recording ||
+                                  analyzingVoice ||
+                                  saving ||
+                                  pendingVoiceEntry
+                                  ? "not-allowed"
+                                  : "pointer",
+
+                              fontSize:
+                                12,
+                            }}
+                          >
+                            <Upload
+                              size={15}
+                            />
+
+                            Upload Audio
+
+                            <input
+                              type="file"
+                              accept=".wav,.mp3,.m4a,.mp4,.webm,.ogg,.flac,audio/*"
+                              disabled={
+                                recording ||
+                                analyzingVoice ||
+                                saving ||
+                                Boolean(
+                                  pendingVoiceEntry
+                                )
+                              }
+                              style={{
+                                maxWidth:
+                                  165,
+
+                                fontSize:
+                                  11,
+                              }}
+                              onChange={(event) => {
+                                acceptAudioFile(
+                                  event.target.files?.[0]
+                                );
+
+                                event.target.value =
+                                  "";
+                              }}
+                            />
+                          </label>
                         </div>
-                      )}
+
+                        {/* RECORDING STATUS */}
+
+                        {recording && (
+                          <p className="ade2-recording">
+                            <span className="ade2-rec-dot" />
+
+                            {liveSpeechState ===
+                              "listening"
+                              ? `Recording... ${voiceLanguage === "en" ? "English" : "Tamil"
+                              } text appears below as you speak.`
+                              : "Recording audio... Live voice typing may be unavailable."}
+                          </p>
+                        )}
+
+                        {/* AUDIO PLAYER */}
+
+                        {audioUrl && (
+                          <div
+                            style={{
+                              marginTop:
+                                12,
+                            }}
+                          >
+                            <audio
+                              src={
+                                audioUrl
+                              }
+                              controls
+                              style={{
+                                width:
+                                  "100%",
+                              }}
+                            />
+
+                            {/* WHISPER FALLBACK */}
+
+                            {(liveSpeechState ===
+                              "fallback" ||
+                              !originalTranscript.trim()) && (
+                                <button
+                                  type="button"
+                                  onClick={
+                                    convertVoiceToText
+                                  }
+                                  disabled={
+                                    recording ||
+                                    analyzingVoice ||
+                                    saving ||
+                                    Boolean(
+                                      pendingVoiceEntry
+                                    )
+                                  }
+                                  style={{
+                                    marginTop:
+                                      8,
+
+                                    display:
+                                      "inline-flex",
+
+                                    alignItems:
+                                      "center",
+
+                                    gap:
+                                      6,
+                                  }}
+                                >
+                                  <Mic
+                                    size={16}
+                                  />
+
+                                  {voiceProcessingStep ===
+                                    "transcribing"
+                                    ? "Converting with Whisper..."
+                                    : "Convert with Whisper (Fallback)"}
+                                </button>
+                              )}
+                          </div>
+                        )}
+
+                        {/* PROCESSING MESSAGE */}
+
+                        {analyzingVoice && (
+                          <small
+                            style={{
+                              display:
+                                "block",
+
+                              marginTop:
+                                8,
+                            }}
+                          >
+                            {voiceProcessingStep ===
+                              "transcribing"
+                              ? "Whisper fallback is converting your saved audio on the CPU."
+                              : "Qwen is analysing the edited text on your CPU."}
+                          </small>
+                        )}
+
+                        <small
+                          style={{
+                            display:
+                              "block",
+
+                            color:
+                              "#667085",
+
+                            marginTop:
+                              10,
+                          }}
+                        >
+                          Live voice typing uses
+                          the browser recognition
+                          service, which may process
+                          speech online. Original audio
+                          is uploaded privately to
+                          FastAPI only when you save.
+                        </small>
+                      </div>
+
+                      {/* EDITABLE TRANSCRIPT */}
 
                       <div className="ade2-transcript">
                         <strong>
-                          {draft.input_method === "voice"
-                            ? "Original Voice Transcript (preserved)"
+                          {draft.input_method ===
+                            "voice"
+                            ? "Voice Transcript (editable copy)"
                             : "Court Proceedings"}
                         </strong>
 
                         <textarea
                           aria-label="Court proceedings"
-                          placeholder="Write what happened in court or record a voice note..."
-                          value={draft.step_notes}
-                          onChange={(e) => {
-                            setField(
-                              "step_notes",
-                              e.target.value
-                            );
-
-                            setTaskTitle("");
-                            setTaskStatus("pending");
-                          }}
+                          placeholder="Write what happened in court, or record a voice note..."
+                          value={
+                            draft.step_notes
+                          }
+                          disabled={
+                            recording ||
+                            analyzingVoice ||
+                            saving ||
+                            Boolean(
+                              pendingVoiceEntry
+                            )
+                          }
+                          onChange={(event) =>
+                            editProceedings(
+                              event.target.value
+                            )
+                          }
                         />
+
+                        {/* ANALYSE TEXT WITH AI */}
+                        {/* AI OUTPUT LANGUAGE */}
+
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            marginTop: 12,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <label
+                            htmlFor="ai-output-language"
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 500,
+                              color: "#344054",
+                            }}
+                          >
+                            AI Notes Language
+                          </label>
+
+                          <select
+                            id="ai-output-language"
+                            value={aiLanguage}
+                            disabled={
+                              recording ||
+                              analyzingVoice ||
+                              saving ||
+                              Boolean(pendingVoiceEntry)
+                            }
+                            onChange={(event) => {
+                              setAiLanguage(event.target.value);
+                              setAiAnalysis(null);
+
+                              setTasks((old) =>
+                                old.filter((task) =>
+                                  task.id.startsWith("manual-")
+                                )
+                              );
+                            }}
+                            style={{
+                              padding: "8px 12px",
+                              borderRadius: 7,
+                              border: "1px solid #d8d2c5",
+                              background: "#fff",
+                              color: "#004535",
+                              fontSize: 12,
+                            }}
+                          >
+                            <option value="ta">Tamil</option>
+                            <option value="en">English</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={
+                            analyzeText
+                          }
+                          disabled={
+                            recording ||
+                            analyzingVoice ||
+                            saving ||
+                            !draft.step_notes.trim() ||
+                            Boolean(
+                              pendingVoiceEntry
+                            )
+                          }
+                          style={{
+                            marginTop:
+                              10,
+
+                            display:
+                              "inline-flex",
+
+                            alignItems:
+                              "center",
+
+                            gap:
+                              6,
+                          }}
+                        >
+                          <Sparkles
+                            size={16}
+                          />
+
+                          {voiceProcessingStep ===
+                            "analyzing"
+                            ? "Analysing Text..."
+                            : "Analyse Text with AI"}
+                        </button>
+
+                        {/* EDITED TEXT MESSAGE */}
+
+                        {originalTranscript &&
+                          draft.step_notes !==
+                          originalTranscript && (
+                            <small
+                              style={{
+                                display:
+                                  "block",
+
+                                marginTop:
+                                  8,
+                              }}
+                            >
+                              Transcript edited.
+                              Click Analyse Text
+                              with AI to refresh
+                              notes and tasks.
+                            </small>
+                          )}
                       </div>
 
-                      {/* POINT-WISE PREVIEW */}
+                      {/* AI LEGAL NOTES */}
 
-                      {draft.step_notes.trim() && (
+                      {aiAnalysis && (
                         <div className="ade2-point-preview">
                           <button
                             type="button"
                             onClick={() =>
-                              setShowPoints((x) => !x)
+                              setShowPoints(
+                                (old) =>
+                                  !old
+                              )
                             }
                           >
-                            <Sparkles size={16} />
-                            Optional Point-wise Format
-                            <ChevronDown size={15} />
+                            <Sparkles
+                              size={16}
+                            />
+
+                            AI Analysed
+                            Legal Notes
+
+                            <ChevronDown
+                              size={15}
+                            />
                           </button>
 
                           {showPoints && (
-                            <pre>
-                              {toPoints(draft.step_notes)}
-                            </pre>
-                          )}
+                            <div
+                              style={{
+                                marginTop:
+                                  12,
+                              }}
+                            >
+                              {aiAnalysis.notes.length ? (
+                                <StructuredLegalNotes
+                                  notes={
+                                    aiAnalysis.notes
+                                  }
+                                />
+                              ) : (
+                                <p>
+                                  No important
+                                  notes were
+                                  extracted.
+                                  Review the
+                                  transcript.
+                                </p>
+                              )}
 
-                          <small>
-                            Original note is preserved.
-                            Points are basic formatting,
-                            not verified AI.
-                          </small>
+                              {/* HIGHLIGHTS */}
+
+                              {!!aiAnalysis
+                                .criticalHighlights
+                                .length && (
+                                  <div
+                                    style={{
+                                      marginTop:
+                                        14,
+                                    }}
+                                  >
+                                    <strong>
+                                      Critical Highlights
+                                    </strong>
+
+                                    {aiAnalysis.criticalHighlights.map(
+                                      (
+                                        highlight,
+                                        index
+                                      ) => (
+                                        <p
+                                          key={
+                                            index
+                                          }
+                                          style={{
+                                            margin:
+                                              "7px 0",
+                                          }}
+                                        >
+                                          •{" "}
+                                          {
+                                            highlight
+                                          }
+                                        </p>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+
+                              {/* INCOMPLETE AI WARNING */}
+
+                              {aiAnalysis.analysisIncomplete && (
+                                <small
+                                  style={{
+                                    display:
+                                      "block",
+
+                                    marginTop:
+                                      9,
+                                  }}
+                                >
+                                  Some details
+                                  could not be
+                                  fully verified
+                                  by AI. Review
+                                  the original text.
+                                </small>
+                              )}
+
+                              <small>
+                                AI notes are
+                                a review preview.
+                                Check facts and dates
+                                against the original
+                                transcript.
+                              </small>
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>
@@ -1257,13 +3331,15 @@ export default function AddDiaryEntry() {
                     <td>
                       <input
                         className="ade2-control"
-                        aria-label="Next hearing date"
                         type="date"
-                        value={draft.next_date}
-                        onChange={(e) =>
+                        aria-label="Next hearing date"
+                        value={
+                          draft.next_date
+                        }
+                        onChange={(event) =>
                           setField(
                             "next_date",
-                            e.target.value
+                            event.target.value
                           )
                         }
                       />
@@ -1271,14 +3347,24 @@ export default function AddDiaryEntry() {
                       <label
                         htmlFor="next-hearing-purpose"
                         style={{
-                          display: "block",
-                          marginTop: "14px",
-                          marginBottom: "7px",
-                          fontSize: "13px",
-                          fontWeight: 600,
+                          display:
+                            "block",
+
+                          marginTop:
+                            14,
+
+                          marginBottom:
+                            7,
+
+                          fontSize:
+                            13,
+
+                          fontWeight:
+                            600,
                         }}
                       >
-                        Next Hearing Purpose (Optional)
+                        Next Hearing
+                        Purpose (Optional)
                       </label>
 
                       <input
@@ -1287,11 +3373,13 @@ export default function AddDiaryEntry() {
                         type="text"
                         maxLength={255}
                         placeholder="e.g. Witness"
-                        value={draft.next_hearing_purpose}
-                        onChange={(e) =>
+                        value={
+                          draft.next_hearing_purpose
+                        }
+                        onChange={(event) =>
                           setField(
                             "next_hearing_purpose",
-                            e.target.value
+                            event.target.value
                           )
                         }
                       />
@@ -1302,7 +3390,7 @@ export default function AddDiaryEntry() {
             </div>
           </section>
 
-          {/* SUGGESTED TASKS */}
+          {/* AI SUGGESTED TASKS */}
 
           <section
             className="ade2-tasks"
@@ -1310,159 +3398,280 @@ export default function AddDiaryEntry() {
           >
             <div className="ade2-tasks-heading">
               <h2>
-                <Sparkles size={21} />
+                <Sparkles
+                  size={21}
+                />
+
                 AI Suggested Tasks
+
                 <span>
-                  (based on today's entry)
+                  (review before saving)
                 </span>
               </h2>
 
               <small>
-                Rule-based preview until AI service
-                is connected
+                Only tasks explicitly
+                mentioned in the
+                transcript should be
+                considered. Verify all
+                suggestions.
               </small>
             </div>
 
             <button
               type="button"
               className="ade2-manual-task-button"
-              onClick={() => {
-                setManualTask(
-                  (current) => !current
-                );
-                setTaskTitle("");
-                setTaskDue("");
-                setTaskPriority("Medium");
-                setTaskStatus("pending");
-                setEditTask(false);
-              }}
+              onClick={
+                addManualTask
+              }
+              disabled={
+                saving ||
+                analyzingVoice ||
+                Boolean(
+                  pendingVoiceEntry
+                )
+              }
             >
-              <Plus size={15} />
-              {manualTask
-                ? "Cancel Manual Task"
-                : "Add Task Manually"}
+              <Plus
+                size={15}
+              />
+
+              Add Task Manually
             </button>
 
-            {rawSuggestedTask || manualTask ? (
+            {tasks.length ? (
               <div className="ade2-task-scroll">
                 <table>
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>Suggested Task</th>
-                      <th>Due Date</th>
-                      <th>Priority</th>
-                      <th>Action</th>
+
+                      <th>
+                        Suggested Task
+                      </th>
+
+                      <th>
+                        Due Date
+                      </th>
+
+                      <th>
+                        Priority
+                      </th>
+
+                      <th>
+                        Action
+                      </th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    <tr>
-                      <td>1</td>
-
-                      <td>
-                        {editTask || manualTask ? (
-                          <input
-                            aria-label="Edit task title"
-                            value={suggestedTitle}
-                            onChange={(e) =>
-                              setTaskTitle(
-                                e.target.value
-                              )
-                            }
-                          />
-                        ) : (
-                          <strong>
-                            {suggestedTitle}
-                          </strong>
-                        )}
-                      </td>
-
-                      <td>
-                        <input
-                          aria-label="Suggested task due date"
-                          type="date"
-                          value={taskDue}
-                          onChange={(e) =>
-                            setTaskDue(
-                              e.target.value
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td>
-                        <select
-                          aria-label="Task priority"
-                          value={taskPriority}
-                          onChange={(e) =>
-                            setTaskPriority(
-                              e.target.value
-                            )
+                    {tasks.map(
+                      (
+                        task,
+                        index
+                      ) => (
+                        <tr
+                          key={
+                            task.id
                           }
                         >
-                          <option>Low</option>
-                          <option>Medium</option>
-                          <option>High</option>
-                        </select>
-                      </td>
+                          <td>
+                            {index + 1}
+                          </td>
 
-                      <td>
-                        <div className="ade2-task-actions">
-                          <button
-                            type="button"
-                            className={
-                              taskStatus === "approved"
-                                ? "ade2-approved"
-                                : "ade2-approve"
-                            }
-                            onClick={() => {
-                              setTaskStatus("approved");
-                              setEditTask(false);
-                            }}
-                          >
-                            <Check size={14} />
-                            {taskStatus === "approved"
-                              ? "Approved"
-                              : "Approve"}
-                          </button>
+                          <td>
+                            {task.editing ? (
+                              <input
+                                aria-label={`Edit task ${index + 1}`}
+                                value={
+                                  task.title
+                                }
+                                onChange={(event) =>
+                                  updateTask(
+                                    task.id,
+                                    {
+                                      title:
+                                        event.target.value,
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setEditTask((x) => !x)
-                            }
-                          >
-                            Edit
-                          </button>
+                                      status:
+                                        "pending",
+                                    }
+                                  )
+                                }
+                              />
+                            ) : (
+                              <strong>
+                                {
+                                  task.title
+                                }
+                              </strong>
+                            )}
 
-                          <button
-                            type="button"
-                            className={
-                              taskStatus === "rejected"
-                                ? "ade2-rejected"
-                                : "ade2-reject"
-                            }
-                            onClick={() =>
-                              setTaskStatus("rejected")
-                            }
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                            {task.status ===
+                              "rejected" && (
+                                <small>
+                                  {" "}
+                                  Rejected
+                                </small>
+                              )}
+                          </td>
+
+                          <td>
+                            <input
+                              aria-label={`Task ${index + 1} due date`}
+                              type="date"
+                              value={
+                                task.deadline
+                              }
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  {
+                                    deadline:
+                                      event.target.value,
+
+                                    status:
+                                      "pending",
+                                  }
+                                )
+                              }
+                            />
+                          </td>
+
+                          <td>
+                            <select
+                              aria-label={`Task ${index + 1} priority`}
+                              value={
+                                task.priority
+                              }
+                              onChange={(event) =>
+                                updateTask(
+                                  task.id,
+                                  {
+                                    priority:
+                                      event.target.value,
+
+                                    status:
+                                      "pending",
+                                  }
+                                )
+                              }
+                            >
+                              <option>
+                                Low
+                              </option>
+
+                              <option>
+                                Medium
+                              </option>
+
+                              <option>
+                                High
+                              </option>
+                            </select>
+                          </td>
+
+                          <td>
+                            <div className="ade2-task-actions">
+                              <button
+                                type="button"
+                                className={
+                                  task.status ===
+                                    "approved"
+                                    ? "ade2-approved"
+                                    : "ade2-approve"
+                                }
+                                onClick={() =>
+                                  approveTask(
+                                    task.id
+                                  )
+                                }
+                              >
+                                <Check
+                                  size={14}
+                                />
+
+                                {task.status ===
+                                  "approved"
+                                  ? "Approved"
+                                  : "Approve"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateTask(
+                                    task.id,
+                                    {
+                                      editing:
+                                        !task.editing,
+                                    }
+                                  )
+                                }
+                              >
+                                {task.editing
+                                  ? "Done"
+                                  : "Edit"}
+                              </button>
+
+                              <button
+                                type="button"
+                                className={
+                                  task.status ===
+                                    "rejected"
+                                    ? "ade2-rejected"
+                                    : "ade2-reject"
+                                }
+                                onClick={() =>
+                                  updateTask(
+                                    task.id,
+                                    {
+                                      status:
+                                        "rejected",
+
+                                      editing:
+                                        false,
+                                    }
+                                  )
+                                }
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
             ) : (
               <p className="ade2-task-empty">
-                Write or record a Step to check for
-                suggested actions. No task is created
-                without your approval.
+                No suggested tasks yet.
+                Analyse text with AI,
+                or add a task manually.
+                No task is saved without
+                approval.
               </p>
             )}
+
+            <small
+              style={{
+                display:
+                  "block",
+
+                marginTop:
+                  9,
+              }}
+            >
+              Current Diary API supports
+              one approved task per entry.
+              Approving another task
+              replaces the previous selection.
+            </small>
           </section>
+
+          {/* ERROR */}
 
           {error && (
             <p
@@ -1478,45 +3687,72 @@ export default function AddDiaryEntry() {
 
         <aside className="ade2-right">
           <MonthCalendar
-            date={entryDate}
-            onPick={changeDate}
+            date={
+              entryDate
+            }
+            onPick={
+              changeDate
+            }
           />
 
           <section className="ade2-panel ade2-sync">
-            <h2>Automatic Sync</h2>
+            <h2>
+              Automatic Sync
+            </h2>
 
             <p>
-              <Check size={17} />
-              Hearing date saved when provided
+              <Check
+                size={17}
+              />
+
+              Hearing date saved
+              when provided
             </p>
 
             <p>
-              <Check size={17} />
-              Calendar can use linked hearing
+              <Check
+                size={17}
+              />
+
+              Calendar can use
+              linked hearing
             </p>
 
             <p>
-              <Check size={17} />
-              Bell reminder record linked
+              <Check
+                size={17}
+              />
+
+              Bell reminder record
+              linked
             </p>
 
             <small>
-              {dateCount} entry/entries already
+              {dateCount}
+              {" "}
+              entry/entries already
               saved on this date.
             </small>
           </section>
 
+          {/* SAVE DIARY */}
+
           <button
             type="button"
             className="ade2-save"
-            onClick={handleSave}
+            onClick={
+              handleSave
+            }
             disabled={
               saving ||
               recording ||
+              analyzingVoice ||
               listLoading
             }
           >
-            <BookOpen size={20} />
+            <BookOpen
+              size={20}
+            />
 
             {saving
               ? "Saving..."
@@ -1526,15 +3762,19 @@ export default function AddDiaryEntry() {
           <button
             type="button"
             className="ade2-cancel"
-            onClick={back}
+            onClick={
+              back
+            }
           >
             Cancel
           </button>
 
           <p className="ade2-private">
-            Original court proceedings remain preserved.
-            Browser voice recognition may send audio
-            to its speech provider.
+            Original voice recordings
+            are stored privately when
+            the diary is saved. Review
+            transcripts and AI suggestions
+            before saving.
           </p>
         </aside>
       </main>
@@ -1550,27 +3790,46 @@ export default function AddDiaryEntry() {
             aria-labelledby="ade2-success-title"
           >
             <div className="ade2-success-mark">
-              <Check size={30} />
+              <Check
+                size={30}
+              />
             </div>
 
             <h2 id="ade2-success-title">
-              Diary Entry Saved Successfully!
+              Diary Entry Saved
+              Successfully!
             </h2>
 
             <p>
-              {success.case_number} — {entryDate}
+              {success.case_number}
+              {" — "}
+              {entryDate}
             </p>
 
             <div className="ade2-result-grid">
               <div>
-                <BookOpen size={22} />
-                <strong>Legal Diary</strong>
-                <small>Entry saved</small>
+                <BookOpen
+                  size={22}
+                />
+
+                <strong>
+                  Legal Diary
+                </strong>
+
+                <small>
+                  Entry saved
+                </small>
               </div>
 
               <div>
-                <Gavel size={22} />
-                <strong>Hearings</strong>
+                <Gavel
+                  size={22}
+                />
+
+                <strong>
+                  Hearings
+                </strong>
+
                 <small>
                   {success.hearing_added
                     ? "Hearing linked"
@@ -1579,8 +3838,14 @@ export default function AddDiaryEntry() {
               </div>
 
               <div>
-                <CalendarDays size={22} />
-                <strong>Calendar</strong>
+                <CalendarDays
+                  size={22}
+                />
+
+                <strong>
+                  Calendar
+                </strong>
+
                 <small>
                   {success.hearing_added
                     ? "Date available"
@@ -1589,8 +3854,14 @@ export default function AddDiaryEntry() {
               </div>
 
               <div>
-                <Bell size={22} />
-                <strong>Reminders</strong>
+                <Bell
+                  size={22}
+                />
+
+                <strong>
+                  Reminders
+                </strong>
+
                 <small>
                   {success.hearing_added
                     ? "Bell reminder saved"
@@ -1600,13 +3871,17 @@ export default function AddDiaryEntry() {
             </div>
 
             {success.task_added && (
-              <p>Approved task saved.</p>
+              <p>
+                Approved task saved.
+              </p>
             )}
 
             <button
               type="button"
               className="ade2-save"
-              onClick={back}
+              onClick={
+                back
+              }
             >
               View Selected Date's Diary
             </button>
@@ -1614,7 +3889,9 @@ export default function AddDiaryEntry() {
             <button
               type="button"
               className="ade2-cancel"
-              onClick={resetEntry}
+              onClick={
+                resetEntry
+              }
             >
               Add Another Entry
             </button>

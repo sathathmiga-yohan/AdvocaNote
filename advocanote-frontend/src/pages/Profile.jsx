@@ -1550,23 +1550,6 @@ export default function Profile() {
                       </button>
                     </div>
 
-                    <div className="anp-v2-feature-row">
-                      <div>
-                        <strong>
-                          Personal Data
-                        </strong>
-
-                        <p>
-                          Your name, contact
-                          details and practice
-                          information are
-                          connected to your
-                          authenticated account.
-                        </p>
-                      </div>
-
-                      <ShieldCheck size={21} />
-                    </div>
 
                     <div className="anp-v2-feature-row anp-v2-delete-row">
                       <div>

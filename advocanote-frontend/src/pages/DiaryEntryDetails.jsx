@@ -7,9 +7,9 @@ import {
     UserRound, X,
 } from "lucide-react";
 import {
-  useLawyerLayout,
-  LawyerTopbarPortal,
-  LawyerTopbarAvatar,
+    useLawyerLayout,
+    LawyerTopbarPortal,
+    LawyerTopbarAvatar,
 } from "../components/LawyerLayout";
 
 import { logoutUser } from "../services/auth";
@@ -20,7 +20,7 @@ import {
     getDiaryOverview,
     updateDiaryEntry,
 } from "../services/diary";
-
+import DiaryVoiceDetails from "../components/DiaryVoiceDetails";
 import "./DiaryEntryDetails.css";
 
 const todayISO = () => {
@@ -365,7 +365,85 @@ export default function DiaryEntryDetails() {
                 </div>
 
                 <div className="ald-topbar-actions">
-                        <NotificationBell />
+
+                    <div className="ald-dropdown-holder">
+                        <button
+                            type="button"
+                            aria-label="Notifications"
+                            aria-expanded={bellOpen}
+                            onClick={() => {
+                                setBellOpen(!bellOpen);
+                                setProfileOpen(false);
+                            }}
+                            style={{
+                                position: "relative",
+                                border: "none",
+                                background: "transparent",
+                                cursor: "pointer",
+                                padding: 10,
+                                color: "inherit",
+                            }}
+                        >
+                            <Bell size={21} />
+
+                            {notifications.length > 0 && (
+                                <span
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        right: 0,
+                                        background: "#ac8d4f",
+                                        color: "#fff",
+                                        borderRadius: 12,
+                                        padding: "1px 5px",
+                                        fontSize: 10,
+                                    }}
+                                >
+                                    {notifications.length > 9
+                                        ? "9+"
+                                        : notifications.length}
+                                </span>
+                            )}
+                        </button>
+
+                        {bellOpen && (
+                            <div
+                                className="ald-top-popover"
+                                style={{
+                                    width: 280,
+                                    padding: 14,
+                                    maxHeight: 300,
+                                    overflowY: "auto",
+                                }}
+                            >
+                                <strong>Notifications</strong>
+
+                                {notifications.length === 0 ? (
+                                    <p>No notifications.</p>
+                                ) : (
+                                    notifications.map((item, index) => (
+                                        <p
+                                            key={item?.id ?? index}
+                                            style={{
+                                                fontSize: 13,
+                                                margin: "10px 0",
+                                            }}
+                                        >
+                                            {typeof item === "string"
+                                                ? item
+                                                : String(
+                                                    item?.message ||
+                                                    item?.title ||
+                                                    item?.text ||
+                                                    "Reminder"
+                                                )}
+                                        </p>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </div>
+
 
                     <div className="ald-topbar-divider" />
 
@@ -550,7 +628,14 @@ export default function DiaryEntryDetails() {
                                     </button>
                                 </div>
                             </section>
+
+                            {/* SAVED VOICE + AI DETAILS */}
+                            <DiaryVoiceDetails
+                                entryId={entry.id}
+                            />
                         </div>
+
+                        {/* RIGHT SIDE - REAL CASE HISTORY */}
 
                         {/* RIGHT SIDE - REAL CASE HISTORY */}
                         <aside

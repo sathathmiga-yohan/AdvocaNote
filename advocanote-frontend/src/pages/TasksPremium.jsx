@@ -316,66 +316,55 @@ export default function TasksPremium() {
     const [menuId, setMenuId] = useState(null);
     const [profileOpen, setProfileOpen] = useState(false);
 
+
     const loadTasks = useCallback(async () => {
         setLoading(true);
         setError("");
 
         try {
-            const casesResponse = await getLawyerCases();
-            const caseList = normalizeArray(casesResponse, "cases");
+            const casesResponse =
+                await getLawyerCases();
+
+            const caseList = normalizeArray(
+                casesResponse,
+                "cases"
+            );
 
             setCases(caseList);
 
-            let loadedTasks = [];
-
-            try {
-                const response = await apiRequest("/tasks");
-                if (
-                    !Array.isArray(response) &&
-                    !Array.isArray(response?.tasks) &&
-                    !Array.isArray(response?.items)
-                ) {
-                    throw new Error("Unexpected tasks response format.");
-                }
-                loadedTasks = normalizeArray(response, "tasks");
-
-            } catch (err) {
-                // Subscription/access errors should not use the fallback.
-                if (err.status !== 404) {
-                    throw err;
-                }
-
-                // Fallback for backends that expose tasks per case.
-                // Fallback for backends that expose tasks per case.
-                const results = await Promise.allSettled(
-                    caseList.map((item) =>
-                        apiRequest(`/tasks/case/${item.id}`)
+            // Get all tasks from every lawyer case.
+            const results = await Promise.allSettled(
+                caseList.map((item) =>
+                    apiRequest(
+                        `/diary/case/${encodeURIComponent(item.id)}/tasks`
                     )
-                );
+                )
+            );
 
-                if (
-                    caseList.length > 0 &&
-                    results.every((result) => result.status === "rejected")
-                ) {
-                    throw new Error(
-                        "Could not load tasks. Please check the FastAPI tasks routes."
-                    );
-                }
-
-                loadedTasks = results.flatMap((result) =>
+            const loadedTasks = results.flatMap(
+                (result) =>
                     result.status === "fulfilled"
                         ? normalizeArray(result.value, "tasks")
                         : []
-                );
-
-                if (results.some((result) => result.status === "rejected")) {
-                    setError("Some case tasks could not be loaded.");
-                }
-            }
+            );
 
             setTasks(loadedTasks);
+
+            const failures = results.filter(
+                (result) => result.status === "rejected"
+            );
+
+            if (failures.length > 0) {
+                setError(
+                    `Could not load tasks for ${failures.length} case(s). ` +
+                    (failures[0].reason?.message || "")
+                );
+            }
         } catch (err) {
-            setError(err.message || "Could not load tasks.");
+            setTasks([]);
+            setError(
+                err.message || "Could not load tasks."
+            );
         } finally {
             setLoading(false);
         }
@@ -665,7 +654,7 @@ export default function TasksPremium() {
 
                 <div className="ald-topbar-actions">
 
-                   
+
 
                     <div className="ald-dropdown-holder">
                         <button

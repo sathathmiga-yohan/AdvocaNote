@@ -381,17 +381,44 @@ def create_entry(
 
                 hearing_added = True
 
-        # Create task only with lawyer approval.
+        # =====================================
+        # SAVE ALL APPROVED TASKS
+        # AI SUGGESTED + MANUAL TASKS
+        # =====================================
+
+        approved_items = (
+            data.approved_tasks
+            if data.approved_tasks
+            else (
+                [data.approved_task]
+                if data.approved_task
+                else []
+            )
+        )
 
         task_added = False
+        task_count = 0
+        seen_tasks = set()
 
-        if data.approved_task:
+        for approved in approved_items:
+            title = approved.title.strip()
+
+            unique_key = (
+                title.casefold(),
+                approved.deadline,
+            )
+
+            if unique_key in seen_tasks:
+                continue
+
+            seen_tasks.add(unique_key)
+
             task = Task(
                 lawyer_id=user.id,
                 case_id=case.id,
                 diary_entry_id=entry.id,
-                title=data.approved_task.title.strip(),
-                deadline=data.approved_task.deadline,
+                title=title,
+                deadline=approved.deadline,
             )
 
             db.add(task)
@@ -401,9 +428,7 @@ def create_entry(
                 AISuggestion(
                     diary_entry_id=entry.id,
                     suggestion_type="Task",
-                    suggested_value=(
-                        data.approved_task.title.strip()
-                    ),
+                    suggested_value=title,
                     status="Approved",
                 )
             )
@@ -416,14 +441,16 @@ def create_entry(
                         reminder_type="Task",
                         title=f"Task due: {task.title}",
                         reminder_date=max(
-                            task.deadline
-                            - timedelta(days=1),
+                            task.deadline - timedelta(days=1),
                             data.entry_date,
                         ),
                     )
                 )
 
-            task_added = True
+            task_count += 1
+
+        task_added = task_count > 0
+
 
         db.commit()
 
@@ -434,6 +461,7 @@ def create_entry(
             "case_number": case_no,
             "hearing_added": hearing_added,
             "task_added": task_added,
+            "tasks_added": task_count,
         }
 
     except Exception:

@@ -30,3 +30,5 @@ htmlcov/
 # Temporary files
 *.tmp
 *.bak
+
+/private_voice_recordings/

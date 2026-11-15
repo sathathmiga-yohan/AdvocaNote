@@ -23,6 +23,8 @@ import {
 
 
 import "./CaseDetails.css";
+import DiaryVoiceDetails from "../components/DiaryVoiceDetails";
+import "./DiaryEntryDetails.css";
 import CaseTasks from "./CaseTasks";
 import { getHearings } from "../services/diary";
 
@@ -1921,6 +1923,14 @@ export default function CaseDetails({
               {entryNotes(viewEntry) ||
                 "No proceedings text"}
             </p>
+
+            {/* ORIGINAL AUDIO + TAMIL TRANSCRIPT + AI NOTES */}
+
+            <div style={{ marginTop: 20 }}>
+              <DiaryVoiceDetails
+                entryId={viewEntry.id}
+              />
+            </div>
           </section>
         </div>
       )}
@@ -1943,7 +1953,11 @@ export default function CaseDetails({
             className="cd-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="Edit Diary Entry"
+            aria-label="Diary entry details"
+            style={{
+              maxHeight: "85vh",
+              overflowY: "auto",
+            }}
           >
             <div className="cd-modal-head">
               <h2>Edit Diary Entry</h2>

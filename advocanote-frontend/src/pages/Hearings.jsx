@@ -567,8 +567,7 @@ export default function Hearings() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Search case number, client name, or hearing date..."
-            aria-label="Search hearings"
+placeholder="Search case number, case title, or hearing date..."            aria-label="Search hearings"
           />
         </div>
 
@@ -714,7 +713,6 @@ export default function Hearings() {
                       <th>Date</th>
                       <th>Case No</th>
                       <th>Case Title</th>
-                      <th>Client Name</th>
                       <th>Purpose / Notes</th>
                       <th>Status</th>
                       <th>Actions</th>
@@ -724,13 +722,13 @@ export default function Hearings() {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={8} className="hr-empty">
+                        <td colSpan={7} className="hr-empty">
                           Loading hearings...
                         </td>
                       </tr>
                     ) : paginatedHearings.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="hr-empty">
+                        <td colSpan={7} className="hr-empty">
                           {error
                             ? "Hearings could not be loaded."
                             : "No hearings found."}
@@ -771,8 +769,6 @@ export default function Hearings() {
                             <td>{hearing.case_number}</td>
 
                             <td>{hearing.case_title}</td>
-
-                            <td>{hearing.client_name || "—"}</td>
 
                             <td>{hearing.purpose || "—"}</td>
 
@@ -877,12 +873,6 @@ export default function Hearings() {
                             </dd>
                           </div>
 
-                          <div>
-                            <dt>Client Name</dt>
-                            <dd>
-                              {hearing.client_name || "—"}
-                            </dd>
-                          </div>
 
                           <div>
                             <dt>Purpose / Notes</dt>

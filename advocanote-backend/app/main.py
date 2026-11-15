@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI, Depends
+from app.auth.security import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.auth import router as auth_router
 from app.routers.diary import router as diary_router
@@ -30,6 +31,14 @@ from app.routers.notifications import (
 from app.routers.admin_lawyers import (
     router as admin_lawyers_router,
 )
+
+from admin_notifications_api import create_notifications_router
+from app.routers import voice_ai
+
+from app.routers.voice_storage import (
+    router as voice_storage_router,
+)
+
 app = FastAPI(
     title="AdvocaNote API",
     description="AI Smart Legal Diary Backend",
@@ -59,7 +68,9 @@ app.include_router(otp_recovery_router)
 app.include_router(onboarding_router)
 
 # Lawyer features require completed onboarding
-
+app.include_router(
+    create_notifications_router(get_current_user)
+)
 
 app.include_router(
     diary_router,
@@ -125,6 +136,8 @@ app.include_router(
         Depends(require_onboarding_complete),
     ],
 )
+app.include_router(voice_ai.router)
+app.include_router(voice_storage_router)
 
 @app.get("/")
 def home():

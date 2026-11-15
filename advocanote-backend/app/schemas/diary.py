@@ -58,3 +58,7 @@ class DiaryEntryCreate(BaseModel):
 
     # Only sent after lawyer approves
     approved_task: ApprovedTask | None = None
+   
+    approved_tasks: list[ApprovedTask] = Field(
+        default_factory=list
+    )
