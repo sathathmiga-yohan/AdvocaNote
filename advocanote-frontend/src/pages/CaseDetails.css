@@ -2776,3 +2776,428 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ==========================================
+   ADVOCANOTE - COMPACT DIARY RECORD
+   NEW CLEAN PROFESSIONAL DESIGN
+========================================== */
+
+.cd-record-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+
+  background: rgba(14, 30, 25, 0.52);
+  backdrop-filter: blur(3px);
+}
+
+/* POPUP */
+
+.cd-record-dialog {
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  width: min(760px, 100%);
+  max-height: min(85dvh, 800px);
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e6e4de;
+  border-radius: 14px;
+
+  box-shadow:
+    0 24px 65px rgba(13, 30, 24, 0.22);
+}
+
+/* HEADER */
+
+.cd-record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+  padding: 19px 23px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #ecebe6;
+}
+
+.cd-record-header > div {
+  min-width: 0;
+}
+
+.cd-record-eyebrow {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #87938d;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+}
+
+.cd-record-header h2 {
+  margin: 0;
+
+  color: #003f31;
+
+  font: 600 23px/1.25
+    Georgia, "Times New Roman", serif;
+}
+
+/* CLOSE */
+
+.cd-record-close {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+
+  padding: 0;
+
+  color: #496057;
+  background: #f5f7f5;
+
+  border: 1px solid #e7ebe7;
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.cd-record-close:hover {
+  color: #003f31;
+  background: #eaf3ed;
+}
+
+/* SCROLLING CONTENT */
+
+.cd-record-scroll {
+  flex: 1;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: #ced8d1 transparent;
+}
+
+/* ==========================================
+   INFORMATION STRIP
+========================================== */
+
+.cd-record-info {
+  display: grid;
+  grid-template-columns:
+    1fr 1.35fr 1fr;
+
+  gap: 0;
+
+  padding: 17px 23px;
+  border-bottom: 1px solid #ecebe6;
+
+  background: #fbfcfa;
+}
+
+.cd-record-info > div {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  gap: 5px;
+
+  padding: 0 18px;
+
+  border-right: 1px solid #e6e9e4;
+}
+
+.cd-record-info > div:first-child {
+  padding-left: 0;
+}
+
+.cd-record-info > div:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.cd-record-info span {
+  color: #849088;
+  font-size: 11px;
+}
+
+.cd-record-info strong {
+  color: #183b2f;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.cd-record-info small {
+  color: #778a80;
+  font-size: 11px;
+}
+
+/* ==========================================
+   TABS - UNDERLINE DESIGN
+========================================== */
+
+.cd-record-tabs {
+  display: flex;
+  align-items: center;
+
+  gap: 23px;
+  padding: 0 23px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #e9eae6;
+}
+
+.cd-record-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 49px;
+  padding: 12px 3px 10px;
+
+  border: 0;
+  border-bottom: 2px solid transparent;
+
+  background: transparent;
+  color: #798980;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cd-record-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cd-record-tab:hover {
+  color: #00513e;
+}
+
+.cd-record-tab.active {
+  color: #004535;
+  border-bottom-color: #004535;
+}
+
+/* ==========================================
+   TAB CONTENT
+========================================== */
+
+.cd-record-content {
+  box-sizing: border-box;
+
+  min-width: 0;
+  padding: 22px 23px 25px;
+}
+
+/* PROCEEDINGS TITLE */
+
+.cd-record-section-title {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+  margin-bottom: 13px;
+
+  color: #004535;
+}
+
+.cd-record-section-title h3 {
+  margin: 0;
+
+  font: 600 18px/1.3
+    Georgia, "Times New Roman", serif;
+}
+
+/* PROCEEDINGS TEXT */
+
+.cd-record-proceedings {
+  padding: 18px 19px;
+
+  background: #fcfbf8;
+
+  border: 1px solid #eee8db;
+  border-left: 3px solid #c5a46b;
+  border-radius: 9px;
+
+  color: #334b5d;
+
+  font-size: 13px;
+  line-height: 1.85;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   VOICE AND AI TAB
+========================================== */
+
+.cd-record-voice {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cd-record-voice > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* HEADINGS INSIDE VOICE COMPONENT */
+
+.cd-record-voice h2,
+.cd-record-voice h3,
+.cd-record-voice h4 {
+  color: #004535;
+  line-height: 1.35;
+}
+
+/* AUDIO PLAYER */
+
+.cd-record-voice audio {
+  display: block;
+
+  width: 100%;
+  max-width: 100%;
+
+  margin: 10px 0;
+}
+
+/* TRANSCRIPT TEXT */
+
+.cd-record-voice p,
+.cd-record-voice pre {
+  max-width: 100%;
+
+  font-size: 12px;
+  line-height: 1.75;
+
+  overflow-wrap: anywhere;
+}
+
+.cd-record-voice pre {
+  white-space: pre-wrap;
+}
+
+/* NESTED DETAILS */
+
+.cd-record-voice details {
+  max-width: 100%;
+}
+
+.cd-record-voice summary {
+  cursor: pointer;
+}
+
+/* FOCUS */
+
+.cd-record-dialog button:focus-visible {
+  outline: 2px solid #b89960;
+  outline-offset: 3px;
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+  .cd-record-overlay {
+    padding: 8px;
+  }
+
+  .cd-record-dialog {
+    width: 100%;
+    max-height: 94dvh;
+
+    border-radius: 12px;
+  }
+
+  .cd-record-header {
+    padding: 15px;
+  }
+
+  .cd-record-header h2 {
+    font-size: 20px;
+  }
+
+  .cd-record-eyebrow {
+    font-size: 9px;
+  }
+
+  .cd-record-info {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 14px 0;
+    padding: 15px;
+  }
+
+  .cd-record-info > div {
+    padding: 0 10px;
+  }
+
+  .cd-record-info > div:first-child {
+    padding-left: 0;
+  }
+
+  .cd-record-info > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .cd-record-info > div:nth-child(3) {
+    grid-column: 1 / -1;
+
+    padding: 11px 0 0;
+    border-top: 1px solid #e6e9e4;
+    border-right: 0;
+  }
+
+  .cd-record-tabs {
+    gap: 20px;
+    padding: 0 15px;
+  }
+
+  .cd-record-tab {
+    font-size: 11px;
+    min-height: 45px;
+  }
+
+  .cd-record-content {
+    padding: 17px 15px 20px;
+  }
+
+  .cd-record-proceedings {
+    padding: 14px;
+
+    font-size: 12px;
+    line-height: 1.75;
+  }
+
+}

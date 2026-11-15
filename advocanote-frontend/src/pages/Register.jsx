@@ -619,6 +619,30 @@ export default function Register() {
             </button>
 
           </form>
+
+          {/* RESTORE OR START FRESH ACCOUNT */}
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 12,
+              marginBottom: 16,
+              fontSize: 13,
+              color: "#64716c",
+            }}
+          >
+            Previously closed your account?{" "}
+            <Link
+              to="/rejoin-account"
+              style={{
+                color: "#004535",
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              Restore or Start Fresh
+            </Link>
+          </p>
+
         </div>
       </section>
     </main>

@@ -146,7 +146,7 @@ export default function DiaryVoiceDetails({
         if (!controller.signal.aborted) {
           setError(
             reason.message ||
-              "Failed to load saved recording."
+            "Failed to load saved recording."
           );
         }
       } finally {
@@ -195,10 +195,31 @@ export default function DiaryVoiceDetails({
       className="ded-card"
       aria-label="Saved voice recording"
     >
-      <h2 className="ded-card-title">
-        <Headphones size={22} />
-        Original Voice Recording
-      </h2>
+
+      {/* PROFESSIONAL VOICE RECORDING HEADER */}
+
+      <div className="dvd-recording-head">
+
+        <div className="dvd-recording-icon">
+          <Headphones size={21} />
+        </div>
+
+        <div className="dvd-recording-info">
+
+          <h3>Original Voice Recording</h3>
+
+          <div className="dvd-recording-privacy">
+            <ShieldCheck size={14} />
+
+            <span>
+              Private recording · Authentication required
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
 
       {voice && (
         <>
@@ -209,15 +230,6 @@ export default function DiaryVoiceDetails({
               margin: "0 0 12px",
             }}
           >
-            <ShieldCheck
-              size={15}
-              style={{
-                verticalAlign: "middle",
-                marginRight: 5,
-              }}
-            />
-            Private recording — authentication
-            required for playback.
           </p>
 
           {/* ORIGINAL AUDIO PLAYER */}

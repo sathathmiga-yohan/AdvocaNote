@@ -20,24 +20,20 @@ from app.routers.lawyer_subscriptions import (
     router as lawyer_subscriptions_router,
 )
 from app.routers.stripe_webhooks import router as stripe_webhooks_router
-
 from app.auth.subscription_guard import require_feature
 from app.routers.subscription_billing import router as subscription_billing_router
-
 from app.routers.notifications import (
     router as notifications_router,
 )
-
 from app.routers.admin_lawyers import (
     router as admin_lawyers_router,
 )
-
 from admin_notifications_api import create_notifications_router
 from app.routers import voice_ai
-
 from app.routers.voice_storage import (
     router as voice_storage_router,
 )
+from app.routers import account
 
 app = FastAPI(
     title="AdvocaNote API",
@@ -138,7 +134,7 @@ app.include_router(
 )
 app.include_router(voice_ai.router)
 app.include_router(voice_storage_router)
-
+app.include_router(account.router)
 @app.get("/")
 def home():
     return {

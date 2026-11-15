@@ -53,13 +53,32 @@ function getInitials(value) {
     .toUpperCase();
 }
 
+
 function getStatus(lawyer) {
+  if (
+    lawyer.deletion_status === "pending_purge" &&
+    lawyer.is_active === false
+  ) {
+    return "closed";
+  }
+
   if (typeof lawyer.is_active !== "boolean") {
     return "unknown";
   }
 
   return lawyer.is_active ? "active" : "suspended";
 }
+
+function getStatusLabel(lawyer) {
+  const status = getStatus(lawyer);
+
+  if (status === "closed") return "Closed";
+  if (status === "active") return "Active";
+  if (status === "suspended") return "Suspended";
+
+  return "Unknown";
+}
+
 
 function getVerification(lawyer) {
   const verified =
@@ -145,18 +164,61 @@ export default function AdminLawyers() {
           );
         }
 
+
         if (!Array.isArray(data.lawyers)) {
           throw new Error("Invalid lawyers API response.");
         }
 
+        // LOAD CLOSED ACCOUNT RECORDS
+        const deletionResponse = await fetch(
+          `${API_URL}/account/admin/deletions`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+            signal: controller.signal,
+          }
+        );
+
+        const deletionData = await deletionResponse
+          .json()
+          .catch(() => ({}));
+
+        if (!deletionResponse.ok) {
+          throw new Error(
+            typeof deletionData.detail === "string"
+              ? deletionData.detail
+              : "Could not load closed accounts."
+          );
+        }
+
+        if (!Array.isArray(deletionData.deletions)) {
+          throw new Error("Invalid deletion records.");
+        }
+
+        const deletionMap = new Map(
+          deletionData.deletions.map((item) => [
+            String(item.user_id),
+            item.status,
+          ])
+        );
+
+        const mergedLawyers = data.lawyers.map((lawyer) => ({
+          ...lawyer,
+          deletion_status:
+            deletionMap.get(String(lawyer.id)) || null,
+        }));
+
         if (!controller.signal.aborted) {
           setOverview({
-            lawyers: data.lawyers,
+            lawyers: mergedLawyers,
             plans: Array.isArray(data.plans)
               ? data.plans
               : [],
           });
         }
+
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(
@@ -183,11 +245,11 @@ export default function AdminLawyers() {
   );
 
   const activeCount = lawyers.filter(
-    (lawyer) => lawyer.is_active === true
+    (lawyer) => getStatus(lawyer) === "active"
   ).length;
 
   const suspendedCount = lawyers.filter(
-    (lawyer) => lawyer.is_active === false
+    (lawyer) => getStatus(lawyer) === "suspended"
   ).length;
 
   const filteredLawyers = useMemo(() => {
@@ -212,10 +274,7 @@ export default function AdminLawyers() {
 
         const matchesStatus =
           statusFilter === "all" ||
-          (statusFilter === "active" &&
-            accountStatus === "active") ||
-          (statusFilter === "suspended" &&
-            accountStatus === "suspended") ||
+          statusFilter === accountStatus ||
           (statusFilter === "not_verified" &&
             verification === "Not Verified") ||
           (statusFilter === "verified" &&
@@ -326,6 +385,13 @@ export default function AdminLawyers() {
 
   async function updateAccountStatus() {
     if (!selectedLawyer || saving) return;
+
+    if (getStatus(selectedLawyer) === "closed") {
+      setActionError(
+        "Closed accounts cannot be reactivated."
+      );
+      return;
+    }
 
     if (
       typeof selectedLawyer.is_active !== "boolean"
@@ -567,6 +633,7 @@ export default function AdminLawyers() {
             <option value="all">All Accounts</option>
             <option value="active">Active Accounts</option>
             <option value="suspended">Suspended Accounts</option>
+            <option value="closed">Closed Accounts</option>
           </select>
 
         </div>
@@ -636,17 +703,21 @@ export default function AdminLawyers() {
                       </td>
 
                       <td>
+
                         <span
                           className={`alm-ref-badge ${accountStatus === "active"
                             ? "alm-ref-active"
                             : accountStatus === "suspended"
                               ? "alm-ref-suspended"
-                              : "alm-ref-unknown"
+                              : accountStatus === "closed"
+                                ? "alm-ref-closed"
+                                : "alm-ref-unknown"
                             }`}
                         >
                           <span className="alm-ref-dot" />
-                          {accountStatus}
+                          {getStatusLabel(lawyer)}
                         </span>
+
                       </td>
 
                       <td>
@@ -768,10 +839,10 @@ export default function AdminLawyers() {
               <section className="alx-identity">
                 <div
                   className={`alx-avatar ${getStatus(selectedLawyer) === "active"
-                      ? "active"
-                      : getStatus(selectedLawyer) === "suspended"
-                        ? "suspended"
-                        : "unknown"
+                    ? "active"
+                    : getStatus(selectedLawyer) === "suspended"
+                      ? "suspended"
+                      : "unknown"
                     }`}
                 >
                   {getInitials(selectedLawyer.full_name)}
@@ -792,10 +863,9 @@ export default function AdminLawyers() {
                 </div>
 
                 <span
-                  className={`alx-status ${getStatus(selectedLawyer)
-                    }`}
+                  className={`alx-status ${getStatus(selectedLawyer)}`}
                 >
-                  {getStatus(selectedLawyer)}
+                  {getStatusLabel(selectedLawyer)}
                 </span>
               </section>
 
@@ -997,31 +1067,33 @@ export default function AdminLawyers() {
                     </p>
                   )}
 
-                  <button
-                    type="button"
-                    className={`alx-action ${selectedLawyer.is_active
-                        ? "alx-suspend"
-                        : "alx-reactivate"
-                      }`}
-                    disabled={
-                      saving ||
-                      typeof selectedLawyer.is_active !==
-                      "boolean"
-                    }
-                    onClick={updateAccountStatus}
-                  >
-                    {selectedLawyer.is_active ? (
-                      <Ban size={16} />
-                    ) : (
-                      <CheckCircle2 size={16} />
-                    )}
+                  {getStatus(selectedLawyer) !== "closed" && (
+                    <button
+                      type="button"
+                      className={`alx-action ${selectedLawyer.is_active
+                          ? "alx-suspend"
+                          : "alx-reactivate"
+                        }`}
+                      disabled={
+                        saving ||
+                        typeof selectedLawyer.is_active !== "boolean"
+                      }
+                      onClick={updateAccountStatus}
+                    >
+                      {selectedLawyer.is_active ? (
+                        <Ban size={16} />
+                      ) : (
+                        <CheckCircle2 size={16} />
+                      )}
 
-                    {saving
-                      ? "Updating Account..."
-                      : selectedLawyer.is_active
-                        ? "Suspend Account"
-                        : "Reactivate Account"}
-                  </button>
+                      {saving
+                        ? "Updating Account..."
+                        : selectedLawyer.is_active
+                          ? "Suspend Account"
+                          : "Reactivate Account"}
+                    </button>
+                  )}
+
                 </div>
               </section>
             </div>

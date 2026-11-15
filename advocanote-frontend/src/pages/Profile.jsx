@@ -220,7 +220,10 @@ export default function Profile() {
 
   const [record, setRecord] = useState(null);
   const [form, setForm] = useState(null);
-
+  const [deleteText, setDeleteText] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [activeTab, setActiveTab] =
     useState("account");
 
@@ -282,7 +285,7 @@ export default function Profile() {
         if (active) {
           showError(
             err.message ||
-              "Unable to load profile."
+            "Unable to load profile."
           );
         }
       } finally {
@@ -458,7 +461,7 @@ export default function Profile() {
     } catch (err) {
       showError(
         err.message ||
-          "Unable to save changes."
+        "Unable to save changes."
       );
 
       if (
@@ -569,12 +572,12 @@ export default function Profile() {
           area
         )
           ? previous.practiceAreas.filter(
-              (item) => item !== area
-            )
+            (item) => item !== area
+          )
           : [
-              ...previous.practiceAreas,
-              area,
-            ],
+            ...previous.practiceAreas,
+            area,
+          ],
     }));
   }
 
@@ -692,7 +695,7 @@ export default function Profile() {
     } catch (err) {
       showError(
         err.message ||
-          "Photo upload failed."
+        "Photo upload failed."
       );
     } finally {
       setPhotoBusy(false);
@@ -734,7 +737,7 @@ export default function Profile() {
     } catch (err) {
       showError(
         err.message ||
-          "Unable to remove photo."
+        "Unable to remove photo."
       );
     } finally {
       setPhotoBusy(false);
@@ -803,12 +806,80 @@ export default function Profile() {
     } catch (err) {
       showError(
         err.message ||
-          "Download failed."
+        "Download failed."
       );
     } finally {
       setExporting(false);
     }
   }
+
+
+  async function confirmAccountDeletion() {
+    if (deleteBusy) return;
+
+    if (deleteText !== "DELETE") {
+      setDeleteError("Please type DELETE to confirm.");
+      return;
+    }
+
+    setDeleteBusy(true);
+    setDeleteError("");
+
+    try {
+      const token = sessionStorage.getItem(
+        "advocanote_access_token"
+      );
+
+      if (!token) {
+        throw new Error("Please log in again.");
+      }
+
+      const API_URL = (
+        import.meta.env.VITE_API_BASE_URL ||
+        "http://127.0.0.1:8000"
+      ).replace(/\/+$/, "");
+
+      const response = await fetch(
+        `${API_URL}/account/me`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            confirmation: deleteText,
+            password: deletePassword || null,
+          }),
+        }
+      );
+
+      const result = await response
+        .json()
+        .catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof result.detail === "string"
+            ? result.detail
+            : "Could not close your account."
+        );
+      }
+
+      // Server has revoked all sessions.
+      sessionStorage.clear();
+
+      // Return to login page.
+      window.location.replace("/login");
+    } catch (err) {
+      setDeleteError(
+        err.message || "Account closure failed."
+      );
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
+
 
   // =====================================
   // PROFILE DISPLAY VALUES
@@ -916,23 +987,23 @@ export default function Profile() {
             activeTab === "account" ||
             activeTab === "professional"
           ) && record && (
-            <button
-              type="submit"
-              form={
-                activeTab === "account"
-                  ? "anp-v2-account-form"
-                  : "anp-v2-professional-form"
-              }
-              className="anp-v2-save"
-              disabled={Boolean(saving)}
-            >
-              <Save size={17} />
+              <button
+                type="submit"
+                form={
+                  activeTab === "account"
+                    ? "anp-v2-account-form"
+                    : "anp-v2-professional-form"
+                }
+                className="anp-v2-save"
+                disabled={Boolean(saving)}
+              >
+                <Save size={17} />
 
-              {saving
-                ? "Saving..."
-                : "Save Changes"}
-            </button>
-          )}
+                {saving
+                  ? "Saving..."
+                  : "Save Changes"}
+              </button>
+            )}
         </div>
 
         {/* LOADING */}
@@ -1598,29 +1669,27 @@ export default function Profile() {
 
         {/* DELETE ACCOUNT INFORMATION */}
 
+
         {dialog === "delete" && (
           <div
             className="anp-v2-modal-backdrop"
-            onClick={() =>
-              setDialog("")
-            }
+            onClick={() => {
+              if (!deleteBusy) setDialog("");
+            }}
           >
             <div
               className="anp-v2-modal"
               role="dialog"
               aria-modal="true"
               aria-labelledby="anp-v2-delete-title"
-              onClick={(event) =>
-                event.stopPropagation()
-              }
+              onClick={(event) => event.stopPropagation()}
             >
               <button
                 type="button"
                 className="anp-v2-modal-close"
-                aria-label="Close dialog"
-                onClick={() =>
-                  setDialog("")
-                }
+                disabled={deleteBusy}
+                onClick={() => setDialog("")}
+                aria-label="Close"
               >
                 <X size={20} />
               </button>
@@ -1628,36 +1697,80 @@ export default function Profile() {
               <Trash2 size={27} />
 
               <h2 id="anp-v2-delete-title">
-                Delete Account
+                Close Your Account
               </h2>
 
               <p>
-                Permanent account deletion
-                is not available yet.
-                Your account has not
-                been deleted.
+                This will disable your AdvocaNote account
+                and sign you out of all sessions.
               </p>
 
               <p>
-                This feature requires
-                identity verification,
-                legal data retention checks
-                and safe handling of
-                related case records.
+                Your legal records will remain pending
+                secure deletion. Active Stripe subscriptions
+                must be cancelled first.
               </p>
+
+              <input
+                type="text"
+                placeholder="Type DELETE"
+                value={deleteText}
+                disabled={deleteBusy}
+                autoComplete="off"
+                onChange={(event) =>
+                  setDeleteText(event.target.value)
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  marginBottom: "12px",
+                  border: "1px solid #d6d6d6",
+                  borderRadius: "8px",
+                }}
+              />
+
+              <input
+                type="password"
+                placeholder="Account password (if applicable)"
+                value={deletePassword}
+                disabled={deleteBusy}
+                autoComplete="current-password"
+                onChange={(event) =>
+                  setDeletePassword(event.target.value)
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  marginBottom: "12px",
+                  border: "1px solid #d6d6d6",
+                  borderRadius: "8px",
+                }}
+              />
+
+              {deleteError && (
+                <p style={{ color: "#b42318" }}>
+                  {deleteError}
+                </p>
+              )}
 
               <button
                 type="button"
-                className="anp-v2-save"
-                onClick={() =>
-                  setDialog("")
+                className="anp-v2-delete-button"
+                disabled={
+                  deleteBusy ||
+                  deleteText !== "DELETE"
                 }
+                onClick={confirmAccountDeletion}
               >
-                Close
+                <Trash2 size={16} />
+                {deleteBusy
+                  ? "Closing Account..."
+                  : "Confirm Account Closure"}
               </button>
             </div>
           </div>
         )}
+
 
       </div>
     </main>

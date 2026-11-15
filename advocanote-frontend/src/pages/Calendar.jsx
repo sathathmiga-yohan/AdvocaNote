@@ -334,9 +334,9 @@ export default function Calendar({
 }) {
   const navigate = useNavigate();
 
-  
-const { user, openSidebar } = useLawyerLayout();
-console.log("CALENDAR COMPONENT RENDERED");
+
+  const { user, openSidebar } = useLawyerLayout();
+  console.log("CALENDAR COMPONENT RENDERED");
 
   // TOP NAVBAR STATES
   const [globalSearch, setGlobalSearch] = useState("");
@@ -472,25 +472,85 @@ console.log("CALENDAR COMPONENT RENDERED");
           ? response.events
           : [];
 
+
+        // Get actual case numbers from My Cases
+        let casesById = new Map();
+
+        try {
+          const casesResponse = await getLawyerCases();
+
+          const caseList = calendarNormalizeList(
+            casesResponse,
+            "cases"
+          );
+
+          casesById = new Map(
+            caseList.map((caseItem) => [
+              String(caseItem.id),
+              String(caseItem.case_number || "").trim(),
+            ])
+          );
+        } catch (error) {
+          console.error(
+            "Could not load case numbers:",
+            error
+          );
+        }
+
+        if (cancelled) return;
+
+
         // Tasks are already loaded separately.
         // Exclude them here to avoid duplicates.
+
         const realEvents = items
           .filter((item) =>
             ["hearing", "postponed", "custom"].includes(
               item.type
             )
           )
-          .map((item) => ({
-            ...item,
-            type:
-              item.type === "postponed"
-                ? "hearing"
-                : item.type,
-            caseNo: item.case_number || "",
-            time: item.time
-              ? String(item.time).slice(0, 5)
-              : "",
-          }));
+          .map((item) => {
+            const isHearing =
+              item.type === "hearing" ||
+              item.type === "postponed";
+
+            const caseId =
+              item.case_id ?? item.case?.id;
+
+            // Get real Case No, not Hearing ID
+            const caseNo = String(
+              item.case_number ||
+              item.caseNo ||
+              item.case?.case_number ||
+              (caseId != null
+                ? casesById.get(String(caseId))
+                : "") ||
+              ""
+            ).trim();
+
+            return {
+              ...item,
+
+              type:
+                item.type === "postponed"
+                  ? "hearing"
+                  : item.type,
+
+              caseNo,
+
+              // Show actual Case No for hearings
+              title: isHearing
+                ? caseNo
+                  ? `Case No: ${caseNo}`
+                  : "Hearing"
+                : item.title,
+
+              time: item.time
+                ? String(item.time).slice(0, 5)
+                : "",
+            };
+          });
+
 
         setEvents(realEvents);
         setCalendarLoadError("");
@@ -1064,7 +1124,7 @@ console.log("CALENDAR COMPONENT RENDERED");
         <div className="ald-topbar-actions">
 
           {/* NOTIFICATION BELL */}
-      
+
 
           {/* DIVIDER */}
 

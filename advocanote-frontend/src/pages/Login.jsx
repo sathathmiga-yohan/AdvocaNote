@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate, Link} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 
 import "./Login.css";
@@ -562,6 +562,39 @@ function Login() {
               ux_mode="popup"
             />
           </div>
+
+          {/* CLOSED ACCOUNT RECOVERY */}
+
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: 18,
+              paddingTop: 15,
+              borderTop: "1px solid #eceee8",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 12,
+                color: "#65716c",
+                margin: 0,
+                lineHeight: 1.8,
+              }}
+            >
+              Previously closed your account?{" "}
+              <Link
+                to="/rejoin-account"
+                style={{
+                  color: "#004535",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Restore or Start Fresh
+              </Link>
+            </p>
+          </div>
+
 
         </div>
       </section>

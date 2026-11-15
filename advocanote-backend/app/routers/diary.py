@@ -841,3 +841,80 @@ def delete_diary_entry(
     except Exception:
         db.rollback()
         raise
+
+
+class AISuggestionReview(BaseModel):
+    status: Literal["Approved", "Rejected"]
+    title: str | None = Field(default=None, max_length=500)
+
+
+@router.patch("/ai-suggestions/{suggestion_id}")
+def review_ai_suggestion(
+    suggestion_id: int,
+    data: AISuggestionReview,
+    db: Session = Depends(get_db),
+    user: User = Depends(lawyer_only),
+):
+    suggestion = db.scalar(
+        select(AISuggestion)
+        .join(
+            DiaryEntry,
+            AISuggestion.diary_entry_id == DiaryEntry.id,
+        )
+        .where(
+            AISuggestion.id == suggestion_id,
+            DiaryEntry.lawyer_id == user.id,
+        )
+    )
+
+    if suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="AI suggestion not found",
+        )
+
+    if (suggestion.status or "").lower() != "pending":
+        raise HTTPException(
+            status_code=409,
+            detail="This suggestion has already been reviewed",
+        )
+
+    entry = db.get(DiaryEntry, suggestion.diary_entry_id)
+
+    title = (
+        data.title or suggestion.suggested_value or ""
+    ).strip()
+
+    if data.status == "Approved":
+        if suggestion.suggestion_type != "Task":
+            raise HTTPException(
+                status_code=422,
+                detail="Only task suggestions can be approved",
+            )
+
+        if len(title) < 3:
+            raise HTTPException(
+                status_code=422,
+                detail="Enter a valid task title",
+            )
+
+        task = Task(
+            lawyer_id=user.id,
+            case_id=entry.case_id,
+            diary_entry_id=entry.id,
+            title=title,
+            deadline=None,
+        )
+
+        db.add(task)
+        suggestion.suggested_value = title
+
+    suggestion.status = data.status
+
+    db.commit()
+
+    return {
+        "id": suggestion.id,
+        "title": suggestion.suggested_value,
+        "status": suggestion.status,
+    }

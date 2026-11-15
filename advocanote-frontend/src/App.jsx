@@ -30,7 +30,7 @@ import TasksPremium from "./pages/TasksPremium";
 import AISuggestions from "./pages/AISuggestions";
 import Subscription from "./pages/Subscription";
 import Profile from "./pages/Profile";
-
+import RejoinAccount from "./pages/RejoinAccount";
 // =====================================
 // LAWYER ROUTE & LAYOUT
 // =====================================
@@ -84,7 +84,10 @@ function App() {
           path="/register"
           element={<Register />}
         />
-
+        <Route
+          path="/rejoin-account"
+          element={<RejoinAccount />}
+        />
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
@@ -179,6 +182,7 @@ function App() {
             path="/profile"
             element={<Profile />}
           />
+
 
         </Route>
 

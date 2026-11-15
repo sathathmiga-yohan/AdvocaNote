@@ -4532,3 +4532,20 @@
     font-size: 21px;
   }
 }
+/* CLOSED ACCOUNT STATUS */
+
+.alm-ref-closed {
+  background: #faf3e5;
+  color: #89632b;
+  border: 1px solid #ead9b6;
+}
+
+.alm-ref-closed .alm-ref-dot {
+  background: #b88d45;
+}
+
+.alx-status.closed {
+  background: #faf3e5;
+  color: #89632b;
+  border: 1px solid #ead9b6;
+}

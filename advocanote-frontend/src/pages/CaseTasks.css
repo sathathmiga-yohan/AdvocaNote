@@ -423,3 +423,320 @@
     flex-wrap: wrap;
   }
 }
+
+/* ==========================================
+   ADVOCANOTE - CASE TASKS UPDATE
+   Matches Diary History Design
+========================================== */
+
+/* MAIN PANEL */
+
+.cd-page .ct-panel {
+  padding: 18px 19px;
+  background: #ffffff;
+  border: 1px solid #e6e4dc;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(50, 42, 25, 0.04);
+}
+
+/* HEADER */
+
+.cd-page .ct-unified-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: 14px;
+  margin-bottom: 17px;
+}
+
+/* LEFT TITLE */
+
+.cd-page .ct-unified-header .ct-title {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+  min-width: 0;
+}
+
+.cd-page .ct-unified-header .ct-title > svg {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  color: #15202c;
+}
+
+.cd-page .ct-unified-header .ct-title h2 {
+  margin: 0;
+
+  color: #101b21;
+
+  font: 700 23px/1.3
+    Georgia, "Times New Roman", serif;
+}
+
+.cd-page .ct-unified-header .ct-title p {
+  margin: 5px 0 0;
+
+  color: #526277;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* RIGHT SIDE CONTROLS */
+
+.cd-page .ct-unified-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 9px;
+  min-width: 0;
+}
+
+/* SEARCH FIELD */
+
+.cd-page .ct-unified-actions .ct-search {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  width: 245px;
+  height: 40px;
+
+  padding: 0 12px;
+
+  background: #ffffff;
+  border: 1px solid #dce3e8;
+  border-radius: 9px;
+
+  box-sizing: border-box;
+}
+
+.cd-page .ct-unified-actions .ct-search svg {
+  flex-shrink: 0;
+  color: #17313b;
+}
+
+.cd-page .ct-unified-actions .ct-search input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  font-size: 12px;
+  color: #203748;
+}
+
+/* SORT */
+
+.cd-page .ct-unified-actions .ct-sort {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+  width: auto;
+  height: 40px;
+
+  padding: 0 13px;
+
+  background: #fff;
+  border: 1px solid #dce3e8;
+  border-radius: 9px;
+
+  color: #152d2c;
+  font-size: 12px;
+  font-weight: 500;
+
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* ADD TASK */
+
+.cd-page .ct-unified-actions .ct-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+
+  gap: 8px;
+  padding: 0 15px;
+
+  background: #004535;
+  border: 1px solid #004535;
+  border-radius: 9px;
+
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cd-page .ct-unified-actions .ct-primary:hover {
+  background: #00604a;
+}
+
+/* ==========================================
+   TASK TABLE POLISH
+========================================== */
+
+.cd-page .ct-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* TABLE */
+
+.cd-page .ct-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+/* CREAM TABLE HEADER */
+
+.cd-page .ct-table thead th {
+  padding: 13px 11px;
+
+  background: #faf8f3;
+  border-bottom: 1px solid #e9e9e8;
+
+  color: #101b21;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+/* TABLE ROWS */
+
+.cd-page .ct-table tbody td {
+  padding: 13px 11px;
+
+  border-bottom: 1px solid #ecece8;
+
+  color: #354c66;
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+.cd-page .ct-table tbody tr:hover {
+  background: #f2f9f5;
+}
+
+/* TASK NAME */
+
+.cd-page .ct-table .ct-task-title {
+  color: #15202c;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ACTIONS */
+
+.cd-page .ct-table .ct-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cd-page .ct-table .ct-actions button {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  background: #fff;
+  border: 1px solid #dce4e6;
+  border-radius: 8px;
+
+  color: #004535;
+}
+
+.cd-page .ct-table .ct-actions button:hover {
+  background: #edf7f0;
+}
+
+/* ==========================================
+   LAPTOP RESPONSIVE
+========================================== */
+
+@media (max-width: 1250px) {
+
+  .cd-page .ct-unified-header {
+    align-items: flex-start;
+  }
+
+  .cd-page .ct-unified-actions {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media (max-width: 720px) {
+
+  .cd-page .ct-panel {
+    padding: 12px;
+  }
+
+  .cd-page .ct-unified-header {
+    gap: 13px;
+  }
+
+  .cd-page .ct-unified-header .ct-title h2 {
+    font-size: 20px;
+  }
+
+  .cd-page .ct-unified-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    width: 100%;
+    gap: 8px;
+  }
+
+  .cd-page .ct-unified-actions .ct-search {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .cd-page .ct-unified-actions .ct-sort,
+  .cd-page .ct-unified-actions .ct-primary {
+    width: auto;
+    min-width: 0;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .cd-page .ct-table-wrap {
+    overflow-x: auto;
+  }
+}

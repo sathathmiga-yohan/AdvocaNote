@@ -345,59 +345,76 @@ export default function CaseTasks({ caseId }) {
       className="cd-panel ct-panel"
       aria-label="Tasks for this case"
     >
-      {/* HEADING */}
 
-      <div className="ct-heading">
-        <div className="ct-title">
-          <ClipboardList size={24} />
+{/* =====================================
+    TASKS HEADER - DIARY HISTORY STYLE
+===================================== */}
 
-          <div>
-            <h2>Tasks</h2>
-            <p>
-              All tasks and deadlines for this case.
-            </p>
-          </div>
-        </div>
+<div className="ct-heading ct-unified-header">
 
-        <button
-          type="button"
-          className="ct-primary"
-          onClick={openAdd}
-        >
-          <Plus size={18} />
-          Add Task
-        </button>
-      </div>
+  {/* LEFT SIDE TITLE */}
 
-      {/* SEARCH AND SORT */}
+  <div className="ct-title">
+    <ClipboardList size={23} />
 
-      <div className="ct-toolbar">
-        <label className="ct-search">
-          <Search size={19} />
+    <div>
+      <h2>Tasks</h2>
 
-          <input
-            aria-label="Search tasks"
-            value={query}
-            placeholder="Search tasks..."
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-            }}
-          />
-        </label>
+      <p>
+        All tasks and deadlines for this case.
+      </p>
+    </div>
+  </div>
 
-        <button
-          type="button"
-          className="ct-sort"
-          onClick={() => {
-            setReverseSort((value) => !value);
-            setPage(1);
-          }}
-        >
-          <ArrowDownUp size={18} />
-          Sort (Due Date)
-        </button>
-      </div>
+  {/* RIGHT SIDE CONTROLS */}
+
+  <div className="ct-unified-actions">
+
+    {/* SEARCH */}
+
+    <label className="ct-search">
+      <Search size={18} />
+
+      <input
+        aria-label="Search tasks"
+        value={query}
+        placeholder="Search tasks..."
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setPage(1);
+        }}
+      />
+    </label>
+
+    {/* SORT */}
+
+    <button
+      type="button"
+      className="ct-sort"
+      onClick={() => {
+        setReverseSort((value) => !value);
+        setPage(1);
+      }}
+    >
+      <ArrowDownUp size={17} />
+      Sort (Due Date)
+    </button>
+
+    {/* ADD TASK */}
+
+    <button
+      type="button"
+      className="ct-primary"
+      onClick={openAdd}
+    >
+      <Plus size={17} />
+      Add Task
+    </button>
+
+  </div>
+
+</div>
+
 
       {error && (
         <p className="ct-error" role="alert">

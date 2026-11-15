@@ -9,7 +9,7 @@ from fastapi import (
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
+from app.models.account_deletion import AccountDeletion
 from app.database import get_db
 from app.models.user import User
 from app.auth.admin_guard import require_admin
@@ -69,7 +69,26 @@ def update_lawyer_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lawyer account not found",
         )
+    # =====================================
+    # PREVENT CLOSED ACCOUNT REACTIVATION
+    # =====================================
 
+    closed_account = db.scalar(
+        select(AccountDeletion.id).where(
+            AccountDeletion.original_user_id == lawyer_id,
+            AccountDeletion.status == "pending_purge",
+        )
+    )
+
+    if closed_account is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "This lawyer closed their account. "
+                "Account recovery must be completed by "
+                "the account owner."
+            ),
+        )
     # Suspension requires a reason
 
     if not data.is_active and not data.reason.strip():

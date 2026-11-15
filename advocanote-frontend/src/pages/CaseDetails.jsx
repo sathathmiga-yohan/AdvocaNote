@@ -122,7 +122,11 @@ export default function CaseDetails({
   const [latestFirst, setLatestFirst] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
   const [viewEntry, setViewEntry] = useState(null);
+  const [entryViewTab, setEntryViewTab] = useState("proceedings");
 
+  useEffect(() => {
+    setEntryViewTab("proceedings");
+  }, [viewEntry?.id]);
   const [closingCase, setClosingCase] = useState(false);
   const [closeCaseError, setCloseCaseError] = useState("");
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -1865,11 +1869,15 @@ export default function CaseDetails({
         </div>
       )}
 
-      {/* VIEW DIARY ENTRY POPUP */}
+      {/* ==========================================
+    VIEW DIARY ENTRY - PROFESSIONAL POPUP
+========================================== */}
+
+      {/* NEW COMPACT DIARY DETAILS POPUP */}
 
       {viewEntry && (
         <div
-          className="cd-modal-backdrop"
+          className="cd-record-overlay"
           role="presentation"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
@@ -1878,62 +1886,147 @@ export default function CaseDetails({
           }}
         >
           <section
-            className="cd-modal"
+            className="cd-record-dialog"
             role="dialog"
             aria-modal="true"
             aria-label="Diary entry details"
           >
-            <div className="cd-modal-head">
-              <h2>Diary Entry Details</h2>
+
+            {/* HEADER */}
+            <header className="cd-record-header">
+
+              <div>
+                <span className="cd-record-eyebrow">
+                  CASE #{caseNumber} · {caseTitle}
+                </span>
+
+                <h2>Diary Entry Details</h2>
+              </div>
 
               <button
                 type="button"
-                onClick={() =>
-                  setViewEntry(null)
-                }
-                aria-label="Close"
+                className="cd-record-close"
+                aria-label="Close diary details"
+                onClick={() => setViewEntry(null)}
               >
-                <X size={20} />
+                <X size={19} />
               </button>
+
+            </header>
+
+            {/* CONTENT */}
+            <div className="cd-record-scroll">
+
+              {/* SIMPLE INFORMATION STRIP */}
+              <div className="cd-record-info">
+
+                <div>
+                  <span>Diary Date</span>
+                  <strong>
+                    {formatDate(entryDate(viewEntry))}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Court</span>
+                  <strong>
+                    {textOf(viewEntry.court_name) || court}
+                  </strong>
+                  <small>
+                    {textOf(viewEntry.location) || location}
+                  </small>
+                </div>
+
+                <div>
+                  <span>Next Date</span>
+                  <strong>
+                    {formatDate(entryNextDate(viewEntry))}
+                  </strong>
+                </div>
+
+              </div>
+
+              {/* TABS */}
+              <div
+                className="cd-record-tabs"
+                role="tablist"
+                aria-label="Diary record sections"
+              >
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={entryViewTab === "proceedings"}
+                  className={
+                    entryViewTab === "proceedings"
+                      ? "cd-record-tab active"
+                      : "cd-record-tab"
+                  }
+                  onClick={() => setEntryViewTab("proceedings")}
+                >
+                  <FileText size={17} />
+                  Court Proceedings
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={entryViewTab === "voice"}
+                  className={
+                    entryViewTab === "voice"
+                      ? "cd-record-tab active"
+                      : "cd-record-tab"
+                  }
+                  onClick={() => setEntryViewTab("voice")}
+                >
+                  <FileText size={17} />
+                  Voice & AI
+                </button>
+
+              </div>
+
+              {/* PROCEEDINGS TAB */}
+              {entryViewTab === "proceedings" && (
+
+                <div className="cd-record-content" role="tabpanel">
+
+                  <div className="cd-record-section-title">
+                    <FileText size={18} />
+                    <h3>Court Proceedings</h3>
+                  </div>
+
+                  <div className="cd-record-proceedings">
+                    {entryNotes(viewEntry) ||
+                      "No court proceedings recorded."}
+                  </div>
+
+                </div>
+
+              )}
+
+              {/* VOICE AND AI TAB */}
+              {entryViewTab === "voice" && (
+
+                <div
+                  className="cd-record-content cd-record-voice"
+                  role="tabpanel"
+                >
+
+                  <DiaryVoiceDetails
+                    key={viewEntry.id}
+                    entryId={viewEntry.id}
+                  />
+
+                </div>
+
+              )}
+
             </div>
 
-            <p>
-              <strong>Diary Date:</strong>{" "}
-              {formatDate(
-                entryDate(viewEntry)
-              )}
-            </p>
-
-            <p>
-              <strong>Court:</strong>{" "}
-              {textOf(viewEntry.court_name) ||
-                court}
-            </p>
-
-            <p>
-              <strong>Next Date:</strong>{" "}
-              {formatDate(
-                entryNextDate(viewEntry)
-              )}
-            </p>
-
-            <h3>Court Proceedings</h3>
-
-            <p className="cd-full-note">
-              {entryNotes(viewEntry) ||
-                "No proceedings text"}
-            </p>
-
-            {/* ORIGINAL AUDIO + TAMIL TRANSCRIPT + AI NOTES */}
-
-            <div style={{ marginTop: 20 }}>
-              <DiaryVoiceDetails
-                entryId={viewEntry.id}
-              />
-            </div>
           </section>
         </div>
       )}
+
 
       {/* EDIT DIARY ENTRY POPUP */}
 

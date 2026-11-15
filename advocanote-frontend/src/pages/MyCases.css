@@ -1949,3 +1949,43 @@
     min-height: 36px !important;
   }
 }
+
+/* MY CASES - BUTTON RIGHT SIDE */
+
+.mc-app .mc-title-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+}
+
+.mc-app .mc-heading-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mc-app .mc-title-row .mc-title-actions {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+.mc-app .mc-title-row .mc-primary-btn {
+  width: auto !important;
+  flex: none !important;
+  padding: 9px 12px !important;
+  font-size: 11px !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .mc-app .mc-title-row {
+    gap: 8px !important;
+  }
+
+  .mc-app .mc-title-row .mc-title-actions button {
+    width: auto !important;
+    flex: none !important;
+  }
+}
