@@ -1,22 +1,38 @@
 
-/* ==========================================
-   ADVOCANOTE - LAWYER MANAGEMENT
-   MODERN COMPACT ADMIN DESIGN
-   Fonts: Inter + Poppins
-   Colors: Dark Green / Cream / Soft Gold
-========================================== */
+/* ==============================================
+   ADVOCANOTE - ADMIN LAWYER MANAGEMENT
+   CLEAN FINAL CSS
+============================================== */
+
+/* =====================
+   MAIN PAGE
+===================== */
 
 .alm-page {
+  --alm-green: #104b39;
+  --alm-emerald: #0eaa79;
+  --alm-gold: #e5a33e;
+  --alm-ink: #203a30;
+  --alm-muted: #788a80;
+  --alm-edge: #e3eae3;
+
   width: 100%;
+  max-width: 1580px;
   min-width: 0;
-  padding: 22px 26px 32px;
-  background: transparent;
-  border-radius: 0;
-  color: #173d30;
-  font-family: "Inter", sans-serif;
+
+  margin: -6px auto 0;
+  padding: 12px 24px 30px;
+
+  background: #f7f9f6;
+  border-radius: 14px;
+
+  color: var(--alm-ink);
+  font-family: Inter, sans-serif;
 }
 
-.alm-page * {
+.alm-page *,
+.alm-page *::before,
+.alm-page *::after {
   box-sizing: border-box;
 }
 
@@ -24,584 +40,1157 @@
 .alm-page input,
 .alm-page select,
 .alm-page textarea {
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 
-/* ==========================================
-   PAGE HEADER
-========================================== */
+.alm-page button:focus-visible,
+.alm-page input:focus-visible,
+.alm-page select:focus-visible,
+.alm-page textarea:focus-visible {
+  outline: 2px solid #b18a4c;
+  outline-offset: 2px;
+}
 
-.alm-page-header {
+/* =====================
+   HEADER
+===================== */
+
+.alm-page .alm-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
-  margin: 0 0 22px;
-  padding: 0;
+
+  margin: 0 0 18px;
+  padding: 0 0 17px;
+
   border: 0;
+  border-bottom: 1px solid #e0e8df;
 }
 
-.alm-page-header::before,
-.alm-page-header::after {
+.alm-page .alm-page-header::before,
+.alm-page .alm-page-header::after {
   display: none;
   content: none;
 }
 
-.alm-page-header h1 {
+.alm-page .alm-page-header h1 {
   margin: 0;
-  color: #103d30;
-  font-family: "Poppins", sans-serif;
-  font-size: 25px;
-  font-weight: 600;
+
+  color: #173b2d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.6px;
-  line-height: 1.35;
 }
 
-.alm-page-header p {
-  margin: 4px 0 0;
-  color: #839087;
+.alm-page .alm-page-header h1 span {
+  color: #bd924b;
+}
+
+.alm-page .alm-page-header p {
+  margin: 5px 0 0;
+
+  color: #74877a;
   font-size: 12px;
   line-height: 1.5;
 }
 
-.alm-refresh {
+/* REFRESH */
+
+.alm-page .alm-refresh {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 37px;
+
+  min-height: 38px;
   padding: 0 15px;
-  border: 1px solid #0d503c;
+
+  border: 1px solid #104b39;
   border-radius: 9px;
-  background: #0d503c;
-  color: #fff;
-  font-size: 12px;
+
+  background: #104b39;
+  color: #ffffff;
+
+  font-size: 11.5px;
   font-weight: 600;
-  box-shadow: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.18s ease;
 }
 
-.alm-refresh:hover {
-  background: #13664b;
+.alm-page .alm-refresh:hover:not(:disabled) {
+  background: #17634b;
 }
 
-.alm-refresh:disabled {
+.alm-page .alm-refresh:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* ==========================================
-   SUCCESS / ERROR MESSAGE
-========================================== */
+.alm-page .alm-refresh svg {
+  width: 16px;
+  height: 16px;
+}
 
-.alm-message {
+/* MESSAGES */
+
+.alm-page .alm-message {
   display: flex;
   align-items: center;
   gap: 9px;
-  min-height: 40px;
-  margin-bottom: 16px;
-  padding: 10px 14px;
+
+  margin-bottom: 14px;
+  padding: 10px 13px;
+
   border-radius: 9px;
   font-size: 12px;
 }
 
-.alm-success {
+.alm-page .alm-success {
   background: #edf7ef;
   border: 1px solid #d6eadb;
   color: #26784b;
 }
 
-.alm-error {
+.alm-page .alm-error {
   background: #fff2ee;
   border: 1px solid #f0d6ce;
   color: #b44d40;
 }
 
-/* ==========================================
-   SUMMARY CARDS
-========================================== */
+/* =====================
+   COMPACT STATISTICS
+===================== */
 
-.alm-stats {
+.alm-page .alm-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
+  grid-auto-rows: auto;
+
+  gap: 12px;
+  margin: 0 0 16px;
 }
 
-.alm-stat {
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 15px;
-
+.alm-page .alm-stats > .alm-stat,
+.alm-page .alm-stats > .alm-stat:nth-child(n) {
   position: relative;
-  min-height: 105px;
-  padding: 17px 19px;
+
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+
+  align-items: center;
+  align-content: center;
+
+  column-gap: 11px;
+  row-gap: 2px;
+
+  grid-column: auto;
+  grid-row: auto;
+
+  min-width: 0;
+  min-height: 100px;
+  padding: 14px 16px;
+
   overflow: hidden;
 
-  border: 1px solid #e2e8e2;
-  border-radius: 13px;
-  background: #fff;
-  box-shadow: 0 3px 12px rgba(24, 48, 33, 0.035);
+  border: 1px solid #e2e9e3;
+  border-radius: 12px;
+  background: #ffffff;
+
+  box-shadow: 0 3px 12px rgba(18, 57, 39, 0.045);
+
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
 }
 
-.alm-stat::before,
-.alm-stat::after {
+.alm-page .alm-stats > .alm-stat:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 17px rgba(18, 57, 39, 0.07);
+}
+
+/* ACCENT LINES */
+
+.alm-page .alm-stats > .alm-stat::before {
+  display: block;
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  width: 100%;
+  height: 3px;
+  background: #104b39;
+}
+
+.alm-page .alm-stats > .alm-stat::after {
   display: none;
   content: none;
 }
 
-.alm-stat-icon {
+.alm-page .alm-stats > .alm-stat:nth-child(1)::before {
+  background: #104b39;
+}
+
+.alm-page .alm-stats > .alm-stat:nth-child(2)::before {
+  background: #0eaa79;
+}
+
+.alm-page .alm-stats > .alm-stat:nth-child(3)::before {
+  background: #e5a33e;
+}
+
+/* STAT ICONS */
+
+.alm-page .alm-stats .alm-stat-icon {
   display: grid;
   place-items: center;
+
   grid-column: 1;
   grid-row: 1 / span 2;
 
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
   margin: 0;
-  border-radius: 11px;
 
-  background: #e7f3e9;
-  color: #176545;
+  border: 0;
+  border-radius: 9px;
+
+  background: #e9f4ee;
+  color: #0f5b43;
 }
 
-.alm-stat-icon svg {
-  width: 21px;
-  height: 21px;
+.alm-page .alm-stats > .alm-stat:nth-child(1) .alm-stat-icon {
+  background: #e9f4ee;
+  color: #0f5b43;
 }
 
-.alm-stat > span {
+.alm-page .alm-stats > .alm-stat:nth-child(2) .alm-stat-icon {
+  background: #e7f8f0;
+  color: #0d9669;
+}
+
+.alm-page .alm-stats > .alm-stat:nth-child(3) .alm-stat-icon {
+  background: #fff4e5;
+  color: #cb8a24;
+}
+
+.alm-page .alm-stats .alm-stat-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* STAT LABEL */
+
+.alm-page .alm-stats > .alm-stat > span:not(.alm-stat-icon) {
+  display: block;
+
   grid-column: 2;
   grid-row: 1;
   align-self: end;
 
-  display: block;
-  color: #77867c;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
+  min-width: 0;
+  margin: 0;
+
+  color: #678070;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  overflow-wrap: anywhere;
 }
 
-.alm-stat > strong {
+/* STAT NUMBER */
+
+.alm-page .alm-stats > .alm-stat > strong {
+  display: block;
+
   grid-column: 2;
   grid-row: 2;
   align-self: start;
 
-  display: block;
-  margin-top: 4px;
-  color: #133e30;
-  font-size: 27px;
-  font-weight: 700;
-  letter-spacing: -0.7px;
+  min-width: 0;
+  margin: 2px 0 0;
+
+  color: #163d2f;
+  font-size: 26px;
+  font-weight: 750;
   line-height: 1.1;
+  letter-spacing: -0.65px;
 }
 
-/* FIRST CARD - DARK GREEN */
+/* =====================
+   REGISTERED LAWYERS
+===================== */
 
-.alm-stat:nth-child(1) {
-  background: #104937;
-  border-color: #104937;
-}
-
-.alm-stat:nth-child(1) .alm-stat-icon {
-  background: rgba(255, 255, 255, 0.11);
-  color: #e8c78c;
-}
-
-.alm-stat:nth-child(1) > span {
-  color: #c7ddd1;
-}
-
-.alm-stat:nth-child(1) > strong {
-  color: #fff;
-}
-
-/* SECOND CARD - ACTIVE */
-
-.alm-stat:nth-child(2) {
-  background: #fff;
-}
-
-.alm-stat:nth-child(2) .alm-stat-icon {
-  background: #e5f5eb;
-  color: #13804d;
-}
-
-/* THIRD CARD - SUSPENDED */
-
-.alm-stat:nth-child(3) {
-  background: #fffdfa;
-}
-
-.alm-stat:nth-child(3) .alm-stat-icon {
-  background: #fff0e7;
-  color: #c2764c;
-}
-
-/* ==========================================
-   LAWYERS TABLE CARD
-========================================== */
-
-.alm-table-card {
+.alm-page .alm-table-card {
   width: 100%;
   min-width: 0;
   overflow: hidden;
 
-  border: 1px solid #e1e7df;
-  border-radius: 13px;
-  background: #fff;
+  background: #ffffff;
+  border: 1px solid #e3eae3;
+  border-radius: 14px;
 
-  box-shadow: 0 4px 16px rgba(20, 46, 31, 0.035);
+  box-shadow:
+    0 3px 8px rgba(13, 54, 38, 0.025),
+    0 6px 20px rgba(13, 54, 38, 0.035);
 }
 
-/* ==========================================
-   DIRECTORY HEADER
-========================================== */
+/* DIRECTORY HEADER */
 
-.alm-directory-header {
+.alm-page .alm-directory-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
 
-  padding: 18px 19px 12px;
-  background: #fff;
+  padding: 18px 20px 12px;
+  background: #ffffff;
 }
 
-.alm-directory-eyebrow {
+.alm-page .alm-directory-eyebrow {
   display: none;
 }
 
-.alm-directory-header h2 {
+.alm-page .alm-directory-header h2 {
   margin: 0;
-  color: #193f30;
-  font-family: "Poppins", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
+  color: #1d3c2f;
+  font-size: 17px;
+  font-weight: 650;
   line-height: 1.4;
 }
 
-.alm-directory-count {
+.alm-page .alm-directory-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   min-height: 28px;
-  padding: 0 11px;
+  padding: 0 10px;
 
-  border: 1px solid #dce8dd;
+  border: 1px solid #dcebdd;
   border-radius: 7px;
-  background: #f2f7f2;
 
-  color: #3f7650;
+  background: #edf6ee;
+  color: #176447;
+
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-/* ==========================================
-   SEARCH / FILTER
-========================================== */
+/* SEARCH AND FILTER */
 
-.alm-toolbar {
+.alm-page .alm-toolbar {
   display: flex;
   align-items: center;
   gap: 11px;
 
-  padding: 0 19px 16px;
-  background: #fff;
+  padding: 0 20px 15px;
+
+  background: #ffffff;
   border-bottom: 1px solid #e9ede8;
 }
 
-.alm-search {
+.alm-page .alm-search {
   display: flex;
   align-items: center;
+  gap: 9px;
   flex: 1;
-  gap: 10px;
 
   min-width: 0;
-  height: 40px;
-  padding: 0 13px;
-
-  border: 1px solid #e0e6e0;
-  border-radius: 8px;
-  background: #fafbf9;
-  color: #819488;
-
-  box-shadow: none;
-}
-
-.alm-search:focus-within {
-  border-color: #7eaf93;
-  background: #fff;
-}
-
-.alm-search svg {
-  flex-shrink: 0;
-  width: 17px;
-  height: 17px;
-}
-
-.alm-search input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #224b36;
-  font-size: 12px;
-}
-
-.alm-search input::placeholder {
-  color: #95a199;
-}
-
-.alm-toolbar select {
-  width: auto;
-  min-width: 148px;
   height: 40px;
   padding: 0 12px;
 
-  border: 1px solid #e0e6e0;
+  background: #f8faf7;
+  border: 1px solid #dde8dd;
   border-radius: 8px;
-  background: #fafbf9;
+
+  color: #819488;
+}
+
+.alm-page .alm-search:focus-within {
+  border-color: #75b396;
+  background: #ffffff;
+}
+
+.alm-page .alm-search svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.alm-page .alm-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+
+  border: 0;
+  outline: 0;
+  background: transparent;
+
+  color: #234b36;
+  font-size: 12px;
+}
+
+.alm-page .alm-search input::placeholder {
+  color: #95a199;
+}
+
+.alm-page .alm-toolbar select {
+  width: auto;
+  min-width: 146px;
+  height: 40px;
+  padding: 0 11px;
 
   color: #254b37;
+  background: #f8faf7;
+
+  border: 1px solid #dde8dd;
+  border-radius: 8px;
+
   font-size: 12px;
   cursor: pointer;
-  box-shadow: none;
 }
 
-/* ==========================================
-   TABLE
-========================================== */
+/* =====================
+   LAWYERS TABLE
+===================== */
 
-.alm-table-scroll {
+.alm-page .alm-table-scroll {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: #d6dfd8 transparent;
+
+  container-type: inline-size;
 }
 
-.alm-table {
+.alm-page .alm-table,
+.alm-page .alm-reference-table {
   width: 100%;
-  min-width: 950px;
+  min-width: 1050px;
+
   border-collapse: collapse;
   text-align: left;
+  font-family: Inter, sans-serif;
 }
 
-.alm-table thead {
-  background: #f4f6f3;
+.alm-page .alm-table thead,
+.alm-page .alm-reference-table thead {
+  background: #f1f6f1;
 }
 
-.alm-table th {
-  padding: 14px 16px;
-  border-bottom: 1px solid #e5ebe4;
+.alm-page .alm-table th,
+.alm-page .alm-reference-table th {
+  padding: 13px 15px;
 
-  color: #617468;
+  border-bottom: 1px solid #e5eae4;
+
+  color: #53705d;
+  background: #f1f6f1;
+
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 650;
   white-space: nowrap;
+
   text-transform: none;
+  letter-spacing: 0;
 }
 
-.alm-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #edf0ec;
+.alm-page .alm-table td,
+.alm-page .alm-reference-table td {
+  min-height: 55px;
+  padding: 11px 15px;
 
-  color: #65796b;
-  font-size: 12px;
+  border-bottom: 1px solid #edf1ec;
+
+  color: #61786a;
+  font-size: 11.5px;
   font-weight: 400;
+  line-height: 1.5;
   vertical-align: middle;
 }
 
-.alm-table tbody tr {
-  background: #fff;
+.alm-page .alm-table tbody tr,
+.alm-page .alm-reference-table tbody tr {
+  background: #ffffff;
   transition: background 0.15s ease;
 }
 
-.alm-table tbody tr:nth-child(even) {
+.alm-page .alm-table tbody tr:nth-child(even),
+.alm-page .alm-reference-table tbody tr:nth-child(even) {
   background: #fcfdfb;
 }
 
-.alm-table tbody tr:hover {
-  background: #f2f8f3;
+.alm-page .alm-table tbody tr:hover,
+.alm-page .alm-reference-table tbody tr:hover {
+  background: #f4faf5;
 }
 
-.alm-table tbody tr:last-child td {
+.alm-page .alm-table tbody tr:last-child td,
+.alm-page .alm-reference-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-/* NAME + AVATAR */
+.alm-page .alm-empty {
+  padding: 30px 16px !important;
+  text-align: center;
+  color: #89998e !important;
+}
 
-.alm-name {
+/* LAWYER DETAILS IN TABLE */
+
+.alm-page .alm-name,
+.alm-page .alm-ref-person {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
-.alm-name strong {
-  color: #1a4230;
+.alm-page .alm-name strong,
+.alm-page .alm-ref-person-info strong {
+  color: #244735;
   font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 650;
 }
 
-.alm-avatar {
+.alm-page .alm-ref-person-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 4px;
+}
+
+.alm-page .alm-ref-person-info span {
+  color: #8d9e94;
+  font-size: 10.5px;
+}
+
+.alm-page .alm-ref-id,
+.alm-page .alm-ref-email,
+.alm-page .alm-ref-date {
+  color: #647e6f;
+  font-size: 11.5px;
+}
+
+/* AVATARS */
+
+.alm-page .alm-ref-avatar,
+.alm-page .alm-avatar {
   display: grid;
   place-items: center;
   flex-shrink: 0;
 
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
 
   border: 1px solid #d9e9dd;
-  border-radius: 50%;
+  border-radius: 10px;
 
   background: #e9f3ea;
   color: #246947;
-  font-size: 10px;
+
+  font-size: 11px;
   font-weight: 700;
 }
 
-/* ==========================================
-   STATUS BADGES
-========================================== */
+.alm-page .alm-ref-avatar-0 {
+  background: #f1f8f5;
+  border-color: #c9ded4;
+  color: #164a3a;
+}
 
-.alm-status {
+.alm-page .alm-ref-avatar-1 {
+  background: #edf7f2;
+  border-color: #d2e8db;
+  color: #206647;
+}
+
+.alm-page .alm-ref-avatar-2 {
+  background: #fff5dc;
+  border-color: #e9d08b;
+  color: #7a5919;
+}
+
+.alm-page .alm-avatar-verified,
+.alm-page .alm-avatar-active {
+  background: #e8f7ee;
+  border-color: #a9dfbf;
+  color: #137748;
+}
+
+.alm-page .alm-avatar-pending {
+  background: #fff5df;
+  border-color: #edce80;
+  color: #a66a12;
+}
+
+.alm-page .alm-avatar-suspended {
+  background: #fff0ea;
+  border-color: #f1bdb1;
+  color: #b84e43;
+}
+
+.alm-page .alm-avatar-unknown {
+  background: #f1f3f1;
+  border-color: #dfe5df;
+  color: #748176;
+}
+
+/* ACCOUNT STATUS */
+
+.alm-page .alm-ref-badge,
+.alm-page .alm-status {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
 
-  padding: 6px 10px;
-  border-radius: 20px;
+  min-height: 27px;
+  padding: 5px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
 
   font-size: 10.5px;
   font-weight: 600;
-  line-height: 1.2;
-  text-transform: capitalize;
   white-space: nowrap;
-  letter-spacing: 0;
+  text-transform: capitalize;
 }
 
-.alm-status::before {
+.alm-page .alm-ref-dot,
+.alm-page .alm-status::before {
+  display: inline-block;
   content: "";
+
+  flex-shrink: 0;
   width: 6px;
   height: 6px;
+
   border-radius: 50%;
   background: currentColor;
 }
 
-.alm-status-active {
-  background: #e8f6ec;
-  border: 1px solid #d9eddf;
-  color: #1b8a50;
+.alm-page .alm-ref-verified,
+.alm-page .alm-ref-active,
+.alm-page .alm-status-active {
+  background: #e4f5e8;
+  border-color: #d5ebda;
+  color: #19814e;
 }
 
-.alm-status-suspended {
-  background: #fff0ec;
-  border: 1px solid #f1d9d1;
-  color: #c2624f;
+.alm-page .alm-ref-pending {
+  background: #fff5df;
+  border-color: #edce80;
+  color: #a66a12;
 }
 
-.alm-status-unknown {
-  background: #f0f2ef;
-  border: 1px solid #e1e5e0;
-  color: #78867c;
+.alm-page .alm-ref-suspended,
+.alm-page .alm-status-suspended {
+  background: #ffede9;
+  border-color: #f1d5ce;
+  color: #bd5549;
 }
 
-/* ==========================================
-   MANAGE BUTTON
-========================================== */
+.alm-page .alm-ref-unknown,
+.alm-page .alm-status-unknown {
+  background: #f1f2f0;
+  border-color: #dce2dc;
+  color: #737f76;
+}
 
-.alm-view {
+.alm-page .alm-ref-closed {
+  background: #f0f2f0;
+  color: #687c6e;
+  border-color: #e0e5e0;
+}
+
+/* MANAGE BUTTON */
+
+.alm-page .alm-ref-manage,
+.alm-page .alm-view {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
 
   min-height: 33px;
-  padding: 0 13px;
+  padding: 0 12px;
 
-  border: 1px solid #10523e;
-  border-radius: 7px;
+  color: #176447;
+  background: #f5faf5;
 
-  background: #10523e;
-  color: #fff;
+  border: 1px solid #dcebdd;
+  border-radius: 8px;
 
   font-size: 11px;
-  font-weight: 500;
-  box-shadow: none;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.16s ease;
+  white-space: nowrap;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
-.alm-view:hover {
-  background: #176c50;
-  border-color: #176c50;
-  color: #fff;
+.alm-page .alm-ref-manage:hover,
+.alm-page .alm-view:hover {
+  background: #e5f2e8;
+  border-color: #b9d5bf;
+  color: #104b39;
 }
 
-.alm-view svg {
+.alm-page .alm-ref-manage svg,
+.alm-page .alm-view svg {
   width: 14px;
   height: 14px;
 }
 
-/* ==========================================
-   TABLE FOOTER
-========================================== */
-
-.alm-table-footer {
-  padding: 14px 19px;
-  border-top: 1px solid #e9eee8;
+.alm-page .alm-table-footer {
+  padding: 12px 18px;
   background: #fafcf9;
-
-  color: #87958a;
+  border-top: 1px solid #e9eee8;
+  color: #87978b;
   font-size: 11px;
 }
 
-.alm-empty {
-  padding: 40px 18px !important;
-  text-align: center;
-  color: #89998e !important;
+/* =====================
+   PAGINATION
+===================== */
+
+.alm-page .alm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  min-height: 58px;
+  padding: 12px 18px;
+
+  background: #ffffff;
+  border-top: 1px solid #e5eee6;
 }
 
-/* ==========================================
-   MANAGE DRAWER
-========================================== */
+.alm-page .alm-pagination-info {
+  color: #829087;
+  font-size: 11.5px;
+}
+
+.alm-page .alm-pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alm-page .alm-pagination-controls button {
+  min-width: 33px;
+  min-height: 32px;
+  padding: 0 11px;
+
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 7px;
+
+  color: #20583f;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alm-page .alm-pagination-controls button:hover:not(:disabled) {
+  background: #edf5ee;
+  border-color: #bcd8c4;
+}
+
+.alm-page .alm-pagination-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.alm-page .alm-pagination-controls button.active,
+.alm-page .alm-pagination-controls button[aria-current="page"] {
+  background: #104b39;
+  border-color: #104b39;
+  color: #ffffff;
+}
+
+.alm-page .alm-page-number {
+  min-width: 46px;
+  text-align: center;
+  color: #315640;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =====================
+   RESPONSIVE STATS
+   NEVER SINGLE COLUMN
+===================== */
+
+@media (max-width: 1100px) {
+  .alm-page {
+    padding: 10px 18px 26px;
+  }
+
+  .alm-page .alm-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .alm-page .alm-stats > .alm-stat:nth-child(n) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 750px) {
+  .alm-page {
+    padding: 10px 13px 24px;
+  }
+
+  .alm-page .alm-page-header h1 {
+    font-size: 25px;
+  }
+
+  .alm-page .alm-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .alm-page .alm-search {
+    flex-basis: 100%;
+  }
+
+  .alm-page .alm-toolbar select {
+    flex: 1;
+  }
+}
+
+@media (max-width: 520px) {
+  .alm-page {
+    margin-top: 0;
+    padding: 10px 10px 22px;
+  }
+
+  .alm-page .alm-page-header {
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+
+  .alm-page .alm-page-header h1 {
+    font-size: 22px;
+  }
+
+  .alm-page .alm-page-header p {
+    font-size: 10.5px;
+  }
+
+  .alm-page .alm-refresh {
+    min-height: 35px;
+    font-size: 11px;
+  }
+
+  .alm-page .alm-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .alm-page .alm-stats > .alm-stat:nth-child(n) {
+    min-height: 93px;
+    padding: 10px;
+    column-gap: 7px;
+  }
+
+  .alm-page .alm-stats .alm-stat-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+
+  .alm-page .alm-stats .alm-stat-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .alm-page .alm-stats > .alm-stat > span:not(.alm-stat-icon) {
+    font-size: 10px;
+  }
+
+  .alm-page .alm-stats > .alm-stat > strong {
+    font-size: 22px;
+  }
+
+  .alm-page .alm-directory-header {
+    padding: 15px 13px 11px;
+  }
+
+  .alm-page .alm-directory-header h2 {
+    font-size: 15px;
+  }
+
+  .alm-page .alm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 13px 13px;
+  }
+
+  .alm-page .alm-search,
+  .alm-page .alm-toolbar select {
+    width: 100%;
+    flex: auto;
+    min-width: 0;
+  }
+
+  .alm-page .alm-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .alm-page .alm-pagination-info {
+    text-align: center;
+  }
+
+  .alm-page .alm-pagination-controls {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 360px) {
+  .alm-page .alm-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .alm-page .alm-stats > .alm-stat:nth-child(n) {
+    padding: 8px;
+    grid-template-columns: 25px minmax(0, 1fr);
+    column-gap: 5px;
+  }
+
+  .alm-page .alm-stats .alm-stat-icon {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+  }
+
+  .alm-page .alm-stats > .alm-stat > span:not(.alm-stat-icon) {
+    font-size: 9px;
+  }
+
+  .alm-page .alm-stats > .alm-stat > strong {
+    font-size: 20px;
+  }
+}
+
+/* ================================
+   RESPONSIVE LAWYERS DIRECTORY
+================================ */
+
+@container (max-width: 1049px) {
+  .alm-page .alm-reference-table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+    border-collapse: separate;
+  }
+
+  .alm-page .alm-reference-table thead {
+    display: none;
+  }
+
+  .alm-page .alm-reference-table tbody {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 13px;
+    background: #f8faf7;
+  }
+
+  .alm-page .alm-reference-table tbody tr,
+  .alm-page .alm-reference-table tbody tr:nth-child(even) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: repeat(5, auto);
+    align-content: start;
+    align-items: center;
+
+    gap: 10px;
+    padding: 13px;
+    min-width: 0;
+
+    border: 1px solid #e1e9e1;
+    border-radius: 11px;
+    background: #ffffff;
+
+    box-shadow: 0 2px 9px rgba(16, 60, 37, 0.035);
+  }
+
+  .alm-page .alm-reference-table tbody tr:hover {
+    background: #ffffff;
+    border-color: #b8d5c0;
+  }
+
+  .alm-page .alm-reference-table tbody td {
+    display: flex;
+    align-items: center;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(1) {
+    grid-column: 1;
+    grid-row: 2;
+    color: #7c8f80;
+    font-size: 11px;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(1)::before {
+    content: "Lawyer ID:";
+    margin-right: 5px;
+    color: #91a096;
+    font-size: 10px;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-end;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(3) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 5px;
+    padding-top: 10px;
+    border-top: 1px solid #eef1ed;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(3)::before {
+    content: "EMAIL ADDRESS";
+    color: #94a299;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(4) {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-content: space-between;
+    gap: 10px;
+    white-space: normal;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(4)::before {
+    content: "Registered On";
+    color: #8d9b90;
+    font-size: 10.5px;
+  }
+
+  .alm-page .alm-reference-table tbody td:nth-child(6) {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    padding-top: 10px;
+    border-top: 1px solid #eef1ed;
+  }
+
+  .alm-page .alm-reference-table tbody .alm-ref-manage {
+    width: 100%;
+    justify-content: center;
+    background: #15523d;
+    color: #ffffff;
+    border-color: #15523d;
+  }
+
+  .alm-page .alm-reference-table tbody .alm-ref-manage:hover {
+    background: #1c7051;
+    color: #ffffff;
+    border-color: #1c7051;
+  }
+
+  .alm-page .alm-reference-table tbody tr:has(.alm-empty) {
+    grid-column: 1 / -1;
+    display: block;
+  }
+
+  .alm-page .alm-reference-table tbody td.alm-empty {
+    display: block;
+    padding: 25px 12px;
+    text-align: center;
+  }
+}
+
+@container (max-width: 700px) {
+  .alm-page .alm-reference-table tbody {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 11px;
+    gap: 10px;
+  }
+
+  .alm-page .alm-reference-table tbody tr {
+    padding: 12px;
+  }
+}
+
+/* ===============================
+   LEGACY MANAGE DRAWER
+=============================== */
 
 .alm-page .alm-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-
   display: flex;
   justify-content: flex-end;
-
   background: rgba(8, 28, 20, 0.42);
 }
 
 .alm-page .alm-drawer {
   display: flex;
   flex-direction: column;
-
   width: min(430px, 100%);
   height: 100%;
   overflow-y: auto;
-
-  background: #fff;
+  background: #ffffff;
   box-shadow: -12px 0 35px rgba(5, 28, 18, 0.12);
 }
-
-/* DRAWER HEADING */
 
 .alm-drawer-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-
   padding: 21px 22px;
   border-bottom: 1px solid #e7ece7;
 }
@@ -616,7 +1205,7 @@
 .alm-drawer-heading h2 {
   margin: 5px 0 0;
   color: #173f30;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 19px;
   font-weight: 600;
 }
@@ -624,24 +1213,19 @@
 .alm-drawer-heading button {
   display: grid;
   place-items: center;
-
   width: 34px;
   height: 34px;
-
   border: 1px solid #e1e7e0;
   border-radius: 8px;
-  background: #fff;
+  background: #ffffff;
   color: #435f4c;
   cursor: pointer;
 }
-
-/* PROFILE SECTION */
 
 .alm-drawer-profile {
   display: flex;
   flex-direction: column;
   align-items: center;
-
   padding: 24px 18px 20px;
   background: #f7faf7;
   border-bottom: 1px solid #e9eee8;
@@ -651,13 +1235,10 @@
 .alm-large-avatar {
   display: grid;
   place-items: center;
-
   width: 59px;
   height: 59px;
-
   border: 1px solid #d2e4d6;
   border-radius: 16px;
-
   background: #e4f2e8;
   color: #176246;
   font-size: 19px;
@@ -667,7 +1248,7 @@
 .alm-drawer-profile h3 {
   margin: 12px 0 4px;
   color: #193f2e;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 17px;
   font-weight: 600;
 }
@@ -679,28 +1260,22 @@
   overflow-wrap: anywhere;
 }
 
-/* TABS */
-
 .alm-tabs {
   display: flex;
   gap: 23px;
-
   padding: 0 22px;
   border-bottom: 1px solid #e7ece6;
-  background: #fff;
+  background: #ffffff;
 }
 
 .alm-tabs button {
   display: flex;
   align-items: center;
   gap: 7px;
-
   padding: 14px 0;
-
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
-
   color: #839086;
   font-size: 12px;
   font-weight: 500;
@@ -713,23 +1288,19 @@
   font-weight: 600;
 }
 
-/* DETAIL CONTENT */
-
 .alm-drawer-body {
   flex: 1;
   padding: 22px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .alm-drawer-body h4 {
   display: flex;
   align-items: center;
   gap: 9px;
-
   margin: 0 0 17px;
-
   color: #234734;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 13px;
   font-weight: 600;
 }
@@ -739,7 +1310,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-
   padding: 12px 0;
   border-bottom: 1px solid #eef1ed;
 }
@@ -758,12 +1328,9 @@
   overflow-wrap: anywhere;
 }
 
-/* ACCOUNT CONTROLS */
-
 .alm-admin-controls {
   margin-top: 22px;
   padding: 17px;
-
   border: 1px solid #e3e9e1;
   border-radius: 11px;
   background: #fafbf9;
@@ -776,15 +1343,12 @@
 .alm-admin-controls textarea {
   width: 100%;
   resize: vertical;
-
   padding: 11px;
   margin-bottom: 12px;
-
   border: 1px solid #dce5dc;
   border-radius: 8px;
   outline: none;
-
-  background: #fff;
+  background: #ffffff;
   color: #214332;
   font-size: 12px;
 }
@@ -798,15 +1362,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-
   width: 100%;
   min-height: 38px;
   padding: 10px;
-
   border: 0;
   border-radius: 8px;
-
-  color: #fff;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -830,543 +1391,20 @@
   font-size: 11.5px;
 }
 
-/* DRAWER FOOTER */
-
 .alm-drawer-footer {
   display: flex;
   align-items: center;
   gap: 8px;
-
   padding: 15px 22px;
   border-top: 1px solid #e9eee7;
-
   background: #fbfcfa;
   color: #829186;
   font-size: 11px;
 }
 
-/* ==========================================
-   KEYBOARD FOCUS
-========================================== */
-
-.alm-page button:focus-visible,
-.alm-page select:focus-visible,
-.alm-page input:focus-visible,
-.alm-page textarea:focus-visible {
-  outline: 2px solid #c29d64;
-  outline-offset: 2px;
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width: 1050px) {
-  .alm-page {
-    padding: 20px 18px 28px;
-  }
-
-  .alm-stats {
-    gap: 11px;
-  }
-
-  .alm-stat {
-    padding: 14px;
-    column-gap: 10px;
-  }
-}
-
-@media (max-width: 780px) {
-  .alm-page {
-    padding: 17px 13px 25px;
-  }
-
-  .alm-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .alm-toolbar {
-    flex-wrap: wrap;
-  }
-
-  .alm-search {
-    flex-basis: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .alm-page-header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .alm-page-header h1 {
-    font-size: 22px;
-  }
-
-  .alm-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .alm-directory-header {
-    padding: 15px;
-  }
-
-  .alm-toolbar {
-    padding: 0 15px 15px;
-  }
-
-  .alm-toolbar select {
-    width: 100%;
-  }
-
-  .alm-detail-item {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .alm-detail-item strong {
-    max-width: 100%;
-    text-align: left;
-  }
-}
-
-/* ==========================================
-   ADVOCANOTE - FINAL UI REFINEMENTS
-   Compact / Modern / Professional
-   Inter + Poppins
-========================================== */
-
-/* PAGE SPACING */
-
-.alm-page {
-  padding: 13px 22px 26px;
-  background: transparent;
-}
-
-/* HEADER */
-
-.alm-page-header {
-  margin-bottom: 17px;
-  gap: 14px;
-}
-
-.alm-page-header h1 {
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: -0.65px;
-  line-height: 1.3;
-}
-
-.alm-page-header p {
-  margin-top: 4px;
-  font-size: 11.5px;
-  color: #829087;
-}
-
-.alm-refresh {
-  min-height: 35px;
-  padding: 0 14px;
-  border-radius: 8px;
-  font-size: 11.5px;
-  box-shadow: 0 2px 7px rgba(10, 65, 45, 0.09);
-}
-
-.alm-refresh svg {
-  width: 15px;
-  height: 15px;
-}
-
-/* SUMMARY CARDS */
-
-.alm-stats {
-  gap: 12px;
-  margin-bottom: 17px;
-}
-
-.alm-stat {
-  grid-template-columns: 40px minmax(0, 1fr);
-  column-gap: 13px;
-  min-height: 95px;
-  padding: 15px 17px;
-  border-radius: 11px;
-  box-shadow: 0 2px 10px rgba(21, 52, 34, 0.035);
-  transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.alm-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 20px rgba(21, 52, 34, 0.07);
-}
-
-.alm-stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-}
-
-.alm-stat-icon svg {
-  width: 19px;
-  height: 19px;
-}
-
-.alm-stat > span {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05px;
-}
-
-.alm-stat > strong {
-  margin-top: 5px;
-  font-size: 25px;
-  font-weight: 700;
-  letter-spacing: -0.75px;
-}
-
-/* DARK GREEN CARD */
-
-.alm-stat:nth-child(1) {
-  background: linear-gradient(
-    115deg,
-    #104936 0%,
-    #15523e 100%
-  );
-  border-color: #17523e;
-}
-
-.alm-stat:nth-child(1) .alm-stat-icon {
-  background: rgba(255, 255, 255, 0.09);
-  color: #e2c389;
-}
-
-.alm-stat:nth-child(1) > span {
-  color: #d1e1d7;
-}
-
-/* ACTIVE CARD */
-
-.alm-stat:nth-child(2) {
-  background: #ffffff;
-  border-color: #e0e9e1;
-}
-
-.alm-stat:nth-child(2) .alm-stat-icon {
-  background: #e6f4e9;
-  color: #14824e;
-}
-
-/* SUSPENDED CARD */
-
-.alm-stat:nth-child(3) {
-  background: #fffefb;
-  border-color: #e9e6de;
-}
-
-.alm-stat:nth-child(3) .alm-stat-icon {
-  background: #fff0e6;
-  color: #c27d51;
-}
-
-/* REGISTERED LAWYERS CONTAINER */
-
-.alm-table-card {
-  border-radius: 12px;
-  border: 1px solid #e1e8e1;
-  background: #ffffff;
-  box-shadow:
-    0 3px 14px rgba(20, 50, 32, 0.03),
-    0 1px 2px rgba(20, 50, 32, 0.015);
-}
-
-/* DIRECTORY HEADER */
-
-.alm-directory-header {
-  padding: 17px 19px 12px;
-  border-bottom: none;
-}
-
-.alm-directory-header h2 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #153f2d;
-  letter-spacing: -0.2px;
-}
-
-.alm-directory-count {
-  min-height: 26px;
-  padding: 0 10px;
-  border: 1px solid #e2e9dd;
-  border-radius: 7px;
-  background: #f6f8f3;
-  color: #526e55;
-  font-size: 10.5px;
-}
-
-/* SEARCH / FILTER */
-
-.alm-toolbar {
-  gap: 11px;
-  padding: 0 19px 14px;
-}
-
-.alm-search {
-  height: 39px;
-  border: 1px solid #e1e8df;
-  border-radius: 8px;
-  background: #fcfdfa;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.alm-search:focus-within {
-  border-color: #9bbdab;
-  box-shadow: 0 0 0 3px rgba(23, 98, 67, 0.06);
-}
-
-.alm-search input {
-  font-size: 11.5px;
-}
-
-.alm-search input::placeholder {
-  color: #9daaa0;
-}
-
-.alm-toolbar select {
-  height: 39px;
-  min-width: 145px;
-  border-radius: 8px;
-  background: #fcfdfa;
-  border-color: #e1e8df;
-  font-size: 11.5px;
-}
-
-/* TABLE */
-
-.alm-table {
-  min-width: 950px;
-}
-
-.alm-table thead {
-  background: #f6f8f5;
-}
-
-.alm-table th {
-  padding: 13px 15px;
-  color: #5c7463;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-  border-bottom: 1px solid #e5eae4;
-}
-
-.alm-table td {
-  padding: 10px 15px;
-  color: #62796b;
-  font-size: 11.5px;
-  border-bottom: 1px solid #edf1ec;
-}
-
-.alm-table tbody tr:nth-child(even) {
-  background: #fcfdfb;
-}
-
-.alm-table tbody tr:hover {
-  background: #f0f6f1;
-}
-
-/* NAME */
-
-.alm-name {
-  gap: 10px;
-}
-
-.alm-name strong {
-  color: #19442f;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.alm-avatar {
-  width: 31px;
-  height: 31px;
-  border-radius: 9px;
-  background: #eaf4ec;
-  border: 1px solid #dbe9dd;
-  color: #216447;
-  font-size: 10px;
-}
-
-/* ACCOUNT STATUS */
-
-.alm-status {
-  gap: 6px;
-  padding: 6px 9px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.alm-status::before {
-  width: 5px;
-  height: 5px;
-}
-
-.alm-status-active {
-  background: #eaf6ed;
-  color: #16814b;
-  border-color: #dceee1;
-}
-
-.alm-status-suspended {
-  background: #fff0ed;
-  color: #c15f51;
-  border-color: #f2ded7;
-}
-
-/* MANAGE BUTTON */
-
-.alm-view {
-  min-height: 31px;
-  padding: 0 12px;
-  gap: 7px;
-  border-radius: 7px;
-  background: #10523d;
-  border: 1px solid #10523d;
-  color: #ffffff;
-  font-size: 10.5px;
-  font-weight: 500;
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.alm-view:hover {
-  background: #176b50;
-  border-color: #176b50;
-  box-shadow: 0 3px 8px rgba(16, 82, 61, 0.14);
-}
-
-.alm-view svg {
-  width: 13px;
-  height: 13px;
-}
-
-/* TABLE FOOTER */
-
-.alm-table-footer {
-  padding: 12px 18px;
-  background: #fafcf9;
-  color: #87978b;
-  font-size: 10.5px;
-}
-
-/* DRAWER POLISH */
-
-.alm-page .alm-drawer {
-  width: min(420px, 100%);
-}
-
-.alm-drawer-heading {
-  padding: 19px 21px;
-}
-
-.alm-drawer-heading h2 {
-  font-size: 18px;
-}
-
-.alm-drawer-profile {
-  padding: 22px 18px 18px;
-}
-
-.alm-large-avatar {
-  width: 55px;
-  height: 55px;
-}
-
-.alm-drawer-profile h3 {
-  font-size: 16px;
-}
-
-.alm-tabs {
-  padding: 0 21px;
-}
-
-.alm-tabs button {
-  padding: 12px 0;
-  font-size: 11.5px;
-}
-
-.alm-drawer-body {
-  padding: 21px;
-}
-
-.alm-detail-item {
-  padding: 11px 0;
-}
-
-.alm-detail-item span,
-.alm-detail-item strong {
-  font-size: 11.5px;
-}
-
-.alm-admin-controls {
-  margin-top: 20px;
-  padding: 15px;
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 800px) {
-  .alm-page {
-    padding: 14px 12px 24px;
-  }
-
-  .alm-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 520px) {
-  .alm-page-header h1 {
-    font-size: 21px;
-  }
-
-  .alm-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .alm-stat {
-    min-height: 88px;
-  }
-
-  .alm-toolbar {
-    padding: 0 14px 14px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .alm-stat,
-  .alm-view,
-  .alm-search {
-    transition: none;
-  }
-
-  .alm-stat:hover {
-    transform: none;
-  }
-}
-
-
-/* ==========================================
-   ADVOCANOTE - PREMIUM LAWYER DETAILS DRAWER
-   Clean / Compact / Professional
-========================================== */
-
-/* OVERLAY */
+/* ==================================
+   PREMIUM LAWYER DRAWER - ALMV
+================================== */
 
 .almv-backdrop {
   position: fixed;
@@ -1378,8 +1416,6 @@
   backdrop-filter: blur(2px);
 }
 
-/* MAIN PANEL */
-
 .almv-panel {
   display: flex;
   flex-direction: column;
@@ -1389,7 +1425,7 @@
   min-height: 0;
   background: #ffffff;
   color: #193e2e;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   box-shadow: -12px 0 40px rgba(7, 31, 18, 0.14);
 }
 
@@ -1399,10 +1435,8 @@
 
 .almv-panel button,
 .almv-panel textarea {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
 }
-
-/* HEADER */
 
 .almv-header {
   display: flex;
@@ -1425,7 +1459,7 @@
 
 .almv-header h2 {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.4px;
@@ -1446,7 +1480,7 @@
   height: 34px;
   border: 1px solid #e3e9e2;
   border-radius: 8px;
-  background: #fff;
+  background: #ffffff;
   color: #567362;
   cursor: pointer;
 }
@@ -1454,8 +1488,6 @@
 .almv-close:hover {
   background: #f2f6f2;
 }
-
-/* SCROLLABLE BODY */
 
 .almv-scroll {
   flex: 1;
@@ -1465,8 +1497,6 @@
   scrollbar-width: thin;
   scrollbar-color: #c8d6cb transparent;
 }
-
-/* PROFILE SUMMARY */
 
 .almv-profile-card {
   display: flex;
@@ -1487,7 +1517,7 @@
   height: 56px;
   border-radius: 13px;
   background: #174f3a;
-  color: #fff;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 600;
 }
@@ -1500,7 +1530,7 @@
 .almv-profile-info h3 {
   margin: 0 0 4px;
   color: #173e2d;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
@@ -1524,7 +1554,7 @@
   padding: 5px 9px;
   border: 1px solid #e0e7df;
   border-radius: 6px;
-  background: #fff;
+  background: #ffffff;
   color: #617d68;
   font-size: 10px;
   font-weight: 600;
@@ -1563,8 +1593,6 @@
   color: #748176;
 }
 
-/* TABS */
-
 .almv-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1593,13 +1621,11 @@
 }
 
 .almv-tabs button.active {
-  background: #fff;
+  background: #ffffff;
   color: #15573e;
   font-weight: 600;
   box-shadow: 0 1px 5px rgba(15, 50, 30, 0.08);
 }
-
-/* CONTENT */
 
 .almv-content {
   padding: 0 26px 26px;
@@ -1630,7 +1656,7 @@
 .almv-section-title h4 {
   margin: 0 0 3px;
   color: #1c4331;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 12.5px;
   font-weight: 600;
 }
@@ -1641,13 +1667,11 @@
   font-size: 10.5px;
 }
 
-/* INFORMATION ROWS */
-
 .almv-details {
   overflow: hidden;
   border: 1px solid #e8ede7;
   border-radius: 10px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .almv-detail-row {
@@ -1688,8 +1712,6 @@
   text-transform: capitalize;
 }
 
-/* SUBSCRIPTION PLAN SUMMARY */
-
 .almv-plan-card {
   margin-bottom: 16px;
   padding: 17px;
@@ -1708,7 +1730,7 @@
 .almv-plan-card h3 {
   margin: 7px 0 4px;
   color: #174833;
-  font-family: "Poppins", sans-serif;
+  font-family: Poppins, sans-serif;
   font-size: 16px;
   font-weight: 600;
 }
@@ -1719,8 +1741,6 @@
   font-size: 11px;
   text-transform: capitalize;
 }
-
-/* ACCOUNT MANAGEMENT */
 
 .almv-account-section {
   padding-top: 19px;
@@ -1776,8 +1796,6 @@
   color: #ba5e4d;
 }
 
-/* SUSPENSION FIELD */
-
 .almv-reason-field {
   margin-bottom: 13px;
 }
@@ -1798,7 +1816,7 @@
   border: 1px solid #dfe7de;
   border-radius: 8px;
   outline: none;
-  background: #fff;
+  background: #ffffff;
   color: #244935;
   font-size: 11.5px;
   line-height: 1.5;
@@ -1818,8 +1836,6 @@
   font-size: 11px;
 }
 
-/* ACTION BUTTONS */
-
 .almv-action-btn {
   display: flex;
   align-items: center;
@@ -1830,7 +1846,7 @@
   padding: 10px 13px;
   border: 0;
   border-radius: 8px;
-  color: #fff;
+  color: #ffffff;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -1865,8 +1881,6 @@
   text-align: center;
 }
 
-/* FOOTER */
-
 .almv-footer {
   display: flex;
   align-items: center;
@@ -1875,7 +1889,7 @@
   gap: 12px;
   padding: 13px 26px;
   border-top: 1px solid #e8ede7;
-  background: #fff;
+  background: #ffffff;
 }
 
 .almv-footer span {
@@ -1905,8 +1919,6 @@
   outline: 2px solid #bc9965;
   outline-offset: 2px;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 520px) {
   .almv-panel {
@@ -1946,401 +1958,9 @@
   }
 }
 
-
-/* =====================================
-   LAWYER MANAGEMENT PAGINATION
-===================================== */
-
-.alm-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  background: #fff;
-  border-top: 1px solid #e8ede7;
-}
-
-.alm-pagination-info {
-  color: #829087;
-  font-size: 11.5px;
-}
-
-.alm-pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.alm-pagination-controls button {
-  min-height: 32px;
-  padding: 0 13px;
-  border: 1px solid #dce6dd;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #20583f;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.alm-pagination-controls button:hover:not(:disabled) {
-  background: #edf5ee;
-  border-color: #bcd8c4;
-}
-
-.alm-pagination-controls button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.alm-page-number {
-  min-width: 48px;
-  text-align: center;
-  color: #315640;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-@media (max-width: 520px) {
-  .alm-pagination {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .alm-pagination-controls {
-    justify-content: space-between;
-  }
-}
-
-/* LAWYER MANAGEMENT - LOGO STYLE FONT */
-
-.alm-page-header h1 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 27px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  line-height: 1.3;
-  color: #103d30;
-}
-
-.alm-page-header p {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  color: #7c8d81;
-}
-
-/* ==============================================
-   ADVOCANOTE - REFERENCE STYLE LAWYERS TABLE
-   Clean / Compact / Professional
-============================================== */
-
-.alm-page .alm-reference-table {
-  width: 100%;
-  min-width: 1100px;
-  border-collapse: collapse;
-  font-family: "Inter", sans-serif;
-  text-align: left;
-}
-
-/* TABLE HEADER */
-
-.alm-page .alm-reference-table thead {
-  background: #f8f7f3;
-}
-
-.alm-page .alm-reference-table th {
-  padding: 15px 17px;
-  border-bottom: 1px solid #e8e7e1;
-  color: #516784;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* TABLE ROWS */
-
-.alm-page .alm-reference-table td {
-  height: 67px;
-  padding: 12px 17px;
-  border-bottom: 1px solid #ecebe6;
-  color: #526b80;
-  font-size: 11.5px;
-  font-weight: 400;
-  vertical-align: middle;
-}
-
-.alm-page .alm-reference-table tbody tr,
-.alm-page .alm-reference-table tbody tr:nth-child(even) {
-  background: #fff;
-}
-
-.alm-page .alm-reference-table tbody tr:hover {
-  background: #f8faf7;
-}
-
-.alm-page .alm-reference-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* ID */
-
-.alm-page .alm-ref-id {
-  color: #526980;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* LAWYER PROFILE */
-
-.alm-ref-person {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 185px;
-}
-
-.alm-ref-avatar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-
-  width: 36px;
-  height: 36px;
-
-  border-radius: 11px;
-
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 12px;
-  font-weight: 700;
-
-  color: #164a3a;
-  background: #f0f7f4;
-  border: 1px solid #cbded6;
-}
-
-/* ALTERNATE SOFT AVATAR COLORS */
-
-.alm-ref-avatar-0 {
-  background: #f1f8f5;
-  border-color: #c9ded4;
-  color: #164a3a;
-}
-
-.alm-ref-avatar-1 {
-  background: #edf7f2;
-  border-color: #d2e8db;
-  color: #206647;
-}
-
-.alm-ref-avatar-2 {
-  background: #fff5dc;
-  border-color: #e9d08b;
-  color: #7a5919;
-}
-
-/* NAME AND SUBTITLE */
-
-.alm-ref-person-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 4px;
-}
-
-.alm-ref-person-info strong {
-  color: #142a49;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.alm-ref-person-info span {
-  color: #909bbb;
-  font-size: 10.5px;
-  font-weight: 400;
-  line-height: 1.3;
-}
-
-/* EMAIL AND DATE */
-
-.alm-page .alm-ref-email {
-  color: #516985;
-  font-size: 11.5px;
-  white-space: nowrap;
-}
-
-.alm-page .alm-ref-date {
-  color: #526e87;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-/* ==============================================
-   VERIFICATION AND STATUS BADGES
-============================================== */
-
-.alm-ref-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 7px;
-  min-height: 26px;
-  padding: 5px 10px;
-
-  border: 1px solid transparent;
-  border-radius: 999px;
-
-  font-size: 10.5px;
-  font-weight: 500;
-  white-space: nowrap;
-  line-height: 1.2;
-  text-transform: capitalize;
-}
-
-/* BADGE DOT */
-
-.alm-ref-dot {
-  display: inline-block;
-  flex-shrink: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* EMAIL VERIFIED */
-
-.alm-ref-verified {
-  color: #00875d;
-  background: #edfcf5;
-  border-color: #a5ebc9;
-}
-
-/* EMAIL NOT VERIFIED */
-
-.alm-ref-pending {
-  color: #bb6800;
-  background: #fffae8;
-  border-color: #f7d97f;
-}
-
-/* ACTIVE ACCOUNT */
-
-.alm-ref-active {
-  color: #00875b;
-  background: #eafff4;
-  border-color: #a6edcd;
-}
-
-/* SUSPENDED ACCOUNT */
-
-.alm-ref-suspended {
-  color: #bb5147;
-  background: #fff1ee;
-  border-color: #f1c1b9;
-}
-
-/* UNKNOWN */
-
-.alm-ref-unknown {
-  color: #747e87;
-  background: #f2f3f5;
-  border-color: #e0e3e6;
-}
-
-/* ==============================================
-   MANAGE BUTTON
-============================================== */
-
-.alm-ref-manage {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-
-  min-height: 31px;
-  padding: 0 12px;
-
-  border: 1px solid #d3e1d8;
-  border-radius: 7px;
-
-  background: #f6faf7;
-  color: #17563e;
-
-  font-family: "Inter", sans-serif;
-  font-size: 10.5px;
-  font-weight: 600;
-
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background 0.18s ease,
-    color 0.18s ease;
-}
-
-.alm-ref-manage:hover {
-  background: #15533e;
-  border-color: #15533e;
-  color: white;
-}
-
-.alm-ref-manage:focus-visible {
-  outline: 2px solid #b99354;
-  outline-offset: 2px;
-}
-
-/* ==============================================
-   TABLE CONTAINER
-============================================== */
-
-.alm-page .alm-table-scroll {
-  width: 100%;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #d6dfd8 transparent;
-}
-
-.alm-page .alm-table-card {
-  border: 1px solid #e6e7e1;
-  border-radius: 12px;
-  background: #fff;
-  overflow: hidden;
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 1100px) {
-  .alm-page .alm-reference-table {
-    min-width: 1050px;
-  }
-}
-
-@media (max-width: 650px) {
-  .alm-page .alm-reference-table td {
-    height: 61px;
-    padding: 10px 13px;
-  }
-
-  .alm-page .alm-reference-table th {
-    padding: 12px 13px;
-  }
-
-  .alm-ref-avatar {
-    width: 33px;
-    height: 33px;
-  }
-}
-
-/* ==========================================
-   ADVOCANOTE - ADMIN LAWYER DETAILS
-   Professional Account Governance Drawer
-========================================== */
+/* ==================================
+   MANAGEMENT DRAWER - ALMD
+================================== */
 
 .almd-overlay {
   position: fixed;
@@ -2359,9 +1979,9 @@
   height: 100vh;
   height: 100dvh;
   min-height: 0;
-  background: #fff;
+  background: #ffffff;
   color: #183e31;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   box-shadow: -12px 0 40px rgba(8, 24, 18, 0.16);
 }
 
@@ -2371,10 +1991,8 @@
 
 .almd-panel button,
 .almd-panel textarea {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
 }
-
-/* HEADER */
 
 .almd-header {
   display: flex;
@@ -2396,8 +2014,8 @@
 
 .almd-header h2 {
   margin: 5px 0 0;
-  color: #fff;
-  font-family: "Poppins", sans-serif;
+  color: #ffffff;
+  font-family: Poppins, sans-serif;
   font-size: 18px;
   font-weight: 600;
 }
@@ -2408,18 +2026,16 @@
   flex-shrink: 0;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
-  background: rgba(255,255,255,0.09);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
   cursor: pointer;
 }
 
 .almd-close:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(255, 255, 255, 0.18);
 }
-
-/* SCROLL AREA */
 
 .almd-scroll {
   flex: 1;
@@ -2430,8 +2046,6 @@
   scrollbar-width: thin;
   scrollbar-color: #c9d7cb transparent;
 }
-
-/* LAWYER PROFILE */
 
 .almd-profile {
   display: flex;
@@ -2513,8 +2127,6 @@
   color: #7e8b82;
 }
 
-/* METRIC CARDS */
-
 .almd-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2531,7 +2143,7 @@
   padding: 13px 14px;
   border: 1px solid #e8e3db;
   border-radius: 10px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .almd-summary span {
@@ -2551,8 +2163,6 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-
-/* TABS */
 
 .almd-tabs {
   display: flex;
@@ -2582,13 +2192,11 @@
 }
 
 .almd-tabs button.active {
-  background: #fff;
+  background: #ffffff;
   color: #13533b;
   font-weight: 600;
   box-shadow: 0 1px 5px rgba(13, 55, 35, 0.08);
 }
-
-/* SECTION */
 
 .almd-section {
   margin-bottom: 22px;
@@ -2602,13 +2210,11 @@
   letter-spacing: 0.5px;
 }
 
-/* PROFESSIONAL DETAILS */
-
 .almd-details {
   overflow: hidden;
   border: 1px solid #e7e2d8;
   border-radius: 11px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .almd-details > div {
@@ -2646,8 +2252,6 @@
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
-
-/* ACCOUNT GOVERNANCE */
 
 .almd-governance {
   margin-top: 24px;
@@ -2694,7 +2298,7 @@
   padding: 7px 11px;
   border: 0;
   border-radius: 8px;
-  color: #fff;
+  color: #ffffff;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
@@ -2754,13 +2358,11 @@
   cursor: not-allowed;
 }
 
-/* REASON FIELD */
-
 .almd-reason {
   padding: 13px;
   border: 1px solid #ece3df;
   border-radius: 10px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .almd-reason label {
@@ -2779,7 +2381,7 @@
   border: 1px solid #e3e6e0;
   border-radius: 8px;
   outline: none;
-  background: #fff;
+  background: #ffffff;
   color: #244b36;
   font-size: 11px;
   line-height: 1.5;
@@ -2794,8 +2396,6 @@
   color: #b43f49;
   font-size: 11px;
 }
-
-/* FIXED FOOTER */
 
 .almd-footer {
   display: flex;
@@ -2820,7 +2420,7 @@
   border: 0;
   border-radius: 9px;
   background: #104a37;
-  color: #fff;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -2835,8 +2435,6 @@
   outline: 2px solid #c4a36c;
   outline-offset: 2px;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 520px) {
   .almd-panel {
@@ -2877,142 +2475,6 @@
   }
 }
 
-
-/* ==========================================
-   LAWYER VERIFICATION COLOUR SYSTEM
-   Verified = Green
-   Not Verified = Gold / Yellow
-========================================== */
-
-/* BASE AVATAR */
-
-.alm-page .alm-ref-avatar {
-  width: 43px;
-  height: 43px;
-  border-radius: 12px;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 650;
-  transition: background 0.2s ease;
-}
-
-/* VERIFIED LAWYER - GREEN */
-
-.alm-page .alm-avatar-verified {
-  background: #e8f7ee;
-  border: 1px solid #a9dfbf;
-  color: #137748;
-}
-
-/* NOT VERIFIED LAWYER - GOLD */
-
-.alm-page .alm-avatar-pending {
-  background: #fff5df;
-  border: 1px solid #edce80;
-  color: #a66a12;
-}
-
-/* UNKNOWN VERIFICATION */
-
-.alm-page .alm-avatar-unknown {
-  background: #f1f3f1;
-  border: 1px solid #dfe5df;
-  color: #748176;
-}
-
-/* VERIFIED BADGE */
-
-.alm-page .alm-ref-verified {
-  background: #e8f7ee;
-  border: 1px solid #a9dfbf;
-  color: #137748;
-}
-
-/* NOT VERIFIED BADGE */
-
-.alm-page .alm-ref-pending {
-  background: #fff5df;
-  border: 1px solid #edce80;
-  color: #a66a12;
-}
-
-/* ACCOUNT STATUS REMAINS SEPARATE */
-
-.alm-page .alm-ref-active {
-  background: #e8f7ee;
-  border: 1px solid #a9dfbf;
-  color: #137748;
-}
-
-.alm-page .alm-ref-suspended {
-  background: #fff0ed;
-  border: 1px solid #efc3ba;
-  color: #b94e43;
-}
-
-
-/* ==========================================
-   LAWYER ACCOUNT STATUS AVATAR COLORS
-   Active = Green
-   Suspended = Red
-========================================== */
-
-/* BASE PROFILE AVATAR */
-
-.alm-page .alm-reference-table .alm-ref-avatar {
-  width: 43px;
-  height: 43px;
-  border-radius: 12px;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-/* ACTIVE LAWYER */
-
-.alm-page .alm-reference-table
-.alm-ref-avatar.alm-avatar-active {
-  background: #e7f6ed;
-  border: 1px solid #a7dfc0;
-  color: #167847;
-}
-
-/* SUSPENDED LAWYER */
-
-.alm-page .alm-reference-table
-.alm-ref-avatar.alm-avatar-suspended {
-  background: #fff0ea;
-  border: 1px solid #f1bdb1;
-  color: #b84e43;
-}
-
-/* UNKNOWN STATUS */
-
-.alm-page .alm-reference-table
-.alm-ref-avatar.alm-avatar-unknown {
-  background: #f1f2f0;
-  border: 1px solid #dce2dc;
-  color: #737f76;
-}
-
-/* ACTIVE BADGE */
-
-.alm-page .alm-ref-active {
-  background: #e7f6ed;
-  border: 1px solid #a7dfc0;
-  color: #167847;
-}
-
-/* SUSPENDED BADGE */
-
-.alm-page .alm-ref-suspended {
-  background: #fff0ea;
-  border: 1px solid #f1bdb1;
-  color: #b84e43;
-}
-
-/* DRAWER PROFILE AVATAR */
-
 .almd-profile .almd-avatar.almd-avatar-active {
   background: #e7f6ed;
   border: 1px solid #a7dfc0;
@@ -3025,333 +2487,9 @@
   color: #b84e43;
 }
 
-
-/* ==========================================
-   ADVOCANOTE - RESPONSIVE LAWYER CARDS
-   Desktop = Table
-   Medium = 2 Cards
-   Mobile = 1 Card
-   No Horizontal Scroll
-========================================== */
-
-/* Detect available table width, including sidebar */
-
-.alm-page .alm-table-scroll {
-  container-type: inline-size;
-}
-
-/* ==========================================
-   COMPACT SCREEN - CARD VIEW
-========================================== */
-
-@container (max-width: 1140px) {
-
-  /* REMOVE TABLE LAYOUT */
-
-  .alm-page .alm-reference-table {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    border-collapse: separate;
-  }
-
-  .alm-page .alm-reference-table thead {
-    display: none;
-  }
-
-  /* CARD GRID */
-
-  .alm-page .alm-reference-table tbody {
-    display: grid;
-    grid-template-columns: repeat(
-      2,
-      minmax(0, 1fr)
-    );
-    gap: 13px;
-    padding: 16px;
-    background: #f8faf7;
-  }
-
-  /* EACH LAWYER CARD */
-
-  .alm-page .alm-reference-table tbody tr,
-  .alm-page .alm-reference-table tbody tr:nth-child(even) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: repeat(5, auto);
-    align-content: start;
-    align-items: center;
-    gap: 12px;
-
-    min-width: 0;
-    padding: 17px;
-
-    border: 1px solid #e1e9e1;
-    border-radius: 12px;
-    background: #ffffff;
-
-    box-shadow: 0 2px 9px rgba(
-      16, 60, 37, 0.035
-    );
-
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  .alm-page .alm-reference-table tbody tr:hover {
-    background: #ffffff;
-    border-color: #b8d5c0;
-    box-shadow: 0 5px 17px rgba(
-      16, 60, 37, 0.08
-    );
-  }
-
-  /* RESET TABLE CELLS */
-
-  .alm-page .alm-reference-table tbody td {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    width: auto;
-    height: auto;
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
-
-  /* 1. LAWYER NAME + AVATAR */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(2) {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
-
-  .alm-ref-person {
-    min-width: 0;
-    gap: 12px;
-  }
-
-  .alm-ref-person-info {
-    min-width: 0;
-  }
-
-  .alm-ref-person-info strong {
-    font-size: 12.5px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  .alm-ref-person-info span {
-    font-size: 10.5px;
-  }
-
-  /* 2. LAWYER ID */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(1) {
-    grid-column: 1;
-    grid-row: 2;
-
-    color: #7c8f80;
-    font-size: 11px;
-  }
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(1)::before {
-    content: "Lawyer ID:";
-    margin-right: 5px;
-    color: #91a096;
-    font-size: 10px;
-  }
-
-  /* 3. ACCOUNT STATUS */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(5) {
-    grid-column: 2;
-    grid-row: 2;
-    justify-content: flex-end;
-  }
-
-  /* 4. EMAIL */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(3) {
-    grid-column: 1 / -1;
-    grid-row: 3;
-
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-
-    padding-top: 12px;
-    border-top: 1px solid #eef1ed;
-
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    color: #4a6854;
-  }
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(3)::before {
-    content: "EMAIL ADDRESS";
-    color: #94a299;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.65px;
-  }
-
-  /* 5. REGISTERED DATE */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(4) {
-    grid-column: 1 / -1;
-    grid-row: 4;
-
-    justify-content: space-between;
-    gap: 10px;
-
-    color: #4a6854;
-    font-size: 11px;
-    white-space: normal;
-  }
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(4)::before {
-    content: "Registered On";
-    color: #8d9b90;
-    font-size: 10.5px;
-  }
-
-  /* 6. MANAGE BUTTON */
-
-  .alm-page .alm-reference-table
-  tbody td:nth-child(6) {
-    grid-column: 1 / -1;
-    grid-row: 5;
-
-    padding-top: 11px;
-    border-top: 1px solid #eef1ed;
-  }
-
-  .alm-page .alm-ref-manage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 100%;
-    min-height: 37px;
-
-    border: 1px solid #15523d;
-    border-radius: 8px;
-
-    background: #15523d;
-    color: #ffffff;
-
-    font-size: 11.5px;
-    font-weight: 600;
-  }
-
-  .alm-page .alm-ref-manage:hover {
-    background: #1c7051;
-    border-color: #1c7051;
-  }
-
-  /* EMPTY / LOADING STATE */
-
-  .alm-page .alm-reference-table
-  tbody tr:has(.alm-empty) {
-    grid-column: 1 / -1;
-    display: block;
-    text-align: center;
-  }
-
-  .alm-page .alm-reference-table
-  tbody td.alm-empty {
-    display: block;
-    width: 100%;
-    padding: 25px 12px;
-  }
-}
-
-/* ==========================================
-   SMALL SCREEN - ONE CARD PER ROW
-========================================== */
-
-@container (max-width: 720px) {
-
-  .alm-page .alm-reference-table tbody {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 13px;
-    gap: 12px;
-  }
-
-  .alm-page .alm-reference-table tbody tr,
-  .alm-page .alm-reference-table tbody tr:nth-child(even) {
-    padding: 15px;
-  }
-
-  .alm-page .alm-ref-avatar {
-    width: 43px;
-    height: 43px;
-  }
-}
-
-/* ==========================================
-   MOBILE SEARCH + PAGINATION
-========================================== */
-
-@media (max-width: 650px) {
-
-  .alm-page {
-    width: 100%;
-    min-width: 0;
-    padding: 13px 10px 22px;
-  }
-
-  .alm-table-card {
-    min-width: 0;
-  }
-
-  .alm-toolbar {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 9px;
-    padding: 13px;
-  }
-
-  .alm-search {
-    width: 100%;
-    flex: none;
-  }
-
-  .alm-toolbar select {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .alm-pagination {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .alm-pagination-controls {
-    justify-content: space-between;
-  }
-
-  .alm-pagination-info {
-    text-align: center;
-  }
-}
-/* ==========================================
-   ADVOCANOTE - NEW LAWYER ACCOUNT DRAWER
-   Verify Email removed
-========================================== */
+/* ==================================
+   ACCOUNT DRAWER - ALPN
+================================== */
 
 .alpn-overlay {
   position: fixed;
@@ -3364,15 +2502,15 @@
 }
 
 .alpn-panel {
+  display: flex;
+  flex-direction: column;
   width: min(470px, 100%);
   height: 100vh;
   height: 100dvh;
-  display: flex;
-  flex-direction: column;
   background: #ffffff;
   color: #193d2f;
+  font-family: Inter, sans-serif;
   box-shadow: -12px 0 36px rgba(5, 26, 16, 0.14);
-  font-family: "Inter", sans-serif;
 }
 
 .alpn-panel * {
@@ -3385,11 +2523,7 @@
   justify-content: space-between;
   gap: 14px;
   padding: 22px 24px 20px;
-  background: linear-gradient(
-    135deg,
-    #0f4a37 0%,
-    #16563f 100%
-  );
+  background: linear-gradient(135deg, #0f4a37 0%, #16563f 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -3411,16 +2545,16 @@
 }
 
 .alpn-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 36px;
   height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
-  display: grid;
-  place-items: center;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .alpn-close:hover {
@@ -3434,8 +2568,6 @@
   background: #f7f8f5;
 }
 
-/* PROFILE CARD */
-
 .alpn-profile-card {
   display: flex;
   align-items: center;
@@ -3448,12 +2580,12 @@
 }
 
 .alpn-avatar {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 24px;
   font-weight: 700;
@@ -3526,8 +2658,6 @@
   color: #b74d42;
 }
 
-/* SUMMARY GRID */
-
 .alpn-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3561,8 +2691,6 @@
   text-transform: capitalize;
 }
 
-/* TABS */
-
 .alpn-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3572,15 +2700,15 @@
 }
 
 .alpn-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 42px;
   border: 1px solid #e0e5de;
   border-radius: 11px;
   background: #eef2ee;
   color: #7d8d80;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -3592,8 +2720,6 @@
   color: #18523d;
   box-shadow: 0 0 0 2px rgba(215, 179, 111, 0.16);
 }
-
-/* SECTION */
 
 .alpn-section {
   margin-bottom: 18px;
@@ -3617,8 +2743,6 @@
   color: #98a39a;
   font-size: 10.5px;
 }
-
-/* INFO CARD */
 
 .alpn-info-card {
   overflow: hidden;
@@ -3662,8 +2786,6 @@
 .alpn-row strong.caps {
   text-transform: capitalize;
 }
-
-/* ACTION CARD */
 
 .alpn-action-card {
   padding: 15px;
@@ -3712,14 +2834,14 @@
 }
 
 .alpn-main-action {
-  width: 100%;
-  min-height: 39px;
-  border: 0;
-  border-radius: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
+  width: 100%;
+  min-height: 39px;
+  border: 0;
+  border-radius: 9px;
   color: #ffffff;
   font-size: 11.5px;
   font-weight: 700;
@@ -3746,8 +2868,6 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
-
-/* FOOTER */
 
 .alpn-footer {
   display: flex;
@@ -3780,8 +2900,6 @@
 .alpn-footer button:hover {
   background: #186648;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 520px) {
   .alpn-panel {
@@ -3824,11 +2942,9 @@
   }
 }
 
-/* ==========================================
-   ADVOCANOTE - MODERN ACCOUNT DETAILS
-   Clean White / Soft Cream / Dark Green
-   Card Grid Layout
-========================================== */
+/* ==================================
+   MODERN LAWYER DRAWER - ALX
+================================== */
 
 .alx-overlay {
   position: fixed;
@@ -3849,7 +2965,7 @@
   min-height: 0;
   background: #f9faf7;
   color: #1c3c2d;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   box-shadow: -12px 0 40px rgba(8, 31, 19, 0.14);
 }
 
@@ -3861,8 +2977,6 @@
 .alx-panel textarea {
   font-family: inherit;
 }
-
-/* HEADER - NO DARK GREEN BANNER */
 
 .alx-header {
   display: flex;
@@ -3894,7 +3008,7 @@
 .alx-header-text h2 {
   margin: 0;
   color: #173e2d;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.25px;
@@ -3914,7 +3028,7 @@
   height: 35px;
   border: 1px solid #e2e8e0;
   border-radius: 9px;
-  background: #fff;
+  background: #ffffff;
   color: #456653;
   cursor: pointer;
 }
@@ -3922,8 +3036,6 @@
 .alx-close:hover {
   background: #f0f5ef;
 }
-
-/* SCROLL CONTENT */
 
 .alx-scroll {
   flex: 1;
@@ -3934,8 +3046,6 @@
   scrollbar-width: thin;
   scrollbar-color: #c8d6cb transparent;
 }
-
-/* PROFILE SUMMARY */
 
 .alx-identity {
   display: flex;
@@ -4028,8 +3138,6 @@
   background: #edf0ed;
 }
 
-/* TABS */
-
 .alx-tabs {
   display: flex;
   gap: 9px;
@@ -4059,8 +3167,6 @@
   font-weight: 700;
 }
 
-/* SECTION HEADINGS */
-
 .alx-section {
   margin-bottom: 23px;
 }
@@ -4084,8 +3190,6 @@
   color: #95a096;
   font-size: 10.5px;
 }
-
-/* CARD GRID INSTEAD OF LINE BY LINE */
 
 .alx-field-grid {
   display: grid;
@@ -4125,8 +3229,6 @@
   overflow-wrap: anywhere;
 }
 
-/* SUBSCRIPTION PLAN */
-
 .alx-plan {
   display: flex;
   align-items: center;
@@ -4159,11 +3261,9 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #fff;
+  background: #ffffff;
   color: #23704d;
 }
-
-/* ACCOUNT ACCESS CARD */
 
 .alx-access-section {
   margin-top: 25px;
@@ -4175,7 +3275,7 @@
   padding: 16px;
   border: 1px solid #e1e7df;
   border-radius: 12px;
-  background: #fff;
+  background: #ffffff;
 }
 
 .alx-access-top {
@@ -4250,8 +3350,6 @@
   font-size: 11px;
 }
 
-/* ACTION BUTTON */
-
 .alx-action {
   display: flex;
   align-items: center;
@@ -4262,7 +3360,7 @@
   padding: 10px;
   border: 0;
   border-radius: 9px;
-  color: white;
+  color: #ffffff;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -4288,8 +3386,6 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-/* FOOTER */
 
 .alx-footer {
   display: flex;
@@ -4317,7 +3413,7 @@
   border: 1px solid #14523c;
   border-radius: 8px;
   background: #14523c;
-  color: white;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -4326,8 +3422,6 @@
 .alx-footer button:hover {
   background: #196b4b;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 520px) {
   .alx-panel {
@@ -4384,168 +3478,189 @@
   }
 }
 
-/* ==========================================
-   MOBILE - THREE COMPACT SUMMARY CARDS
-   AdvocaNote Lawyer Management
-========================================== */
+/* ==========================
+   REDUCED MOTION
+========================== */
 
-@media (max-width: 700px) {
-
-  .alm-page .alm-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 9px;
-    padding: 0;
-    margin-bottom: 16px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    overflow: visible;
-  }
-
-  .alm-page .alm-stats > .alm-stat,
-  .alm-page .alm-stats > .alm-stat:nth-child(1),
-  .alm-page .alm-stats > .alm-stat:nth-child(2),
-  .alm-page .alm-stats > .alm-stat:nth-child(3) {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0;
-
-    min-width: 0;
-    min-height: 113px;
-    padding: 13px 12px;
-
-    border: 1px solid #e1e8df;
-    border-radius: 11px;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(12, 48, 29, 0.035);
-    transform: none;
-  }
-
-  /* FIRST CARD - DARK GREEN */
-
-  .alm-page .alm-stats > .alm-stat:nth-child(1) {
-    background: #124b38;
-    border-color: #124b38;
-  }
-
-  /* ICONS */
-
-  .alm-page .alm-stats .alm-stat-icon {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-
-    width: 29px;
-    height: 29px;
-    min-width: 29px;
-    margin: 0 0 10px;
-    padding: 0;
-
-    border: 0;
-    border-radius: 8px;
-    background: #e8f4ec;
-    color: #17794a;
-  }
-
-  .alm-page .alm-stats > .alm-stat:nth-child(1)
-  .alm-stat-icon {
-    background: rgba(255,255,255,0.12);
-    color: #e7c88c;
-  }
-
-  .alm-page .alm-stats > .alm-stat:nth-child(3)
-  .alm-stat-icon {
-    background: #fff0e7;
-    color: #c5764d;
-  }
-
-  .alm-page .alm-stats .alm-stat-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* LABELS */
-
-  .alm-page .alm-stats .alm-stat > span {
-    display: block;
-    width: 100%;
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 1.3;
-    color: #708576;
-    overflow-wrap: break-word;
-  }
-
-  .alm-page .alm-stats > .alm-stat:nth-child(1) > span {
-    color: #d5e6db;
-  }
-
-  /* NUMBERS */
-
-  .alm-page .alm-stats .alm-stat > strong {
-    display: block;
-    margin-top: 5px;
-    font-size: 23px;
-    font-weight: 700;
-    line-height: 1.1;
-    color: #153e2d;
-  }
-
-  .alm-page .alm-stats > .alm-stat:nth-child(1) > strong {
-    color: #ffffff;
+@media (prefers-reduced-motion: reduce) {
+  .alm-page *,
+  .almv-panel *,
+  .almd-panel *,
+  .alpn-panel *,
+  .alx-panel * {
+    transition: none !important;
+    animation: none !important;
   }
 }
 
-/* VERY SMALL MOBILE */
+/* =========================================
+   LAWYER MANAGEMENT - FINAL COLOR FIX
+========================================= */
 
-@media (max-width: 390px) {
+/* PAGE BACKGROUND */
 
-  .alm-page .alm-stats {
-    gap: 6px;
-  }
-
-  .alm-page .alm-stats > .alm-stat,
-  .alm-page .alm-stats > .alm-stat:nth-child(1),
-  .alm-page .alm-stats > .alm-stat:nth-child(2),
-  .alm-page .alm-stats > .alm-stat:nth-child(3) {
-    min-height: 103px;
-    padding: 10px 8px;
-    border-radius: 9px;
-  }
-
-  .alm-page .alm-stats .alm-stat-icon {
-    width: 27px;
-    height: 27px;
-    min-width: 27px;
-    margin-bottom: 8px;
-  }
-
-  .alm-page .alm-stats .alm-stat > span {
-    font-size: 9px;
-  }
-
-  .alm-page .alm-stats .alm-stat > strong {
-    font-size: 21px;
-  }
-}
-/* CLOSED ACCOUNT STATUS */
-
-.alm-ref-closed {
-  background: #faf3e5;
-  color: #89632b;
-  border: 1px solid #ead9b6;
+body:has(.alm-page),
+#root:has(.alm-page),
+main:has(.alm-page) {
+  background-color: #f7f9f6 !important;
 }
 
-.alm-ref-closed .alm-ref-dot {
-  background: #b88d45;
+.alm-page {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  min-height: calc(100dvh - 110px);
 }
 
+/* =========================================
+   TABLE - ACCOUNT STATUS COLORS
+========================================= */
+
+/* ACTIVE - GREEN */
+
+.alm-page .alm-ref-active,
+.alm-page .alm-status-active {
+  background: #def5e6 !important;
+  border: 1px solid #a9ddbc !important;
+  color: #087a43 !important;
+}
+
+/* CLOSED - YELLOW / ORANGE */
+
+.alm-page .alm-ref-closed,
+.alm-page .alm-status-closed {
+  background: #fff1ce !important;
+  border: 1px solid #efce74 !important;
+  color: #a66500 !important;
+}
+
+/* SUSPENDED / BLOCKED - RED */
+
+.alm-page .alm-ref-suspended,
+.alm-page .alm-ref-blocked,
+.alm-page .alm-status-suspended,
+.alm-page .alm-status-blocked {
+  background: #ffe5e5 !important;
+  border: 1px solid #efb0b0 !important;
+  color: #b72d38 !important;
+}
+
+/* UNKNOWN - READABLE GREY */
+
+.alm-page .alm-ref-unknown,
+.alm-page .alm-status-unknown {
+  background: #e9eeeb !important;
+  border: 1px solid #c8d2ca !important;
+  color: #53675a !important;
+}
+
+/* =========================================
+   MANAGE PROFILE - STATUS COLORS
+========================================= */
+
+/* ACTIVE */
+
+.almv-status-active,
+.almd-status.is-active,
+.alpn-status.is-active,
+.alx-status.active {
+  background: #def5e6 !important;
+  border: 1px solid #a9ddbc !important;
+  color: #087a43 !important;
+}
+
+/* CLOSED */
+
+.almv-status-closed,
+.almd-status.is-closed,
+.alpn-status.is-closed,
 .alx-status.closed {
-  background: #faf3e5;
-  color: #89632b;
-  border: 1px solid #ead9b6;
+  background: #fff1ce !important;
+  border: 1px solid #efce74 !important;
+  color: #a66500 !important;
+}
+
+/* SUSPENDED / BLOCKED */
+
+.almv-status-suspended,
+.almv-status-blocked,
+.almd-status.is-suspended,
+.almd-status.is-blocked,
+.alpn-status.is-suspended,
+.alpn-status.is-blocked,
+.alx-status.suspended,
+.alx-status.blocked {
+  background: #ffe5e5 !important;
+  border: 1px solid #efb0b0 !important;
+  color: #b72d38 !important;
+}
+
+/* UNKNOWN */
+
+.almv-status-unknown,
+.almd-status.is-unknown,
+.alpn-status.is-unknown,
+.alx-status.unknown {
+  background: #e9eeeb !important;
+  border: 1px solid #c8d2ca !important;
+  color: #53675a !important;
+}
+
+/* BADGE TEXT */
+
+.alm-page .alm-ref-badge,
+.alm-page .alm-status,
+.almv-status,
+.almd-status,
+.alpn-status,
+.alx-status {
+  font-weight: 700 !important;
+}
+
+/* DOT USES SAME STATUS COLOR */
+
+.alm-page .alm-ref-dot,
+.alm-page .alm-status::before,
+.almv-status-dot {
+  background: currentColor;
+}
+
+/* ===================================
+   LAWYER AVATAR - MATCH STATUS COLOR
+=================================== */
+
+/* CLOSED - YELLOW / ORANGE */
+
+.alm-page .alm-reference-table
+tr:has(.alm-ref-closed) .alm-ref-avatar {
+  background: #fff1ce !important;
+  border: 1px solid #efce74 !important;
+  color: #a66500 !important;
+}
+
+/* ACTIVE - GREEN */
+
+.alm-page .alm-reference-table
+tr:has(.alm-ref-active) .alm-ref-avatar {
+  background: #def5e6 !important;
+  border: 1px solid #a9ddbc !important;
+  color: #087a43 !important;
+}
+
+/* SUSPENDED - RED */
+
+.alm-page .alm-reference-table
+tr:has(.alm-ref-suspended) .alm-ref-avatar {
+  background: #ffe5e5 !important;
+  border: 1px solid #efb0b0 !important;
+  color: #b72d38 !important;
+}
+
+/* BLOCKED - RED */
+
+.alm-page .alm-reference-table
+tr:has(.alm-ref-blocked) .alm-ref-avatar {
+  background: #ffe5e5 !important;
+  border: 1px solid #efb0b0 !important;
+  color: #b72d38 !important;
 }

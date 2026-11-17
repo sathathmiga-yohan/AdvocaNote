@@ -113,7 +113,7 @@ export default function AdminLawyers() {
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const lawyersPerPage = 20;
+  const lawyersPerPage = 10;
   const [statusFilter, setStatusFilter] =
     useState("all");
 
@@ -295,9 +295,8 @@ export default function AdminLawyers() {
         return dateB - dateA;
       });
   }, [lawyers, search, statusFilter]);
-
   // =====================================
-  // PAGINATION - 20 LAWYERS PER PAGE
+  // PAGINATION - 10 LAWYERS PER PAGE
   // =====================================
 
   const totalPages = Math.max(
@@ -525,7 +524,11 @@ export default function AdminLawyers() {
     <main className="alm-page">
       <header className="alm-page-header">
         <div>
-          <h1>Lawyer Management</h1>
+
+          <h1>
+            Lawyer <span>Management</span>
+          </h1>
+
           <p>
             Manage registered lawyers and monitor
             account status.
@@ -1071,8 +1074,8 @@ export default function AdminLawyers() {
                     <button
                       type="button"
                       className={`alx-action ${selectedLawyer.is_active
-                          ? "alx-suspend"
-                          : "alx-reactivate"
+                        ? "alx-suspend"
+                        : "alx-reactivate"
                         }`}
                       disabled={
                         saving ||

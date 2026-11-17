@@ -11,13 +11,15 @@ from app.auth.security import hash_password, verify_password, create_access_toke
 
 import hashlib
 import secrets
+from admin_notifications_api import create_admin_notification
+import logging
+
+logger = logging.getLogger(__name__)
 
 from datetime import datetime, timedelta, timezone
 
 from app.config import settings
 from app.models.session import LoginSession
-
-
 def register_user(db: Session, data: Register):
 
     existing_user = db.scalar(
@@ -53,8 +55,36 @@ def register_user(db: Session, data: Register):
             detail="Email already registered"
         )
 
-    return new_user
+    # =====================================
+    # ADMIN NOTIFICATION - NEW REGISTRATION
+    # =====================================
 
+    try:
+        create_admin_notification(
+            type="registration",
+            title="New Lawyer Registration",
+            message=(
+                f"{new_user.full_name} has registered "
+                "a new lawyer account."
+            ),
+            details={
+                "lawyer_id": new_user.id,
+                "lawyer_name": new_user.full_name,
+                "email": new_user.email,
+                "role": new_user.role,
+                "account_status": "Active",
+                "activity": "New Registration",
+            },
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to create admin registration notification "
+            "for lawyer ID %s",
+            new_user.id,
+        )
+
+    return new_user
 
 def login_user(db: Session, data: Login):
 

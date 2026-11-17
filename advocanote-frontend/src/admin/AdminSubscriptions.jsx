@@ -1,34 +1,31 @@
 
 import { useEffect, useMemo, useState } from "react";
-
 import {
-  Crown,
-  CreditCard,
-  Users,
-  Search,
-  RefreshCw,
-  Wallet,
-  CalendarDays,
   AlertCircle,
-  ShieldCheck,
+  BarChart3,
+  CalendarDays,
+  Clock3,
+  CreditCard,
+  Crown,
+  Layers3,
+  LayoutDashboard,
   Receipt,
-  CheckCircle2,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Users,
+  Wallet,
 } from "lucide-react";
 
-import "./AdminSubscriptions.css";
 import AdminPlanManager from "./AdminPlanManager";
-// =====================================
-// API CONFIGURATION
-// =====================================
+import "./AdminSubscriptions.css";
 
 const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:8000"
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
 
-// =====================================
-// ADMIN AUTHENTICATION
-// =====================================
+const ROWS_PER_PAGE = 10;
+const COLOMBO_TZ = "Asia/Colombo";
 
 function getAdminToken() {
   const token = sessionStorage.getItem(
@@ -40,32 +37,28 @@ function getAdminToken() {
     : null;
 }
 
-// =====================================
-// MONEY HELPERS
-// =====================================
+function normalizeStatus(value) {
+  return String(value || "unknown")
+    .trim()
+    .toLowerCase();
+}
 
-// Our current MySQL Payment model stores
-// LKR 1000 as amount = 1000.00.
-//
-// Older overview APIs may return amount_minor.
-// Support both without dividing twice.
+function formatStatus(value) {
+  return normalizeStatus(value)
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
+}
 
-function getPlanAmount(plan) {
-  if (
-    plan?.price !== null &&
-    plan?.price !== undefined
-  ) {
-    return Number(plan.price);
-  }
+function StatusBadge({ status }) {
+  const value = normalizeStatus(status);
 
-  if (
-    plan?.price_minor !== null &&
-    plan?.price_minor !== undefined
-  ) {
-    return Number(plan.price_minor) / 100;
-  }
-
-  return null;
+  return (
+    <span className={`asub-status asub-status-${value}`}>
+      {formatStatus(value)}
+    </span>
+  );
 }
 
 function getPaymentAmount(payment) {
@@ -86,7 +79,11 @@ function getPaymentAmount(payment) {
   return null;
 }
 
-function formatMoney(amount, currency = "LKR") {
+function formatMoney(
+  amount,
+  currency = "LKR",
+  decimals = 2
+) {
   if (
     amount === null ||
     amount === undefined ||
@@ -99,110 +96,74 @@ function formatMoney(amount, currency = "LKR") {
     return new Intl.NumberFormat("en-LK", {
       style: "currency",
       currency: currency || "LKR",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(Number(amount));
   } catch {
-    return `${currency} ${Number(amount).toFixed(2)}`;
+    return `${currency || "LKR"} ${Number(amount).toFixed(decimals)}`;
   }
 }
 
-// =====================================
-// DATE HELPERS
-// =====================================
+function parseBackendDate(value) {
+  if (!value) return null;
 
-function formatDate(value) {
-  if (!value) return "—";
+  const raw = String(value)
+    .trim()
+    .replace(" ", "T");
 
-  const raw = String(value);
-
-  // Backend stores naive UTC datetimes.
   const normalized =
-    /(?:Z|[+-]\d{2}:\d{2})$/i.test(raw)
+    /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw)
       ? raw
       : `${raw}Z`;
 
   const date = new Date(normalized);
 
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
+}
+
+function formatDate(value) {
+  const date = parseBackendDate(value);
+
+  if (!date) return "—";
 
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    timeZone: "Asia/Colombo",
+    timeZone: COLOMBO_TZ,
   }).format(date);
 }
 
-// =====================================
-// STATUS HELPERS
-// =====================================
+function monthKey(date) {
+  const parts = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      timeZone: COLOMBO_TZ,
+      year: "numeric",
+      month: "2-digit",
+    }
+  ).formatToParts(date);
 
-function normalizeStatus(status) {
-  return String(status || "unknown")
-    .trim()
-    .toLowerCase();
-}
+  const year = parts.find(
+    (part) => part.type === "year"
+  )?.value;
 
-function formatStatus(status) {
-  return normalizeStatus(status)
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase()
-    );
+  const month = parts.find(
+    (part) => part.type === "month"
+  )?.value;
+
+  return `${year}-${month}`;
 }
 
 function isPaidPayment(payment) {
-  const status = normalizeStatus(payment?.status);
-
-  return status === "paid" ||
-    status === "succeeded";
-}
-
-function StatusBadge({ status }) {
-  const value = normalizeStatus(status);
-
-  return (
-    <span
-      className={`asub-status asub-status-${value}`}
-    >
-      {formatStatus(value)}
-    </span>
+  return ["paid", "succeeded"].includes(
+    normalizeStatus(payment?.status)
   );
 }
 
-// =====================================
-// PLAN HELPERS
-// =====================================
-
-function getBillingCycle(plan) {
-  const cycle =
-    plan?.billing_interval ||
-    plan?.billing_cycle ||
-    plan?.interval;
-
-  if (!cycle) return "—";
-
-  if (
-    cycle === "month" ||
-    cycle === "monthly"
-  ) {
-    return "Monthly";
-  }
-
-  if (
-    cycle === "year" ||
-    cycle === "yearly"
-  ) {
-    return "Yearly";
-  }
-
-  return formatStatus(cycle);
-}
-
-function getLawyerName(lawyer) {
+function getLawyerName(lawyer = {}) {
   return (
     lawyer.full_name ||
     lawyer.fullName ||
@@ -211,12 +172,14 @@ function getLawyerName(lawyer) {
       lawyer.first_name,
       lawyer.last_name,
     ].filter(Boolean).join(" ") ||
-    `Lawyer #${lawyer.id}`
+    (lawyer.id
+      ? `Lawyer #${lawyer.id}`
+      : "Lawyer")
   );
 }
 
 function getLawyerSubscription(lawyer) {
-  return lawyer.subscription || null;
+  return lawyer?.subscription || null;
 }
 
 function getSubscriptionEnd(subscription) {
@@ -227,30 +190,289 @@ function getSubscriptionEnd(subscription) {
   );
 }
 
+// Display old DB plan names using current UI names.
+// Stripe IDs and backend plan records stay unchanged.
+function displayPlanName(value) {
+  const name = String(value || "").trim();
+  const key = name.toLowerCase();
+
+  if (key === "free plus") return "Basic";
+  if (key === "pro") return "Premium";
+  if (key === "plus") return "Annual";
+
+  return name || "Not assigned";
+}
+
+function PlanTag({ name }) {
+  const label = displayPlanName(name);
+  const key = label.toLowerCase();
+
+  const variant = [
+    "basic",
+    "premium",
+    "annual",
+  ].includes(key)
+    ? key
+    : "default";
+
+  return (
+    <span
+      className={`asub-plan-tag asub-plan-${variant}`}
+    >
+      {label}
+    </span>
+  );
+}
+
 // =====================================
-// MAIN ADMIN SUBSCRIPTIONS PAGE
+// PAGINATION
+// =====================================
+
+function Pager({
+  page,
+  totalPages,
+  onChange,
+}) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="asub-pager">
+      <span>
+        Page {page} of {totalPages}
+      </span>
+
+      <div className="asub-pager-actions">
+        <button
+          type="button"
+          disabled={page <= 1}
+          onClick={() => onChange(page - 1)}
+        >
+          Previous
+        </button>
+
+        <button
+          type="button"
+          disabled={page >= totalPages}
+          onClick={() => onChange(page + 1)}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// =====================================
+// REVENUE CHART
+// =====================================
+
+function RevenueChart({ payments }) {
+  const months = useMemo(() => {
+    const [year, month] = monthKey(
+      new Date()
+    )
+      .split("-")
+      .map(Number);
+
+    const series = Array.from(
+      { length: 6 },
+      (_, index) => {
+        const date = new Date(
+          Date.UTC(
+            year,
+            month - 1 - (5 - index),
+            1,
+            12
+          )
+        );
+
+        return {
+          key: monthKey(date),
+
+          label: new Intl.DateTimeFormat(
+            "en-US",
+            {
+              month: "short",
+              timeZone: "UTC",
+            }
+          ).format(date),
+
+          amount: 0,
+        };
+      }
+    );
+
+    const byKey = new Map(
+      series.map((entry) => [
+        entry.key,
+        entry,
+      ])
+    );
+
+    payments.forEach((payment) => {
+      const date = parseBackendDate(
+        payment.paid_at ||
+        payment.created_at
+      );
+
+      const amount = getPaymentAmount(
+        payment
+      );
+
+      if (
+        !date ||
+        amount === null ||
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
+        return;
+      }
+
+      const entry = byKey.get(
+        monthKey(date)
+      );
+
+      if (entry) {
+        entry.amount += amount;
+      }
+    });
+
+    return series;
+  }, [payments]);
+
+  const maxValue = Math.max(
+    0,
+    ...months.map(
+      (month) => month.amount
+    )
+  );
+
+  const axisMax =
+    maxValue > 0
+      ? Math.ceil(maxValue / 1000) * 1000
+      : 1000;
+
+  return (
+    <section className="asub-overview-card asub-revenue-card">
+      <div className="asub-card-heading">
+        <BarChart3 size={19} />
+
+        <h2>
+          Subscription Revenue{" "}
+          <span>(Last 6 Months)</span>
+        </h2>
+      </div>
+
+      <div className="asub-chart">
+        <div
+          className="asub-chart-axis"
+          aria-hidden="true"
+        >
+          {[4, 3, 2, 1, 0].map(
+            (tick) => (
+              <span key={tick}>
+                {formatMoney(
+                  (axisMax * tick) / 4,
+                  "LKR",
+                  0
+                )}
+              </span>
+            )
+          )}
+        </div>
+
+        <div className="asub-chart-main">
+          <div className="asub-chart-plot">
+            <div
+              className="asub-chart-grid"
+              aria-hidden="true"
+            />
+
+            <div className="asub-chart-bars">
+              {months.map(
+                (month, index) => (
+                  <div
+                    className="asub-chart-bar-slot"
+                    key={month.key}
+                  >
+                    <div
+                      className={`asub-chart-bar ${
+                        index ===
+                        months.length - 1
+                          ? "latest"
+                          : ""
+                      }`}
+                      style={{
+                        height: `${
+                          Math.max(
+                            0,
+                            Math.min(
+                              100,
+                              (
+                                month.amount /
+                                axisMax
+                              ) * 100
+                            )
+                          )
+                        }%`,
+                      }}
+                      title={`${month.label}: ${formatMoney(month.amount)}`}
+                      aria-label={`${month.label}: ${formatMoney(month.amount)}`}
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="asub-chart-months">
+            {months.map((month) => (
+              <span key={month.key}>
+                {month.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// =====================================
+// MAIN PAGE
 // =====================================
 
 export default function AdminSubscriptions() {
   const [data, setData] = useState(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
 
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [error, setError] =
+    useState("");
 
-  const [activeTab, setActiveTab] = useState(
-    "lawyers"
-  );
+  const [refreshKey, setRefreshKey] =
+    useState(0);
 
-  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] =
+    useState("overview");
+
+  const [search, setSearch] =
+    useState("");
+
+  const [lawyerPage, setLawyerPage] =
+    useState(1);
+
+  const [paymentPage, setPaymentPage] =
+    useState(1);
 
   // ===================================
-  // FETCH REAL BACKEND DATA
+  // EXISTING BACKEND API
   // ===================================
 
   useEffect(() => {
-    const controller = new AbortController();
+    const controller =
+      new AbortController();
 
     async function loadSubscriptions() {
       setLoading(true);
@@ -260,9 +482,11 @@ export default function AdminSubscriptions() {
 
       if (!token) {
         setData(null);
+
         setError(
           "Please log in as an administrator."
         );
+
         setLoading(false);
         return;
       }
@@ -272,10 +496,15 @@ export default function AdminSubscriptions() {
           `${API_URL}/admin/subscriptions/overview`,
           {
             method: "GET",
+
             headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
+              Authorization:
+                `Bearer ${token}`,
+
+              Accept:
+                "application/json",
             },
+
             signal: controller.signal,
           }
         );
@@ -294,7 +523,7 @@ export default function AdminSubscriptions() {
 
         if (response.status === 404) {
           throw new Error(
-            "Admin Subscription Overview API was not found. Please check the backend route."
+            "Admin Subscription Overview API was not found."
           );
         }
 
@@ -304,10 +533,9 @@ export default function AdminSubscriptions() {
           );
         }
 
-        const result = await response.json();
+        const result =
+          await response.json();
 
-        // Never invent missing backend data.
-        // Validate the actual overview response.
         if (
           !result ||
           !Array.isArray(result.lawyers) ||
@@ -346,159 +574,387 @@ export default function AdminSubscriptions() {
     loadSubscriptions();
 
     return () => controller.abort();
-
   }, [refreshKey]);
-
-  // ===================================
-  // BACKEND DATA
-  // ===================================
 
   const lawyers = data?.lawyers || [];
   const plans = data?.plans || [];
   const payments = data?.payments || [];
 
   // ===================================
-  // FILTER LAWYERS
+  // PAID LKR PAYMENTS
   // ===================================
 
-  const filteredLawyers = useMemo(() => {
-    const query = search
-      .toLowerCase()
-      .trim();
+  const paidPayments = useMemo(
+    () =>
+      payments.filter(
+        (payment) =>
+          isPaidPayment(payment) &&
+          String(
+            payment.currency || ""
+          ).toUpperCase() === "LKR"
+      ),
+    [payments]
+  );
 
-    if (!query) {
-      return lawyers;
-    }
+  const totalRevenue = useMemo(
+    () =>
+      paidPayments.reduce(
+        (total, payment) => {
+          const amount =
+            getPaymentAmount(payment);
 
-    return lawyers.filter((lawyer) => {
-      const subscription =
-        getLawyerSubscription(lawyer);
-
-      const searchableText = [
-        lawyer.id,
-        getLawyerName(lawyer),
-        lawyer.email,
-        subscription?.plan_name,
-        subscription?.status,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return searchableText.includes(query);
-    });
-
-  }, [lawyers, search]);
-
-  // ===================================
-  // ACTIVE SUBSCRIBERS
-  // ===================================
-
-  const activeSubscribers = useMemo(() => {
-    return lawyers.filter((lawyer) => {
-      const subscription =
-        getLawyerSubscription(lawyer);
-
-      return (
-        normalizeStatus(subscription?.status) ===
-        "active"
-      );
-    }).length;
-  }, [lawyers]);
+          return (
+            total +
+            (
+              amount !== null &&
+              Number.isFinite(amount)
+                ? amount
+                : 0
+            )
+          );
+        },
+        0
+      ),
+    [paidPayments]
+  );
 
   // ===================================
-  // ACTIVE PLANS
+  // SUBSCRIPTION STATISTICS
   // ===================================
 
-  const activePlans = useMemo(() => {
-    return plans.filter(
-      (plan) => plan.is_active === true
-    ).length;
-  }, [plans]);
+  const activeSubscriptions = useMemo(
+    () =>
+      lawyers.filter(
+        (lawyer) =>
+          normalizeStatus(
+            getLawyerSubscription(
+              lawyer
+            )?.status
+          ) === "active"
+      ).length,
+    [lawyers]
+  );
+
+  const trialUsers = useMemo(
+    () =>
+      lawyers.filter(
+        (lawyer) =>
+          normalizeStatus(
+            getLawyerSubscription(
+              lawyer
+            )?.status
+          ) === "trialing"
+      ).length,
+    [lawyers]
+  );
 
   // ===================================
-  // PAYMENT REVENUE
+  // THREE RECENT SUBSCRIPTIONS
   // ===================================
 
-  const paidPayments = useMemo(() => {
-    return payments.filter(
-      (payment) =>
-        isPaidPayment(payment) &&
-        String(payment.currency || "").toUpperCase() ===
-        "LKR"
-    );
-  }, [payments]);
+  const recentSubscriptions = useMemo(
+    () => {
+      const sorted = [
+        ...paidPayments,
+      ].sort((a, b) => {
+        const aDate =
+          parseBackendDate(
+            a.paid_at ||
+            a.created_at
+          )?.getTime() || 0;
 
-  const totalRevenue = useMemo(() => {
-    return paidPayments.reduce(
-      (total, payment) => {
-        const amount = getPaymentAmount(payment);
+        const bDate =
+          parseBackendDate(
+            b.paid_at ||
+            b.created_at
+          )?.getTime() || 0;
 
-        if (
-          amount === null ||
-          !Number.isFinite(amount)
-        ) {
-          return total;
+        return (
+          bDate - aDate ||
+          Number(b.id || 0) -
+          Number(a.id || 0)
+        );
+      });
+
+      const seen = new Set();
+      const result = [];
+
+      sorted.forEach((payment) => {
+        if (result.length >= 3) {
+          return;
         }
 
-        return total + amount;
-      },
-      0
-    );
-  }, [paidPayments]);
+        const identity = String(
+          payment.user_id ||
+          payment.lawyer_email ||
+          `payment-${payment.id}`
+        );
+
+        if (seen.has(identity)) {
+          return;
+        }
+
+        seen.add(identity);
+
+        const lawyer = lawyers.find(
+          (item) =>
+            Number(item.id) ===
+            Number(payment.user_id)
+        );
+
+        const plan = plans.find(
+          (item) =>
+            Number(item.id) ===
+            Number(payment.plan_id)
+        );
+
+        result.push({
+          id: payment.id,
+
+          name: lawyer
+            ? getLawyerName(lawyer)
+            : payment.lawyer_email ||
+              `Lawyer #${payment.user_id || "—"}`,
+
+          plan:
+            payment.plan_name ||
+            plan?.name ||
+            "Subscription",
+
+          amount:
+            getPaymentAmount(payment),
+
+          date:
+            payment.paid_at ||
+            payment.created_at,
+        });
+      });
+
+      return result;
+    },
+    [paidPayments, lawyers, plans]
+  );
 
   // ===================================
-  // TABS
+  // LAWYERS SEARCH + PAGINATION
+  // ===================================
+
+  const filteredLawyers = useMemo(
+    () => {
+      const query = search
+        .toLowerCase()
+        .trim();
+
+      if (!query) {
+        return lawyers;
+      }
+
+      return lawyers.filter(
+        (lawyer) => {
+          const subscription =
+            getLawyerSubscription(
+              lawyer
+            );
+
+          return [
+            lawyer.id,
+            getLawyerName(lawyer),
+            lawyer.email,
+            subscription?.plan_name,
+            subscription?.status,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+            .includes(query);
+        }
+      );
+    },
+    [lawyers, search]
+  );
+
+  const lawyerPages = Math.max(
+    1,
+    Math.ceil(
+      filteredLawyers.length /
+      ROWS_PER_PAGE
+    )
+  );
+
+  const currentLawyerPage = Math.min(
+    lawyerPage,
+    lawyerPages
+  );
+
+  const visibleLawyers =
+    filteredLawyers.slice(
+      (currentLawyerPage - 1) *
+        ROWS_PER_PAGE,
+
+      currentLawyerPage *
+        ROWS_PER_PAGE
+    );
+
+  // ===================================
+  // PAYMENTS PAGINATION
+  // ===================================
+
+  const sortedPayments = useMemo(
+    () =>
+      [...payments].sort((a, b) => {
+        const aDate =
+          parseBackendDate(
+            a.paid_at ||
+            a.created_at
+          )?.getTime() || 0;
+
+        const bDate =
+          parseBackendDate(
+            b.paid_at ||
+            b.created_at
+          )?.getTime() || 0;
+
+        return (
+          bDate - aDate ||
+          Number(b.id || 0) -
+          Number(a.id || 0)
+        );
+      }),
+    [payments]
+  );
+
+  const paymentPages = Math.max(
+    1,
+    Math.ceil(
+      sortedPayments.length /
+      ROWS_PER_PAGE
+    )
+  );
+
+  const currentPaymentPage = Math.min(
+    paymentPage,
+    paymentPages
+  );
+
+  const visiblePayments =
+    sortedPayments.slice(
+      (currentPaymentPage - 1) *
+        ROWS_PER_PAGE,
+
+      currentPaymentPage *
+        ROWS_PER_PAGE
+    );
+
+  // ===================================
+  // NAVIGATION
   // ===================================
 
   const tabs = [
     {
+      id: "overview",
+      label: "Overview",
+      icon: LayoutDashboard,
+    },
+    {
       id: "lawyers",
       label: "Lawyer Subscriptions",
+      icon: Users,
     },
     {
       id: "plans",
       label: "Subscription Plans",
+      icon: Layers3,
     },
     {
       id: "payments",
       label: "Payment History",
+      icon: CreditCard,
     },
   ];
 
   // ===================================
-  // RENDER
+  // UI
   // ===================================
 
   return (
     <div className="asub-page">
 
-      {/* PAGE HEADING */}
+      {/* HEADER */}
 
       <header className="asub-heading">
-        <div>
-          <h1>
-            Subscriptions & Payments
-          </h1>
+        <div className="asub-heading-copy">
+        
 
-          <p>
-            Monitor lawyer subscriptions,
-            plans and billing records.
-          </p>
+          <div>
+            <h1>
+              Subscription <span>Management</span>
+            </h1>
+
+            <p>
+              Manage lawyer subscriptions,
+              plans and payment details.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           className="asub-refresh"
           onClick={() =>
-            setRefreshKey((n) => n + 1)
+            setRefreshKey(
+              (number) => number + 1
+            )
           }
           disabled={loading}
         >
-          <RefreshCw size={17} />
-          {loading ? "Loading..." : "Refresh"}
+          <RefreshCw
+            size={15}
+            className={
+              loading
+                ? "asub-spinning"
+                : ""
+            }
+          />
+
+          {loading
+            ? "Loading..."
+            : "Refresh"}
         </button>
       </header>
+
+      {/* TABS */}
+
+      <nav
+        className="asub-tabs"
+        aria-label="Subscription management tabs"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              className={
+                activeTab === tab.id
+                  ? "active"
+                  : ""
+              }
+              aria-current={
+                activeTab === tab.id
+                  ? "page"
+                  : undefined
+              }
+              onClick={() =>
+                setActiveTab(tab.id)
+              }
+            >
+              <Icon size={17} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
 
       {/* LOADING */}
 
@@ -518,14 +974,16 @@ export default function AdminSubscriptions() {
           className="asub-error"
           role="alert"
         >
-          <AlertCircle size={19} />
+          <AlertCircle size={18} />
 
           <span>{error}</span>
 
           <button
             type="button"
             onClick={() =>
-              setRefreshKey((n) => n + 1)
+              setRefreshKey(
+                (number) => number + 1
+              )
             }
           >
             Retry
@@ -533,211 +991,280 @@ export default function AdminSubscriptions() {
         </div>
       )}
 
-      {/* SHOW ONLY REAL BACKEND DATA */}
+      {/* BACKEND DATA */}
 
       {!loading && !error && data && (
         <>
 
-          {/* ==================================
-              STATISTICS
-          ================================== */}
+          {/* ==========================
+              OVERVIEW
+          ========================== */}
 
-          <section className="asub-stats">
+          {activeTab === "overview" && (
+            <>
 
-            {/* REGISTERED LAWYERS */}
+              {/* FOUR KPI CARDS */}
 
-            <article className="asub-stat">
-              <div className="asub-stat-icon">
-                <Users size={23} />
-              </div>
+              <section
+                className="asub-stats"
+                aria-label="Subscription overview"
+              >
 
-              <span>
-                Registered Lawyers
-              </span>
-
-              <strong>
-                {lawyers.length}
-              </strong>
-            </article>
-
-            {/* ACTIVE SUBSCRIPTIONS */}
-
-            <article className="asub-stat">
-              <div className="asub-stat-icon">
-                <Crown size={23} />
-              </div>
-
-              <span>
-                Active Subscriptions
-              </span>
-
-              <strong>
-                {activeSubscribers}
-              </strong>
-            </article>
-
-            {/* ACTIVE PLANS */}
-
-            <article className="asub-stat">
-              <div className="asub-stat-icon">
-                <CreditCard size={23} />
-              </div>
-
-              <span>
-                Active Plans
-              </span>
-
-              <strong>
-                {activePlans}
-              </strong>
-            </article>
-
-            {/* RECORDED REVENUE */}
-
-            <article className="asub-stat">
-              <div className="asub-stat-icon">
-                <Wallet size={23} />
-              </div>
-
-              <span>
-                Recorded Paid Payments (LKR)
-              </span>
-
-              <strong>
-                {formatMoney(
-                  totalRevenue,
-                  "LKR"
-                )}
-              </strong>
-            </article>
-
-          </section>
-
-          {/* SANDBOX INFORMATION */}
-
-          <div className="asub-notice">
-            <ShieldCheck size={19} />
-
-            <span>
-              Recorded revenue is calculated from
-              paid LKR payment records returned by
-              the AdvocaNote backend. Sandbox payments
-              do not represent real bank transfers.
-            </span>
-          </div>
-
-          {/* ==================================
-              MAIN PANEL
-          ================================== */}
-
-          <section className="asub-panel">
-
-            {/* TABS */}
-
-            <div className="asub-tabs">
-
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={
-                    activeTab === tab.id
-                      ? "active"
-                      : ""
-                  }
-                  onClick={() =>
-                    setActiveTab(tab.id)
-                  }
-                >
-                  {tab.label}
-                </button>
-              ))}
-
-            </div>
-
-            {/* ==================================
-                LAWYERS TAB
-            ================================== */}
-
-            {activeTab === "lawyers" && (
-              <>
-
-                {/* SEARCH */}
-
-                <div className="asub-toolbar">
-
-                  <div className="asub-search">
-                    <Search size={19} />
-
-                    <input
-                      type="search"
-                      placeholder="Search lawyer name or email..."
-                      value={search}
-                      onChange={(e) =>
-                        setSearch(e.target.value)
-                      }
-                    />
+                <article className="asub-stat">
+                  <div className="asub-stat-icon green">
+                    <Users size={23} />
                   </div>
 
-                </div>
+                  <div className="asub-stat-copy">
+                    <span>
+                      Registered Lawyers
+                    </span>
 
-                {/* LAWYERS TABLE */}
+                    <strong>
+                      {lawyers.length}
+                    </strong>
+                  </div>
+                </article>
 
-                <div className="asub-table-scroll">
+                <article className="asub-stat">
+                  <div className="asub-stat-icon gold">
+                    <Crown size={23} />
+                  </div>
 
-                  <table className="asub-table">
+                  <div className="asub-stat-copy">
+                    <span>
+                      Active Subscriptions
+                    </span>
 
-                    <thead>
-                      <tr>
-                        <th>Lawyer</th>
-                        <th>Email</th>
-                        <th>Current Plan</th>
-                        <th>Subscription Status</th>
-                        <th>Expiry Date</th>
-                      </tr>
-                    </thead>
+                    <strong>
+                      {activeSubscriptions}
+                    </strong>
+                  </div>
+                </article>
 
-                    <tbody>
+                <article className="asub-stat">
+                  <div className="asub-stat-icon green">
+                    <Layers3 size={23} />
+                  </div>
 
-                      {filteredLawyers.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan="5"
-                            className="asub-empty"
+                  <div className="asub-stat-copy">
+                    <span>
+                      Trial Users
+                    </span>
+
+                    <strong>
+                      {trialUsers}
+                    </strong>
+                  </div>
+                </article>
+
+                <article className="asub-stat">
+                  <div className="asub-stat-icon gold">
+                    <Wallet size={23} />
+                  </div>
+
+                  <div className="asub-stat-copy">
+                    <span>
+                      Total Revenue
+                    </span>
+
+                    <strong>
+                      {formatMoney(
+                        totalRevenue,
+                        "LKR",
+                        0
+                      )}
+                    </strong>
+                  </div>
+                </article>
+
+              </section>
+
+              {/* CHART + RECENT SUBSCRIPTIONS */}
+
+              <div className="asub-overview-grid">
+                <RevenueChart
+                  payments={paidPayments}
+                />
+
+                <section className="asub-overview-card asub-recent-card">
+
+                  <div className="asub-card-heading asub-recent-heading">
+                    <div className="asub-recent-heading-name">
+                      <Clock3 size={19} />
+
+                      <h2>
+                        Recent Subscriptions
+                      </h2>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="asub-view-all"
+                      onClick={() =>
+                        setActiveTab("payments")
+                      }
+                    >
+                      View All →
+                    </button>
+                  </div>
+
+                  <div className="asub-recent-list">
+
+                    {recentSubscriptions.length === 0 ? (
+                      <div className="asub-no-recent">
+                        No paid subscriptions
+                        found yet.
+                      </div>
+                    ) : (
+                      recentSubscriptions.map(
+                        (item) => (
+                          <div
+                            className="asub-recent-item"
+                            key={item.id}
                           >
-                            No matching lawyer records found.
-                          </td>
-                        </tr>
-                      ) : (
+                            <div className="asub-avatar">
+                              <Users size={18} />
+                            </div>
 
-                        filteredLawyers.map((lawyer) => {
+                            <div className="asub-recent-person">
+                              <strong
+                                title={item.name}
+                              >
+                                {item.name}
+                              </strong>
+
+                              <span>
+                                Subscribed on{" "}
+                                {formatDate(
+                                  item.date
+                                )}
+                              </span>
+                            </div>
+
+                            <PlanTag
+                              name={item.plan}
+                            />
+
+                            <b className="asub-recent-amount">
+                              {formatMoney(
+                                item.amount,
+                                "LKR",
+                                0
+                              )}
+                            </b>
+                          </div>
+                        )
+                      )
+                    )}
+                  </div>
+                </section>
+              </div>
+
+            </>
+          )}
+
+          {/* ==========================
+              LAWYER SUBSCRIPTIONS
+          ========================== */}
+
+          {activeTab === "lawyers" && (
+            <section className="asub-panel">
+
+              <div className="asub-section-heading">
+                <div>
+                  <h2>
+                    Lawyer Subscriptions
+                  </h2>
+
+                </div>
+              </div>
+
+              <div className="asub-toolbar">
+                <div className="asub-search">
+                  <Search size={18} />
+
+                  <input
+                    type="search"
+                    placeholder="Search lawyer name or email..."
+                    value={search}
+                    onChange={(event) => {
+                      setSearch(
+                        event.target.value
+                      );
+
+                      setLawyerPage(1);
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="asub-table-scroll">
+                <table className="asub-table">
+                  <thead>
+                    <tr>
+                      <th>Lawyer</th>
+                      <th>Email</th>
+                      <th>Current Plan</th>
+                      <th>
+                        Subscription Status
+                      </th>
+                      <th>Expiry Date</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {visibleLawyers.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="asub-empty"
+                        >
+                          No matching lawyer
+                          records found.
+                        </td>
+                      </tr>
+                    ) : (
+                      visibleLawyers.map(
+                        (lawyer) => {
                           const subscription =
-                            getLawyerSubscription(lawyer);
+                            getLawyerSubscription(
+                              lawyer
+                            );
 
                           const plan =
                             plans.find(
                               (item) =>
-                                Number(item.id) ===
-                                Number(subscription?.plan_id)
+                                Number(
+                                  item.id
+                                ) ===
+                                Number(
+                                  subscription?.plan_id
+                                )
                             );
 
                           return (
                             <tr key={lawyer.id}>
-
                               <td>
                                 <strong>
-                                  {getLawyerName(lawyer)}
+                                  {getLawyerName(
+                                    lawyer
+                                  )}
                                 </strong>
                               </td>
 
                               <td>
-                                {lawyer.email || "—"}
+                                {lawyer.email ||
+                                  "—"}
                               </td>
 
                               <td>
-                                {subscription?.plan_name ||
-                                  plan?.name ||
-                                  "Not assigned"}
+                                <PlanTag
+                                  name={
+                                    subscription?.plan_name ||
+                                    plan?.name
+                                  }
+                                />
                               </td>
 
                               <td>
@@ -756,44 +1283,59 @@ export default function AdminSubscriptions() {
                                   )
                                 )}
                               </td>
-
                             </tr>
                           );
-                        })
+                        }
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-                      )}
+              <Pager
+                page={currentLawyerPage}
+                totalPages={lawyerPages}
+                onChange={setLawyerPage}
+              />
+            </section>
+          )}
 
-                    </tbody>
+          {/* ==========================
+              SUBSCRIPTION PLANS
+          ========================== */}
 
-                  </table>
-
-                </div>
-              </>
-            )}
-
-
-            {/* PLANS TAB */}
-
-            {activeTab === "plans" && (
+          {activeTab === "plans" && (
+            <section className="asub-panel asub-plans-panel">
               <AdminPlanManager
                 plans={plans}
                 lawyers={lawyers}
-                onChanged={() => setRefreshKey((n) => n + 1)}
+                onChanged={() =>
+                  setRefreshKey(
+                    (number) =>
+                      number + 1
+                  )
+                }
               />
-            )}
+            </section>
+          )}
 
+          {/* ==========================
+              PAYMENT HISTORY
+          ========================== */}
 
+          {activeTab === "payments" && (
+            <section className="asub-panel">
 
+              <div className="asub-section-heading">
+                <div>
+                  <h2>
+                    Payment History
+                  </h2>
+                </div>
+              </div>
 
-            {/* ==================================
-                PAYMENTS TAB
-            ================================== */}
-
-            {activeTab === "payments" && (
               <div className="asub-table-scroll">
-
                 <table className="asub-table">
-
                   <thead>
                     <tr>
                       <th>Transaction</th>
@@ -806,113 +1348,108 @@ export default function AdminSubscriptions() {
                   </thead>
 
                   <tbody>
-
-                    {payments.length === 0 ? (
+                    {visiblePayments.length === 0 ? (
                       <tr>
                         <td
                           colSpan="6"
                           className="asub-empty"
                         >
-                          No payment records found.
+                          No payment records
+                          found.
                         </td>
                       </tr>
                     ) : (
+                      visiblePayments.map(
+                        (payment) => {
+                          const relatedPlan =
+                            plans.find(
+                              (plan) =>
+                                Number(
+                                  plan.id
+                                ) ===
+                                Number(
+                                  payment.plan_id
+                                )
+                            );
 
-                      payments.map((payment) => {
-                        const relatedPlan =
-                          plans.find(
-                            (plan) =>
-                              Number(plan.id) ===
-                              Number(payment.plan_id)
+                          const relatedLawyer =
+                            lawyers.find(
+                              (lawyer) =>
+                                Number(
+                                  lawyer.id
+                                ) ===
+                                Number(
+                                  payment.user_id
+                                )
+                            );
+
+                          return (
+                            <tr key={payment.id}>
+                              <td>
+                                <strong>
+                                  #{payment.id}
+                                </strong>
+                              </td>
+
+                              <td>
+                                {payment.lawyer_email ||
+                                  relatedLawyer?.email ||
+                                  "—"}
+                              </td>
+
+                              <td>
+                                {payment.plan_name ||
+                                  relatedPlan?.name ||
+                                  `Plan #${payment.plan_id}`}
+                              </td>
+
+                              <td>
+                                {formatMoney(
+                                  getPaymentAmount(
+                                    payment
+                                  ),
+                                  payment.currency
+                                )}
+                              </td>
+
+                              <td>
+                                <CalendarDays
+                                  size={13}
+                                  className="asub-date-icon"
+                                />
+
+                                {formatDate(
+                                  payment.paid_at ||
+                                  payment.created_at
+                                )}
+                              </td>
+
+                              <td>
+                                <StatusBadge
+                                  status={
+                                    payment.status
+                                  }
+                                />
+                              </td>
+                            </tr>
                           );
-
-                        const relatedLawyer =
-                          lawyers.find(
-                            (lawyer) =>
-                              Number(lawyer.id) ===
-                              Number(payment.user_id)
-                          );
-
-                        return (
-                          <tr key={payment.id}>
-
-                            <td>
-                              <strong>
-                                #{payment.id}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {payment.lawyer_email ||
-                                relatedLawyer?.email ||
-                                "—"}
-                            </td>
-
-                            <td>
-                              {payment.plan_name ||
-                                relatedPlan?.name ||
-                                `Plan #${payment.plan_id}`}
-                            </td>
-
-                            <td>
-                              {formatMoney(
-                                getPaymentAmount(payment),
-                                payment.currency
-                              )}
-                            </td>
-
-                            <td>
-                              <CalendarDays
-                                size={13}
-                                className="asub-date-icon"
-                              />
-
-                              {" "}
-
-                              {formatDate(
-                                payment.paid_at ||
-                                payment.created_at
-                              )}
-                            </td>
-
-                            <td>
-                              <StatusBadge
-                                status={payment.status}
-                              />
-                            </td>
-
-                          </tr>
-                        );
-                      })
-
+                        }
+                      )
                     )}
-
                   </tbody>
-
                 </table>
-
               </div>
-            )}
 
-          </section>
-
-          {/* FOOTER INFORMATION */}
-
-          <div className="asub-notice">
-            <Receipt size={19} />
-
-            <span>
-              This page displays subscription and
-              payment information provided by the
-              AdvocaNote admin backend. Payment
-              verification and subscription access
-              are controlled by FastAPI.
-            </span>
-          </div>
+              <Pager
+                page={currentPaymentPage}
+                totalPages={paymentPages}
+                onChange={setPaymentPage}
+              />
+            </section>
+          )}
 
         </>
       )}
-
     </div>
   );
 }

@@ -145,11 +145,12 @@ function buildChart(series) {
   if (values.length === 0) return null;
 
   const W = 840;
-  const H = 270;
+  const H = 215;
   const left = 58;
   const right = 18;
-  const top = 20;
-  const bottom = 37;
+  const top = 16;
+  const bottom = 33;
+
 
   const bottomY = H - bottom;
   const graphHeight = bottomY - top;
@@ -894,74 +895,109 @@ export default function AdminDashboard() {
       <section className="adash-analytics-grid">
 
         {/* REVENUE CHART */}
+        <div className="adash-left-panels">
+          <article className="adash-card adash-revenue-card">
+            <div className="adash-card-header">
+              <div>
+                <span className="adash-section-eyebrow">
+                  PERFORMANCE
+                </span>
 
-        <article className="adash-card adash-revenue-card">
-          <div className="adash-card-header">
-            <div>
-              <span className="adash-section-eyebrow">
-                PERFORMANCE
-              </span>
+                <h2>Revenue Analytics</h2>
+                <p>Confirmed payment revenue over time</p>
+              </div>
 
-              <h2>Revenue Analytics</h2>
-              <p>Confirmed payment revenue over time</p>
-            </div>
-
-            <div className="adash-period-controls">
-              {PERIOD_OPTIONS.map((option) => (
-                <button
-                  type="button"
-                  key={option.value}
-                  className={
-                    period === option.value ? "active" : ""
-                  }
-                  aria-pressed={period === option.value}
-                  onClick={() => setPeriod(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="adash-revenue-overview">
-            <div>
-              <span className="adash-muted-label">
-                Total collected in selected period
-              </span>
-
-              <div className="adash-revenue-number">
-                {loading
-                  ? "—"
-                  : data?.payments_enabled === false
-                    ? "Not configured"
-                    : formatMoney(
-                      summary.collected_revenue_minor
-                    )}
+              <div className="adash-period-controls">
+                {PERIOD_OPTIONS.map((option) => (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={
+                      period === option.value ? "active" : ""
+                    }
+                    aria-pressed={period === option.value}
+                    onClick={() => setPeriod(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="adash-chart-legend">
-              <span />
-              Successful payments
+            <div className="adash-revenue-overview">
+              <div>
+                <span className="adash-muted-label">
+                  Total collected in selected period
+                </span>
+
+                <div className="adash-revenue-number">
+                  {loading
+                    ? "—"
+                    : data?.payments_enabled === false
+                      ? "Not configured"
+                      : formatMoney(
+                        summary.collected_revenue_minor
+                      )}
+                </div>
+              </div>
+
+              <div className="adash-chart-legend">
+                <span />
+                Successful payments
+              </div>
             </div>
-          </div>
 
-          {loading ? (
-            <div className="adash-chart-loading">
-              Loading analytics...
+            {loading ? (
+              <div className="adash-chart-loading">
+                Loading analytics...
+              </div>
+            ) : (
+              <RevenueChart
+                series={data?.revenue_series || []}
+              />
+            )}
+
+
+
+            {/* REVENUE FOOTNOTE */}
+
+            <div className="adash-chart-footnote">
+              <ShieldCheck size={15} />
+              Payment revenue is not the same as bank payouts.
             </div>
-          ) : (
-            <RevenueChart
-              series={data?.revenue_series || []}
-            />
-          )}
 
-          <div className="adash-chart-footnote">
-            <ShieldCheck size={15} />
-            Payment revenue is not the same as bank payouts.
-          </div>
-        </article>
+          </article>
 
+          {/* SEPARATE QUICK ACCESS CARD */}
+
+          <article className="adash-card adash-revenue-quick">
+
+            <nav
+              className="adash-shortcuts"
+              aria-label="Admin quick access"
+            >
+              <Link to="/admin/lawyers">
+                <UsersRound size={18} />
+                <span>Lawyer Management</span>
+                <ArrowUpRight size={15} />
+              </Link>
+
+              <Link to="/admin/subscriptions">
+                <CreditCard size={18} />
+                <span>Subscriptions & Payments</span>
+                <ArrowUpRight size={15} />
+              </Link>
+
+              <Link to="/admin/notifications">
+                <Bell size={18} />
+                <span>Notifications</span>
+                <ArrowUpRight size={15} />
+              </Link>
+            </nav>
+
+          </article>
+
+        </div>
         {/* RIGHT PANELS */}
 
         <div className="adash-side-panels">
@@ -971,15 +1007,9 @@ export default function AdminDashboard() {
           <article className="adash-card adash-breakdown-card">
             <div className="adash-card-header">
               <div>
-                <span className="adash-section-eyebrow">
-                  MEMBERSHIP
-                </span>
                 <h2>Plan Distribution</h2>
               </div>
 
-              <div className="adash-small-icon">
-                <Crown size={17} />
-              </div>
             </div>
 
             <div className="adash-donut-layout">
@@ -1253,33 +1283,6 @@ export default function AdminDashboard() {
           </Link>
         </article>
       </section>
-
-      {/* SHORTCUTS */}
-
-      <section className="adash-shortcuts">
-        <Link to="/admin/lawyers">
-          <UsersRound size={19} />
-          Lawyer Management
-          <ArrowUpRight size={15} />
-        </Link>
-
-        <Link to="/admin/subscriptions">
-          <CreditCard size={19} />
-          Subscriptions & Payments
-          <ArrowUpRight size={15} />
-        </Link>
-
-        <Link to="/admin/notifications">
-          <Bell size={19} />
-          Notifications
-          <ArrowUpRight size={15} />
-        </Link>
-      </section>
-
-      <footer className="adash-footer">
-        AdvocaNote Admin Portal
-        <span>Secure platform overview</span>
-      </footer>
     </main>
   );
 }

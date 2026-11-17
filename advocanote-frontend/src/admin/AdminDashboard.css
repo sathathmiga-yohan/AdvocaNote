@@ -2256,3 +2256,368 @@
 .adash-page .adash-welcome h1::after {
   content: none !important;
 }
+
+/* ==========================================
+   ADMIN DASHBOARD - COMPACT ANALYTICS
+   WITH QUICK ACCESS BELOW GRAPH
+========================================== */
+
+/* REVENUE CARD */
+
+.adash-page .adash-revenue-card {
+  min-height: 0;
+  padding: 19px 20px 16px;
+}
+
+/* REVENUE AMOUNT */
+
+.adash-page .adash-revenue-overview {
+  margin-top: 14px;
+  gap: 10px;
+}
+
+.adash-page .adash-revenue-number {
+  margin-top: 5px;
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+/* COMPACT GRAPH */
+
+.adash-page .adash-chart-wrap {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.adash-page .adash-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+/* EMPTY / LOADING STATES */
+
+.adash-page .adash-chart-empty,
+.adash-page .adash-chart-loading {
+  min-height: 170px;
+  margin-top: 10px;
+  padding: 15px;
+}
+
+/* FOOTNOTE */
+
+.adash-page .adash-chart-footnote {
+  margin-top: 8px;
+  padding-top: 9px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   QUICK ACCESS SECTION
+========================================== */
+
+.adash-revenue-quick {
+  width: 100%;
+  margin-top: 13px;
+}
+
+/* LABEL */
+
+.adash-revenue-quick-label {
+  margin-bottom: 9px;
+
+  color: #ae813b;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1px;
+}
+
+/* THREE BUTTONS IN SAME ROW */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+/* INDIVIDUAL BUTTON */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  min-width: 0;
+  min-height: 47px;
+  padding: 10px 11px;
+
+  background: #fbfdfb;
+  border: 1px solid #dfe9df;
+  border-radius: 9px;
+
+  color: #204b38;
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.35;
+
+  box-shadow:
+    0 2px 7px rgba(0, 50, 35, 0.025);
+
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* TEXT */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a span {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ICONS */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a > svg:first-child {
+  flex-shrink: 0;
+  color: #007b56;
+}
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a:nth-child(2)
+> svg:first-child {
+  color: #c18c3d;
+}
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a:nth-child(3)
+> svg:first-child {
+  color: #008e91;
+}
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a > svg:last-child {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #8ba69a;
+}
+
+/* HOVER */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts a:hover {
+  background: #f0f7f1;
+  border-color: #b9d5bf;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 12px rgba(0, 55, 37, 0.065);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@container adash (max-width: 900px) {
+
+  .adash-page .adash-revenue-card {
+    padding: 17px;
+  }
+
+  .adash-page .adash-revenue-number {
+    font-size: 25px;
+  }
+
+  .adash-page .adash-revenue-quick
+  .adash-shortcuts {
+    gap: 8px;
+  }
+
+  .adash-page .adash-revenue-quick
+  .adash-shortcuts a {
+    padding: 9px;
+    font-size: 10px;
+  }
+}
+
+@container adash (max-width: 520px) {
+
+  .adash-page .adash-revenue-quick
+  .adash-shortcuts {
+    grid-template-columns: 1fr;
+  }
+
+  .adash-page .adash-revenue-quick
+  .adash-shortcuts a {
+    min-height: 42px;
+  }
+
+  .adash-page .adash-revenue-number {
+    font-size: 23px;
+  }
+}
+
+/* =====================================
+   ADMIN DASHBOARD - CLEAN HEADINGS
+   REMOVE UNNECESSARY DECORATIVE LABELS
+===================================== */
+
+/* Remove PERFORMANCE label */
+
+.adash-revenue-card .adash-section-eyebrow {
+  display: none !important;
+}
+
+/* Remove MEMBERSHIP label */
+
+.adash-breakdown-card .adash-section-eyebrow {
+  display: none !important;
+}
+
+/* Remove PLATFORM MANAGEMENT label and icon */
+
+.adash-quick-card .adash-quick-heading {
+  display: none !important;
+}
+
+/* Remove QUICK ACCESS label */
+
+.adash-revenue-quick-label {
+  display: none !important;
+}
+
+/* Neat revenue heading */
+
+.adash-revenue-card .adash-card-header h2 {
+  margin-top: 0 !important;
+}
+
+/* Neat plan distribution heading */
+
+.adash-breakdown-card .adash-card-header h2 {
+  margin-top: 0 !important;
+}
+
+/* Platform card text spacing */
+
+.adash-quick-card h3 {
+  margin-top: 4px !important;
+}
+
+/* Space above shortcut buttons */
+
+.adash-revenue-quick {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #e8ede8;
+}
+
+/* =====================================
+   ADMIN DASHBOARD - CLEAN BOTTOM CARDS
+===================================== */
+
+/* Remove BILLING ACTIVITY & NEW MEMBERS */
+
+.adash-bottom-grid .adash-section-eyebrow {
+  display: none !important;
+}
+
+/* Fix heading spacing */
+
+.adash-bottom-grid .adash-card-header h2 {
+  margin-top: 0 !important;
+}
+
+/* =====================================
+   SEPARATE REVENUE & QUICK ACCESS CARDS
+===================================== */
+
+/* Left column layout */
+
+.adash-page .adash-left-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Revenue chart separate white card */
+
+.adash-page .adash-revenue-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 19px 20px 16px;
+}
+
+/* Quick Access separate white card */
+
+.adash-page .adash-revenue-quick {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 17px 18px;
+
+  background: #ffffff;
+  border: 1px solid #e1e8e0;
+  border-radius: 13px;
+
+  box-shadow:
+    0 3px 12px rgba(0, 45, 35, 0.035);
+}
+
+/* Remove previous divider */
+
+.adash-page .adash-revenue-quick {
+  border-top: 1px solid #e1e8e0;
+}
+
+/* Three buttons */
+
+.adash-page .adash-revenue-quick
+.adash-shortcuts {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove excess spacing */
+
+.adash-page .adash-chart-footnote {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+/* Responsive */
+
+@container adash (max-width: 600px) {
+  .adash-page .adash-left-panels {
+    gap: 12px;
+  }
+
+  .adash-page .adash-revenue-quick {
+    padding: 13px;
+  }
+
+  .adash-page .adash-revenue-quick
+  .adash-shortcuts {
+    grid-template-columns: 1fr;
+  }
+}
