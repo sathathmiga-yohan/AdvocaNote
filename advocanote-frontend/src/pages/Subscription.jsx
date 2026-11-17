@@ -418,11 +418,18 @@ export default function Subscription() {
     search.trim().toLowerCase();
 
 
-  const visiblePlans = plans.filter((plan) =>
-    `${plan.name} ${plan.description || ""}`
-      .toLowerCase()
-      .includes(searchTerm)
-  );
+
+const visiblePlans = plans.filter((plan) => {
+  // Only show active subscription plans.
+  if (plan.is_active !== true) {
+    return false;
+  }
+
+  return `${plan.name} ${plan.description || ""}`
+    .toLowerCase()
+    .includes(searchTerm);
+});
+
 
   const visiblePayments = payments.filter(
     (payment) => {

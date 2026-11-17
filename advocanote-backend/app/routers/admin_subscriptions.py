@@ -742,3 +742,249 @@ def get_admin_subscriptions_overview(
         "payments": payment_rows,
         "payments_enabled": True,
     }
+
+
+# =====================================
+# DELETE SUBSCRIPTION PLAN
+# =====================================
+
+@router.delete("/plans/{plan_id}")
+def delete_subscription_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+):
+    plan = db.scalars(
+        select(SubscriptionPlan)
+        .where(SubscriptionPlan.id == plan_id)
+        .with_for_update()
+    ).first()
+
+    if plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Subscription plan not found."
+        )
+
+    # Protect all existing subscriptions.
+    has_subscriptions = db.scalar(
+        select(Subscription.id)
+        .where(Subscription.plan_id == plan_id)
+        .limit(1)
+    ) is not None
+
+    # Protect payment history.
+    has_payments = db.scalar(
+        select(Payment.id)
+        .where(Payment.plan_id == plan_id)
+        .limit(1)
+    ) is not None
+
+    if has_subscriptions or has_payments:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "This plan has subscription or payment "
+                "history. Deactivate it instead."
+            )
+        )
+
+    plan_name = plan.name
+    price_id = plan.stripe_price_id
+    saved_product_id = plan.stripe_product_id
+
+    product_id = None
+    is_default_price = False
+    was_price_active = False
+
+    default_cleared = False
+    price_archived = False
+
+    # =====================================
+    # VERIFY STRIPE REFERENCES
+    # =====================================
+
+    if price_id:
+        try:
+            price = stripe.Price.retrieve(price_id)
+
+            product_ref = price.product
+
+            product_id = (
+                product_ref
+                if isinstance(product_ref, str)
+                else product_ref.id
+            )
+
+            if (
+                saved_product_id
+                and saved_product_id != product_id
+            ):
+                db.rollback()
+                raise HTTPException(
+                    status_code=409,
+                    detail="Stripe Product ID mismatch."
+                )
+
+            product = stripe.Product.retrieve(
+                product_id
+            )
+
+            default_ref = product.default_price
+
+            default_price_id = (
+                default_ref
+                if isinstance(default_ref, str)
+                else (
+                    default_ref.id
+                    if default_ref else None
+                )
+            )
+
+            is_default_price = (
+                default_price_id == price_id
+            )
+
+            was_price_active = bool(price.active)
+
+        except stripe.error.StripeError as exc:
+            db.rollback()
+
+            print(
+                "[STRIPE VERIFICATION ERROR]",
+                str(exc),
+                flush=True
+            )
+
+            raise HTTPException(
+                status_code=502,
+                detail="Unable to verify Stripe Price."
+            ) from exc
+
+    # =====================================
+    # PRECHECK DATABASE DELETION
+    # =====================================
+
+    try:
+        db.delete(plan)
+        db.flush()
+
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "This plan is referenced by other "
+                "records and cannot be deleted."
+            )
+        ) from exc
+
+    # =====================================
+    # RESTORE STRIPE IF DELETION FAILS
+    # =====================================
+
+    def restore_stripe():
+        restored = True
+
+        # Restore Price before making it default.
+        if price_archived:
+            try:
+                stripe.Price.modify(
+                    price_id,
+                    active=True
+                )
+            except stripe.error.StripeError as exc:
+                restored = False
+                print(
+                    "[STRIPE PRICE RESTORE ERROR]",
+                    str(exc),
+                    flush=True
+                )
+
+        if default_cleared:
+            try:
+                stripe.Product.modify(
+                    product_id,
+                    default_price=price_id
+                )
+            except stripe.error.StripeError as exc:
+                restored = False
+                print(
+                    "[STRIPE DEFAULT RESTORE ERROR]",
+                    str(exc),
+                    flush=True
+                )
+
+        return restored
+
+    # =====================================
+    # ARCHIVE STRIPE AND COMMIT
+    # =====================================
+
+    try:
+        if price_id:
+
+            # Remove default-price association first.
+            if is_default_price:
+                stripe.Product.modify(
+                    product_id,
+                    default_price=""
+                )
+
+                default_cleared = True
+
+            # Archive the Stripe Price.
+            if was_price_active:
+                stripe.Price.modify(
+                    price_id,
+                    active=False
+                )
+
+                price_archived = True
+
+        # Permanently delete unused plan.
+        db.commit()
+
+    except Exception as exc:
+        db.rollback()
+
+        restored = restore_stripe()
+
+        print(
+            "[PLAN DELETE ERROR]",
+            type(exc).__name__,
+            str(exc),
+            flush=True
+        )
+
+        if not restored:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Deletion failed and Stripe restoration "
+                    "was unsuccessful. Manual reconciliation "
+                    "is required."
+                )
+            ) from exc
+
+        raise HTTPException(
+            status_code=(
+                502
+                if isinstance(
+                    exc,
+                    stripe.error.StripeError
+                )
+                else 500
+            ),
+            detail=(
+                "Subscription plan deletion failed. "
+                "Check the backend terminal."
+            )
+        ) from exc
+
+    return {
+        "message": "Subscription plan deleted successfully.",
+        "plan_id": plan_id,
+        "plan_name": plan_name,
+        "stripe_price_archived": price_archived,
+    }

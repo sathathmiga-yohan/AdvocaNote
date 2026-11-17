@@ -275,7 +275,6 @@ function SectionTitle({
     <div
       className={`an-heading${light ? " an-heading--light" : ""}`}
     >
-      <Eyebrow light={light}>{kicker}</Eyebrow>
 
       <h2>{title}</h2>
 
@@ -571,7 +570,6 @@ export default function Home() {
           {/* SECTION HEADING */}
 
           <SectionTitle
-            kicker="OUR UNIQUE FEATURES"
             title="Everything You Need in One Place"
             description="From traditional diary workflows to smart legal tools — everything your legal practice needs."
           />
@@ -594,7 +592,7 @@ export default function Home() {
                 },
                 {
                   Icon: CalendarDays,
-                  title: "Hearings & Calendar",
+                  title: "Hearings and Calendar",
                   text: "View upcoming hearings and organise important dates.",
                 },
                 {
@@ -687,7 +685,7 @@ export default function Home() {
                 },
                 {
                   Icon: ClipboardCheck,
-                  title: "Tasks & Deadlines",
+                  title: "Tasks and Deadlines",
                   text: "Create follow-up tasks and manage important deadlines.",
                 },
                 {
@@ -748,63 +746,6 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* =================================
-          HOW IT WORKS
-      ================================= */}
-
-      <section
-        className="an-work"
-        id="how-it-works"
-      >
-
-        <div className="an-shell">
-
-          <SectionTitle
-            kicker="SIMPLE, EFFICIENT, BUILT FOR LAWYERS"
-            title="How AdvocaNote Works"
-            description="Get started in a few simple steps and keep your legal practice organised."
-          />
-
-          <div className="an-work__steps">
-
-            {steps.map(
-              ({ Icon, title, text }, index) => (
-                <div
-                  className="an-work__step an-reveal"
-                  key={title}
-                  style={{
-                    "--an-reveal-delay":
-                      `${index * 95}ms`,
-                  }}
-                >
-
-                  <div className="an-work__circle">
-                    <Icon
-                      size={31}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-
-                  {index < steps.length - 1 && (
-                    <span
-                      className="an-work__arrow"
-                      aria-hidden="true"
-                    >
-                      ››
-                    </span>
-                  )}
-
-                </div>
-              )
-            )}
-
-          </div>
-        </div>
-      </section>
 
       {/* =================================
           PRICING
@@ -1024,14 +965,7 @@ export default function Home() {
 
           {/* BOTTOM DECORATION */}
 
-          <div
-            className="an-faq-modern__bottom"
-            aria-hidden="true"
-          >
-            <span />
-            <Scale size={19} strokeWidth={1.6} />
-            <span />
-          </div>
+          
 
         </div>
       </section>

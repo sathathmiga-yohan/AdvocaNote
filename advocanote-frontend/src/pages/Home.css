@@ -5127,3 +5127,219 @@ html {
     justify-content: flex-start;
   }
 }
+/* ==========================================
+   ADVOCANOTE FEATURES - COMPACT BALANCED SIZE
+========================================== */
+
+@media (min-width: 851px) {
+  /* whole section width and spacing reduce */
+  .an-bf__layout {
+    grid-template-columns:
+      minmax(0, 1fr)
+      285px
+      minmax(0, 1fr);
+    gap: 18px;
+    max-width: 1120px;
+    padding: 0;
+  }
+
+  /* side items smaller and tighter */
+  .an-bf__side {
+    grid-template-rows: repeat(3, 92px);
+    gap: 14px;
+  }
+
+  .an-bf__feature {
+    height: 92px;
+    min-height: 92px;
+    gap: 10px;
+    padding: 0;
+  }
+
+  /* icon smaller */
+  .an-bf__icon {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    border-width: 4px;
+  }
+
+  .an-bf__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* text smaller */
+  .an-bf__copy h3 {
+    font-size: 14px;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  .an-bf__copy p {
+    font-size: 10.5px;
+    line-height: 1.55;
+    max-width: 235px;
+  }
+
+  .an-bf__soon {
+    font-size: 7px;
+    padding: 3px 6px;
+  }
+
+  /* center book area smaller */
+  .an-bf__centre {
+    min-height: 370px;
+  }
+
+  .an-bf__book {
+    width: min(245px, 92%);
+    max-height: 340px;
+  }
+
+  .an-bf__halo {
+    width: 250px;
+    height: 250px;
+  }
+
+  .an-bf__halo-inner {
+    width: 205px;
+    height: 205px;
+  }
+
+  .an-bf__shadow {
+    width: 155px;
+    height: 18px;
+    bottom: 18px;
+  }
+
+  /* connectors shorter so everything looks tighter */
+  .an-bf__connector {
+    width: 28px;
+    height: 16px;
+  }
+
+  .an-bf__connector::after {
+    width: 7px;
+    height: 7px;
+    top: -5px;
+  }
+
+  .an-bf__side--left .an-bf__connector {
+    right: -22px;
+  }
+
+  .an-bf__side--left .an-bf__connector::after {
+    right: -4px;
+  }
+
+  .an-bf__side--right .an-bf__connector {
+    left: -22px;
+  }
+
+  .an-bf__side--right .an-bf__connector::after {
+    left: -4px;
+  }
+
+  /* heading section also a bit tighter */
+  .an-book-features .an-heading {
+    margin-bottom: 14px;
+  }
+
+  .an-book-features .an-heading h2 {
+    font-size: clamp(28px, 2.8vw, 40px);
+  }
+
+  .an-book-features .an-heading > p {
+    font-size: 13px;
+  }
+
+  #features.an-book-features {
+    padding: 55px 0 60px;
+  }
+}
+
+/* small laptop */
+@media (min-width: 851px) and (max-width: 1100px) {
+  .an-bf__layout {
+    grid-template-columns:
+      minmax(0, 1fr)
+      240px
+      minmax(0, 1fr);
+    gap: 14px;
+    max-width: 980px;
+  }
+
+  .an-bf__side {
+    grid-template-rows: repeat(3, 88px);
+    gap: 12px;
+  }
+
+  .an-bf__feature {
+    height: 88px;
+    min-height: 88px;
+  }
+
+  .an-bf__book {
+    width: min(210px, 90%);
+    max-height: 300px;
+  }
+
+  .an-bf__centre {
+    min-height: 325px;
+  }
+
+  .an-bf__halo {
+    width: 220px;
+    height: 220px;
+  }
+
+  .an-bf__halo-inner {
+    width: 180px;
+    height: 180px;
+  }
+
+  .an-bf__connector {
+    display: none;
+  }
+}
+
+/* =====================================
+   FEATURES TEXT SIZE INCREASE ONLY
+===================================== */
+
+@media (min-width: 851px) {
+
+  /* Feature headings */
+  .an-bf__copy h3 {
+    font-size: 18px;
+    line-height: 1.35;
+    margin-bottom: 7px;
+  }
+
+  /* Feature descriptions */
+  .an-bf__copy p {
+    font-size: 13px;
+    line-height: 1.65;
+    max-width: none;
+  }
+
+  /* Coming Soon label */
+  .an-bf__soon {
+    font-size: 9px;
+    padding: 4px 8px;
+  }
+}
+
+/* Tablet & Mobile */
+@media (max-width: 850px) {
+
+  .an-bf__copy h3 {
+    font-size: 17px;
+  }
+
+  .an-bf__copy p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+}

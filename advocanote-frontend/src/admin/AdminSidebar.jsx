@@ -7,8 +7,6 @@ import {
   CreditCard,
   Landmark,
   Bell,
-  Headset,
-  ShieldCheck,
   Settings,
   ChevronRight,
   LogOut,
@@ -28,7 +26,7 @@ const ADMIN_MENU_ITEMS = [
     to: "/admin/lawyers",
   },
   {
-    label: "Subscriptions & Payments",
+    label: "Subscriptions",
     icon: CreditCard,
     to: "/admin/subscriptions",
   },
@@ -36,16 +34,6 @@ const ADMIN_MENU_ITEMS = [
     label: "Notifications",
     icon: Bell,
     to: "/admin/notifications",
-  },
-  {
-    label: "Support & Feedback",
-    icon: Headset,
-    to: "/admin/support",
-  },
-  {
-    label: "Security & Audit",
-    icon: ShieldCheck,
-    to: "/admin/security",
   },
   {
     label: "System Settings",

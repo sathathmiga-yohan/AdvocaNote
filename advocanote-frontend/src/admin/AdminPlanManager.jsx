@@ -5,6 +5,7 @@ import {
   Plus,
   Pencil,
   Power,
+  Trash2,
   X,
   AlertCircle,
   CheckCircle2,
@@ -178,7 +179,8 @@ export default function AdminPlanManager({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [confirmPlan, setConfirmPlan] = useState(null);
-
+  const [deletePlanCandidate, setDeletePlanCandidate] =
+    useState(null);
   // ========================================
   // UPDATE FORM FIELD
   // ========================================
@@ -501,6 +503,56 @@ export default function AdminPlanManager({
     } catch (err) {
       setError(err.message);
 
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ========================================
+  // DELETE SUBSCRIPTION PLAN
+  // ========================================
+
+  async function deletePlan(plan) {
+    if (saving || !plan) return;
+
+    if (subscriberCount(plan.id) > 0) {
+      setError(
+        "This plan has current subscribers. " +
+        "It cannot be deleted."
+      );
+      setDeletePlanCandidate(null);
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await adminRequest(
+        `/admin/subscriptions/plans/${plan.id}`,
+        "DELETE"
+      );
+
+      setSuccess(
+        `${plan.name} deleted successfully.`
+      );
+
+      setDeletePlanCandidate(null);
+      setConfirmPlan(null);
+
+      if (editingPlan?.id === plan.id) {
+        setMode(null);
+        setEditingPlan(null);
+      }
+
+      onChanged?.();
+
+    } catch (err) {
+      setError(
+        err.message ||
+        "Unable to delete subscription plan."
+      );
     } finally {
       setSaving(false);
     }
@@ -916,10 +968,9 @@ export default function AdminPlanManager({
                     <td>
                       <span
                         className={
-                          `asub-status asub-status-${
-                            plan.is_active
-                              ? "active"
-                              : "inactive"
+                          `asub-status asub-status-${plan.is_active
+                            ? "active"
+                            : "inactive"
                           }`
                         }
                       >
@@ -958,7 +1009,7 @@ export default function AdminPlanManager({
                           }
                           title={
                             plan.is_active &&
-                            count > 0
+                              count > 0
                               ? "Active subscribers use this plan."
                               : ""
                           }
@@ -972,6 +1023,27 @@ export default function AdminPlanManager({
                             ? "Deactivate"
                             : "Activate"}
                         </button>
+
+                        <button
+                          type="button"
+                          className="apm-action apm-action-delete"
+                          disabled={saving || count > 0}
+                          title={
+                            count > 0
+                              ? "Cannot delete a plan with current subscribers."
+                              : "Delete subscription plan"
+                          }
+                          onClick={() => {
+                            setConfirmPlan(null);
+                            setDeletePlanCandidate(plan);
+                            setError("");
+                            setSuccess("");
+                          }}
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+
 
                       </div>
                     </td>
@@ -1031,6 +1103,62 @@ export default function AdminPlanManager({
           </div>
         </div>
       )}
+
+      {/* =====================================
+    DELETE PLAN CONFIRMATION
+===================================== */}
+
+      {deletePlanCandidate && (
+        <div className="apm-confirm apm-confirm-delete">
+
+          <strong>
+            Delete {deletePlanCandidate.name}?
+          </strong>
+
+          <p>
+            Are you sure you want to delete this
+            subscription plan?
+          </p>
+
+          <p>
+            This action permanently removes the plan
+            from AdvocaNote and archives its Stripe
+            Price. Plans with subscription or payment
+            history cannot be deleted.
+          </p>
+
+          <div className="apm-form-actions">
+
+            <button
+              type="button"
+              className="apm-button apm-outline"
+              disabled={saving}
+              onClick={() =>
+                setDeletePlanCandidate(null)
+              }
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              className="apm-button apm-danger"
+              disabled={saving}
+              onClick={() =>
+                deletePlan(deletePlanCandidate)
+              }
+            >
+              <Trash2 size={16} />
+
+              {saving
+                ? "Deleting..."
+                : "Yes, Delete Plan"}
+            </button>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

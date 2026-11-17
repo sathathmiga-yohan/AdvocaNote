@@ -276,3 +276,66 @@
     width: 100%;
   }
 }
+
+/* =====================================
+   DELETE PLAN BUTTON
+===================================== */
+
+.apm-action-delete {
+  color: #bb3939;
+  border: 1px solid #f0d0d0;
+  background: #fff7f7;
+  font-weight: 600;
+}
+
+.apm-action-delete:hover:not(:disabled) {
+  color: #a12525;
+  background: #ffecec;
+  border-color: #df9c9c;
+}
+
+/* =====================================
+   DELETE CONFIRMATION PANEL
+===================================== */
+
+.apm-confirm-delete {
+  background: #fff8f7;
+  border: 1px solid #edb8b4;
+  border-left: 4px solid #ca4545;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.apm-confirm-delete strong {
+  color: #9d2e2e;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.apm-confirm-delete p {
+  color: #745e5e;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+
+/* =====================================
+   CONFIRM DELETE BUTTON
+===================================== */
+
+.apm-danger {
+  background: #bb3939;
+  color: #ffffff;
+  border: 1px solid #bb3939;
+}
+
+.apm-danger:hover:not(:disabled) {
+  background: #992727;
+  border-color: #992727;
+}
+
+.apm-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
