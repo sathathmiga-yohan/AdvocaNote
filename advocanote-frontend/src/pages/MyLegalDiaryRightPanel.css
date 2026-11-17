@@ -257,3 +257,20 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* MY LEGAL DIARY HEADING ONLY */
+
+h1.ald-diary-compact-title {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.55px !important;
+  margin: 0 0 5px !important;
+}
+
+@media (max-width: 600px) {
+  h1.ald-diary-compact-title {
+    font-size: 21px !important;
+  }
+}

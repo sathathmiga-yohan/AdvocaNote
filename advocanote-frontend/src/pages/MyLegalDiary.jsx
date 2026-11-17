@@ -591,7 +591,10 @@ export default function MyLegalDiary({ onLogout }) {
               aria-labelledby="ald-page-heading"
             >
               <div>
-                <h1 id="ald-page-heading">My Legal Diary</h1>
+
+                <h1 className="ald-diary-compact-title">
+                  My Legal Diary
+                </h1>
                 <p>
                   Record court proceedings day by day.
                   Next dates sync to Hearings, Calendar

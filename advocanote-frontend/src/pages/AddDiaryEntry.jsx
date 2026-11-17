@@ -263,7 +263,6 @@ export default function AddDiaryEntry() {
   const [notifications, setNotifications] =
     useState([]);
 
-  const [dateCount, setDateCount] = useState(0);
   const [globalQuery, setGlobalQuery] =
     useState("");
 
@@ -813,11 +812,6 @@ export default function AddDiaryEntry() {
 
         setNotifications(
           overview?.notifications || []
-        );
-
-        setDateCount(
-          (overview?.entries || [])
-            .length
         );
 
         if (selectedCaseId) {
@@ -2205,10 +2199,6 @@ export default function AddDiaryEntry() {
         diaryResult
       );
 
-      setDateCount(
-        (count) =>
-          count + 1
-      );
 
       setError("");
     } catch (err) {
@@ -2909,11 +2899,6 @@ export default function AddDiaryEntry() {
                             </small>
                           )}
 
-                        <small className="ade2-voice-privacy">
-                          Live voice recognition may use an online
-                          browser service. Original audio is
-                          uploaded to FastAPI only when you save.
-                        </small>
                       </section>
 
                       {/* OPTIONAL AI ASSISTANCE */}
@@ -2929,8 +2914,7 @@ export default function AddDiaryEntry() {
                         </div>
 
                         <p>
-                          Analyse the proceedings only if you want
-                          AI-organised notes and suggested tasks.
+                          Use AI to organise your notes and suggest tasks.
                         </p>
 
                         <div className="ade2-ai-assist-controls">
@@ -2987,16 +2971,14 @@ export default function AddDiaryEntry() {
                         {analyzingVoice &&
                           voiceProcessingStep === "analyzing" && (
                             <small className="ade2-processing-note">
-                              Qwen is analysing your edited text
-                              on the CPU.
+                              Converting audio to text...
                             </small>
                           )}
 
                         {originalTranscript &&
                           draft.step_notes !== originalTranscript && (
                             <small className="ade2-processing-note">
-                              Transcript edited. Analyse again to
-                              refresh AI notes and tasks.
+                              Analysing your notes...
                             </small>
                           )}
                       </section>
@@ -3142,24 +3124,9 @@ export default function AddDiaryEntry() {
           >
             <div className="ade2-tasks-heading">
               <h2>
-                <Sparkles
-                  size={21}
-                />
-
+                <Sparkles size={21} />
                 AI Suggested Tasks
-
-                <span>
-                  (review before saving)
-                </span>
               </h2>
-
-              <small>
-                Only tasks explicitly
-                mentioned in the
-                transcript should be
-                considered. Verify all
-                suggestions.
-              </small>
             </div>
 
             <button
@@ -3391,28 +3358,10 @@ export default function AddDiaryEntry() {
               </div>
             ) : (
               <p className="ade2-task-empty">
-                No suggested tasks yet.
-                Analyse text with AI,
-                or add a task manually.
-                No task is saved without
-                approval.
+                No suggested tasks yet. Use AI or add a task manually.
               </p>
             )}
 
-            <small
-              style={{
-                display:
-                  "block",
-
-                marginTop:
-                  9,
-              }}
-            >
-              Current Diary API supports
-              one approved task per entry.
-              Approving another task
-              replaces the previous selection.
-            </small>
           </section>
 
           {/* ERROR */}
@@ -3445,38 +3394,12 @@ export default function AddDiaryEntry() {
             </h2>
 
             <p>
-              <Check
-                size={17}
-              />
-
-              Hearing date saved
-              when provided
+              <Check size={18} />
+              <span>
+                Hearing dates link to the calendar
+                and reminders.
+              </span>
             </p>
-
-            <p>
-              <Check
-                size={17}
-              />
-
-              Calendar can use
-              linked hearing
-            </p>
-
-            <p>
-              <Check
-                size={17}
-              />
-
-              Bell reminder record
-              linked
-            </p>
-
-            <small>
-              {dateCount}
-              {" "}
-              entry/entries already
-              saved on this date.
-            </small>
           </section>
 
           {/* SAVE DIARY */}

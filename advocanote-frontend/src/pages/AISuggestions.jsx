@@ -41,7 +41,7 @@ const API_URL = (
   import.meta.env.VITE_API_URL ||
   "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
-
+const PAGE_SIZE = 10;
 const getStatus = (value) => {
   const status = String(value || "").toLowerCase();
 
@@ -91,7 +91,7 @@ export default function AISuggestions() {
   const [filter, setFilter] = useState("all");
   const [selectedId, setSelectedId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-
+  const [page, setPage] = useState(1);
   const [bellOpen, setBellOpen] = useState(false);
 
   // LOAD SUGGESTIONS
@@ -212,9 +212,68 @@ export default function AISuggestions() {
     });
   }, [suggestions, filter, search]);
 
+  // =====================================
+  // PAGINATION - 10 RECORDS PER PAGE
+  // =====================================
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filtered.length / PAGE_SIZE)
+  );
+
+  const currentPage = Math.min(page, totalPages);
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+
+  const paginatedSuggestions = useMemo(() => {
+    return filtered.slice(
+      startIndex,
+      startIndex + PAGE_SIZE
+    );
+  }, [filtered, startIndex]);
+
+  // Reset pagination when searching or filtering
+  useEffect(() => {
+    setPage(1);
+    setSelectedId(null);
+  }, [search, filter]);
+
+  // Handle changes in the total number of pages
+  useEffect(() => {
+    setPage((previous) =>
+      Math.min(previous, totalPages)
+    );
+  }, [totalPages]);
+
+  const goToPage = (pageNumber) => {
+    const nextPage = Math.max(
+      1,
+      Math.min(pageNumber, totalPages)
+    );
+
+    setPage(nextPage);
+    setSelectedId(null);
+  };
+
+  // Show up to 5 page numbers
+  const pageNumbers = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => {
+      const startPage = Math.max(
+        1,
+        Math.min(currentPage - 2, totalPages - 4)
+      );
+
+      return startPage + index;
+    }
+  );
+
+  // Selected suggestion from current page
   const selected =
-    filtered.find((item) => item.id === selectedId) ||
-    filtered[0] ||
+    paginatedSuggestions.find(
+      (item) => item.id === selectedId
+    ) ||
+    paginatedSuggestions[0] ||
     null;
 
   useEffect(() => {
@@ -514,7 +573,7 @@ export default function AISuggestions() {
                         </td>
                       </tr>
                     ) : (
-                      filtered.map((item, index) => (
+                      paginatedSuggestions.map((item, index) => (
                         <tr
                           key={item.id}
                           className={
@@ -523,7 +582,7 @@ export default function AISuggestions() {
                               : ""
                           }
                         >
-                          <td>{index + 1}</td>
+                          <td>{startIndex + index + 1}</td>
 
                           <td className="ais-case-cell">
                             {item.caseNo}
@@ -569,6 +628,80 @@ export default function AISuggestions() {
                   </tbody>
                 </table>
               </div>
+
+              {/* PAGINATION */}
+              {!loading && filtered.length > 0 && (
+                <div className="ais-pagination">
+
+                  <div className="ais-pagination-info">
+                    Showing{" "}
+                    <strong>
+                      {startIndex + 1}–
+                      {Math.min(
+                        startIndex + PAGE_SIZE,
+                        filtered.length
+                      )}
+                    </strong>{" "}
+                    of <strong>{filtered.length}</strong> suggestions
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="ais-pagination-controls">
+
+                      <button
+                        type="button"
+                        className="ais-page-nav"
+                        disabled={currentPage === 1}
+                        onClick={() =>
+                          goToPage(currentPage - 1)
+                        }
+                      >
+                        Previous
+                      </button>
+
+                      <div className="ais-page-numbers">
+                        {pageNumbers.map((pageNumber) => (
+                          <button
+                            key={pageNumber}
+                            type="button"
+                            className={`ais-page-number ${currentPage === pageNumber
+                                ? "active"
+                                : ""
+                              }`}
+                            onClick={() =>
+                              goToPage(pageNumber)
+                            }
+                            aria-label={`Page ${pageNumber}`}
+                            aria-current={
+                              currentPage === pageNumber
+                                ? "page"
+                                : undefined
+                            }
+                          >
+                            {pageNumber}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="ais-page-nav"
+                        disabled={
+                          currentPage === totalPages
+                        }
+                        onClick={() =>
+                          goToPage(currentPage + 1)
+                        }
+                      >
+                        Next
+                      </button>
+
+                    </div>
+                  )}
+
+                </div>
+              )}
+
             </section>
           </section>
 

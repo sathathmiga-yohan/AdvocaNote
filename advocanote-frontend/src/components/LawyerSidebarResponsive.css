@@ -1,0 +1,289 @@
+
+/* =========================================
+   ADVOCANOTE GLOBAL MOBILE SIDEBAR
+   Applies to all lawyer pages
+   ========================================= */
+
+@media (max-width: 900px) {
+
+  .ald-app .ald-sidebar {
+    position: fixed !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    right: auto !important;
+
+    width: min(260px, 82vw) !important;
+    min-width: 0 !important;
+    max-width: 260px !important;
+
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+
+    z-index: 10020 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    border-radius: 0 15px 15px 0;
+
+    transform: translateX(-105%) !important;
+
+    transition:
+      transform 0.25s ease !important;
+
+    box-shadow:
+      8px 0 35px rgba(0, 25, 18, 0.2);
+  }
+
+  .ald-app .ald-sidebar.ald-sidebar--open {
+    transform: translateX(0) !important;
+  }
+
+  /* Background overlay */
+
+  .ald-app .ald-mobile-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+
+    z-index: 10010 !important;
+
+    display: block !important;
+
+    width: 100vw;
+    height: 100dvh;
+
+    background: rgba(0, 20, 15, 0.4);
+    border: none;
+  }
+
+  /* Make the logo fully visible */
+
+  .ald-app .ald-sidebar-brand {
+    padding: 32px 12px 17px !important;
+    margin: 0 !important;
+  }
+
+  .ald-app .ald-brand-wordmark {
+    font-size: 23px !important;
+  }
+
+  .ald-app .ald-brand-subtitle {
+    font-size: 12px !important;
+  }
+
+  /* Compact navigation */
+
+  .ald-app .ald-nav {
+    padding: 0 11px !important;
+  }
+
+  .ald-app .ald-nav-item {
+    min-height: 46px !important;
+    gap: 12px !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+
+  .ald-app .ald-nav-item > svg:first-child {
+    width: 21px !important;
+    height: 21px !important;
+    flex-shrink: 0;
+  }
+
+  .ald-app .ald-sidebar-bottom-art {
+    height: 160px !important;
+  }
+
+  /* Main workspace */
+
+  .ald-app .ald-workspace {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+
+  .ald-app .ald-sidebar {
+    width: min(235px, 82vw) !important;
+  }
+
+  .ald-app .ald-nav-item {
+    min-height: 43px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ==========================================
+   MOBILE SIDEBAR - ALL MENU TEXT VISIBLE
+   ========================================== */
+
+@media (max-width: 900px) {
+
+  .ald-app .ald-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+
+    overflow: hidden !important;
+  }
+
+  /* Keep navigation above artwork */
+
+  .ald-app .ald-sidebar-main {
+    position: relative;
+    z-index: 5;
+
+    display: flex;
+    flex-direction: column;
+
+    flex: 1 1 auto;
+    min-height: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    padding-bottom: 16px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #56836d transparent;
+  }
+
+  /* Compact branding */
+
+  .ald-app .ald-sidebar-brand {
+    flex-shrink: 0;
+
+    padding: 17px 12px 9px !important;
+  }
+
+  .ald-app .ald-brand-icon {
+    width: 35px !important;
+    height: 35px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .ald-app .ald-brand-wordmark {
+    font-size: 22px !important;
+  }
+
+  .ald-app .ald-brand-subtitle {
+    font-size: 11px !important;
+  }
+
+  .ald-app .ald-brand-line {
+    margin: 12px auto !important;
+  }
+
+  /* Compact menu with readable labels */
+
+  .ald-app .ald-nav {
+    position: relative;
+    z-index: 6;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+
+    flex-shrink: 0;
+
+    padding: 0 10px !important;
+  }
+
+  .ald-app .ald-nav-item {
+    display: flex !important;
+    align-items: center !important;
+
+    flex: 0 0 auto;
+
+    width: 100% !important;
+    min-width: 0 !important;
+
+    height: 43px !important;
+    min-height: 43px !important;
+
+    padding: 0 11px !important;
+    gap: 11px !important;
+
+    color: #ffffff !important;
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+  }
+
+  .ald-app .ald-nav-item > span {
+    display: block !important;
+    flex: 1 1 auto;
+
+    min-width: 0;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .ald-app .ald-nav-item > svg:first-child {
+    flex-shrink: 0;
+
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  /* Prevent the bottom image from
+     interfering with menu text */
+
+  .ald-app .ald-sidebar-bottom-art {
+    position: absolute !important;
+    z-index: 0 !important;
+
+    bottom: 0 !important;
+    left: 0;
+    right: 0;
+
+    height: 140px !important;
+    opacity: 0.18 !important;
+
+    pointer-events: none !important;
+  }
+
+}
+
+/* Short browser windows */
+
+@media (max-width: 900px) and (max-height: 700px) {
+
+  .ald-app .ald-sidebar-brand {
+    padding-top: 12px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .ald-app .ald-brand-icon {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .ald-app .ald-brand-line {
+    margin: 7px auto !important;
+  }
+
+  .ald-app .ald-nav {
+    gap: 2px !important;
+  }
+
+  .ald-app .ald-nav-item {
+    height: 39px !important;
+    min-height: 39px !important;
+  }
+
+  .ald-app .ald-sidebar-bottom-art {
+    display: none !important;
+  }
+
+}

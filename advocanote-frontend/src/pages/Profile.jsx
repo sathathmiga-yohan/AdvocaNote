@@ -20,6 +20,7 @@ import {
   X,
   RefreshCw,
   ArrowUpRight,
+  MoreHorizontal,
 } from "lucide-react";
 
 import { useLawyerLayout } from "../components/LawyerLayout";
@@ -163,17 +164,35 @@ function SettingField({
 // SECTION HEADING
 // =====================================
 
-function SectionHeading({
-  title,
-  description,
-}) {
+
+function SectionHeading({ title, description }) {
+  const iconMap = {
+    "Profile Information": UserRound,
+    "Professional Profile": BriefcaseBusiness,
+    "Billing & Subscription": CreditCard,
+    "Notification Preferences": Bell,
+    "Privacy & Data": ShieldCheck,
+  };
+
+  const Icon = iconMap[title] || UserRound;
+
   return (
     <div className="anp-v2-section-heading">
-      <h2>{title}</h2>
-      <p>{description}</p>
+      <span
+        className="anp-v2-heading-icon"
+        aria-hidden="true"
+      >
+        <Icon size={23} strokeWidth={1.8} />
+      </span>
+
+      <div className="anp-v2-heading-copy">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
     </div>
   );
 }
+
 
 // =====================================
 // NOTIFICATION OPTION
@@ -204,6 +223,193 @@ function NotificationOption({
         }
       />
     </div>
+  );
+}
+
+function ProfileTabs({ activeTab, onSelect }) {
+  const barRef = useRef(null);
+  const measureRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      const width = barRef.current?.clientWidth || 0;
+      const measure = measureRef.current;
+
+      if (!width || !measure) return;
+
+      const items = Array.from(
+        measure.querySelectorAll("[data-tab-measure]")
+      );
+
+      const more = measure.querySelector(
+        "[data-more-measure]"
+      );
+
+      if (!more || items.length !== TABS.length) return;
+
+      const gap = 8;
+      const moreWidth = Math.ceil(
+        more.getBoundingClientRect().width
+      );
+
+      let used = 0;
+      let count = 0;
+
+      for (let i = 0; i < items.length; i++) {
+        const tabWidth = Math.ceil(
+          items[i].getBoundingClientRect().width
+        );
+
+        const next =
+          used + (count ? gap : 0) + tabWidth;
+
+        const reserve =
+          i < items.length - 1
+            ? moreWidth + gap
+            : 0;
+
+        if (next + reserve > width) break;
+
+        used = next;
+        count++;
+      }
+
+      setVisibleCount(count);
+    };
+
+    update();
+
+    const observer = new ResizeObserver(update);
+
+    if (barRef.current) observer.observe(barRef.current);
+    if (measureRef.current) observer.observe(measureRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+
+    const close = (event) => {
+      if (!menuRef.current?.contains(event.target)) {
+        setMoreOpen(false);
+      }
+    };
+
+    const escape = (event) => {
+      if (event.key === "Escape") {
+        setMoreOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", escape);
+
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [moreOpen]);
+
+  const shownTabs = TABS.slice(0, visibleCount);
+  const hiddenTabs = TABS.slice(visibleCount);
+
+  const hiddenActive = hiddenTabs.some(
+    (tab) => tab.id === activeTab
+  );
+
+  const choose = (id) => {
+    onSelect(id);
+    setMoreOpen(false);
+  };
+
+  return (
+    <>
+      <div className="anp-v2-tabbar" ref={barRef}>
+        <div
+          className="anp-v2-tabs"
+          role="tablist"
+          aria-label="Profile settings sections"
+        >
+          {shownTabs.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`anp-v2-tab-${id}`}
+              aria-selected={activeTab === id}
+              aria-controls="anp-v2-panel"
+              className={activeTab === id ? "active" : ""}
+              onClick={() => choose(id)}
+            >
+              <Icon size={15} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {hiddenTabs.length > 0 && (
+          <div className="anp-v2-tabs-more" ref={menuRef}>
+            <button
+              type="button"
+              className={`anp-v2-tabs-more-btn ${hiddenActive ? "is-active" : ""
+                }`}
+              aria-label="More settings sections"
+              aria-expanded={moreOpen}
+              aria-haspopup="menu"
+              onClick={() => setMoreOpen((open) => !open)}
+            >
+              <MoreHorizontal size={20} />
+            </button>
+
+            {moreOpen && (
+              <div
+                className="anp-v2-tabs-menu"
+                role="menu"
+                aria-label="More settings sections"
+              >
+                {hiddenTabs.map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="menuitem"
+                    className={
+                      activeTab === id ? "active" : ""
+                    }
+                    onClick={() => choose(id)}
+                  >
+                    <Icon size={16} />
+                    <span>{label}</span>
+                    {activeTab === id && <Check size={15} />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div
+        className="anp-v2-tabs-measure"
+        ref={measureRef}
+        aria-hidden="true"
+      >
+        {TABS.map(({ id, label, Icon }) => (
+          <span key={id} data-tab-measure>
+            <Icon size={15} />
+            <span>{label}</span>
+          </span>
+        ))}
+
+        <span data-more-measure>
+          <MoreHorizontal size={20} />
+        </span>
+      </div>
+    </>
   );
 }
 
@@ -968,13 +1174,13 @@ export default function Profile() {
 
         <div className="anp-v2-page-header">
           <div>
-            <span className="anp-v2-eyebrow">
-              ADVOCANOTE / MY ACCOUNT
-            </span>
 
-            <h1>
+
+
+            <h1 className="profile-title-small">
               Profile & Settings
             </h1>
+
 
             <p>
               Manage your legal professional
@@ -1222,53 +1428,18 @@ export default function Profile() {
 
               {/* NAVIGATION TABS */}
 
-              <div
-                className="anp-v2-tabs"
-                role="tablist"
-                aria-label="Profile settings sections"
-              >
-                {TABS.map(
-                  ({
-                    id,
-                    label,
-                    Icon,
-                  }) => (
-                    <button
-                      key={id}
-                      type="button"
-                      role="tab"
-                      id={`anp-v2-tab-${id}`}
-                      aria-selected={
-                        activeTab === id
-                      }
-                      aria-controls="anp-v2-panel"
-                      className={
-                        activeTab === id
-                          ? "active"
-                          : ""
-                      }
-                      onClick={() =>
-                        selectTab(id)
-                      }
-                    >
-                      <Icon size={16} />
-
-                      <span>
-                        {label}
-                      </span>
-                    </button>
-                  )
-                )}
-              </div>
-
+              <ProfileTabs
+                activeTab={activeTab}
+                onSelect={selectTab}
+              />
               {/* TAB PANEL */}
 
               <div
                 className="anp-v2-panel"
                 id="anp-v2-panel"
                 role="tabpanel"
-                aria-labelledby={
-                  `anp-v2-tab-${activeTab}`
+                aria-label={
+                  TABS.find((tab) => tab.id === activeTab)?.label
                 }
               >
 

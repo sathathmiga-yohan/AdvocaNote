@@ -1267,3 +1267,678 @@ main.anp-page:has(.ans-page) .ans-page {
     padding: 15px !important;
   }
 }
+
+/* ==========================================
+   CURRENT PLAN + PAYMENT HISTORY
+   TWO COLUMN LAYOUT
+========================================== */
+
+.ans-page .ans-overview {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.ans-page .ans-overview-main,
+.ans-page .ans-payment-card {
+  min-width: 0;
+}
+
+/* ==========================================
+   PAYMENT HISTORY CARD
+========================================== */
+
+.ans-payment-card {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  padding: 20px 18px;
+
+  background: #ffffff;
+  border: 1px solid #e8e1d6;
+  border-radius: 13px;
+
+  box-shadow:
+    0 3px 12px rgba(52, 43, 26, 0.025);
+}
+
+/* HEADER */
+
+.ans-payment-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 17px;
+}
+
+.ans-payment-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ans-payment-heading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 35px;
+  height: 35px;
+
+  background: #fff6e8;
+  border: 1px solid #f2e6d1;
+  border-radius: 9px;
+
+  color: #ad894b;
+}
+
+.ans-payment-card-title h2 {
+  margin: 0;
+
+  color: #004535;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+}
+
+/* VIEW ALL BUTTON */
+
+.ans-payment-view-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+
+  padding: 8px 11px;
+  min-height: 34px;
+
+  background: #ffffff;
+  border: 1px solid #dcded6;
+  border-radius: 9px;
+
+  color: #004535;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ans-payment-view-all:hover {
+  background: #f0f6f1;
+  border-color: #bdd6c4;
+}
+
+.ans-payment-view-all svg {
+  flex-shrink: 0;
+}
+
+/* PENDING PAYMENT BUTTON */
+
+.ans-payment-check {
+  align-self: flex-start;
+  margin-bottom: 12px;
+}
+
+/* ==========================================
+   PAYMENT HISTORY TABLE
+========================================== */
+
+.ans-payment-card .ans-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  max-height: 270px;
+
+  overflow: auto;
+
+  background: #ffffff;
+  border: 1px solid #eae5dc;
+  border-radius: 11px;
+
+  box-shadow: none;
+}
+
+.ans-payment-card .ans-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* TABLE COLUMN WIDTHS */
+
+.ans-payment-card .ans-table th:first-child {
+  width: 35%;
+}
+
+.ans-payment-card .ans-table th:nth-child(2) {
+  width: 23%;
+}
+
+.ans-payment-card .ans-table th:nth-child(3) {
+  width: 25%;
+}
+
+.ans-payment-card .ans-table th:nth-child(4) {
+  width: 17%;
+}
+
+/* TABLE HEADER */
+
+.ans-payment-card .ans-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  padding: 12px 9px;
+
+  background: #faf9f6;
+  border-bottom: 1px solid #eae5dc;
+
+  color: #143f35;
+  font-size: 10.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* TABLE ROWS */
+
+.ans-payment-card .ans-table td {
+  padding: 13px 9px;
+
+  color: #385b4e;
+  font-size: 10.5px;
+  line-height: 1.5;
+
+  border-bottom: 1px solid #efebe5;
+  vertical-align: middle;
+}
+
+.ans-payment-card .ans-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ans-payment-card .ans-table tbody tr:hover {
+  background: #fcfdfb;
+}
+
+/* PAYMENT NAME */
+
+.ans-payment-card .ans-payment-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ans-payment-card .ans-payment-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+
+  background: #eaf6ee;
+  border-radius: 8px;
+}
+
+.ans-payment-card .ans-payment-name strong {
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* PAYMENT DATE */
+
+.ans-payment-card .ans-date-cell {
+  white-space: normal;
+}
+
+.ans-payment-card .ans-date-cell svg {
+  width: 13px;
+  height: 13px;
+  margin-right: 4px;
+}
+
+/* AMOUNT */
+
+.ans-payment-card .ans-amount {
+  color: #004535;
+  font-size: 10.5px !important;
+  font-weight: 700;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* STATUS */
+
+.ans-payment-card .ans-payment-status {
+  padding: 5px 7px;
+  border-radius: 7px;
+  font-size: 9.5px;
+}
+
+/* EMPTY STATE */
+
+.ans-payment-card .ans-payment-empty {
+  min-height: 145px;
+  padding: 24px 15px;
+
+  background: #fcfbf8;
+  border: 1px dashed #e8e1d6;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 1150px) {
+  .ans-page .ans-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .ans-payment-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ans-page .ans-overview {
+    gap: 11px;
+  }
+
+  .ans-payment-card {
+    padding: 15px;
+  }
+
+  .ans-payment-card-title h2 {
+    font-size: 18px;
+  }
+
+  .ans-payment-card .ans-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .ans-payment-card .ans-table {
+    min-width: 480px;
+  }
+
+  .ans-payment-view-all {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+}
+
+/* ======================================
+   CURRENT PLAN - REFINED TYPOGRAPHY
+====================================== */
+
+/* Same heading style as Payment History */
+
+.ans-current-header {
+  display: flex;
+  align-items: center;
+  min-height: 35px;
+}
+
+.ans-current-title {
+  margin: 0;
+  color: #004535;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+  line-height: 1.3;
+}
+
+/* Plan name - modern, distinct style */
+
+.ans-overview-main .ans-overview-heading {
+  margin-top: 13px;
+}
+
+.ans-overview-main .ans-overview-heading h2 {
+  margin: 0;
+  color: #004535;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.45px;
+  line-height: 1.4;
+}
+
+/* Active status alignment */
+
+.ans-overview-main .ans-overview-heading .ans-status {
+  flex-shrink: 0;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .ans-current-title {
+    font-size: 19px;
+  }
+
+  .ans-overview-main .ans-overview-heading h2 {
+    font-size: 18px;
+  }
+}
+
+/* ========================================
+   ADVOCANOTE SUBSCRIPTION
+   FINAL REFINED DESIGN
+======================================== */
+
+/* CURRENT PLAN HEADER */
+
+.ans-page .ans-current-header {
+  display: flex;
+  align-items: center;
+  min-height: 39px;
+}
+
+.ans-page .ans-current-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  margin: 0;
+
+  color: #004535;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+  line-height: 1.3;
+}
+
+/* CROWN EMOJI */
+
+.ans-page .ans-current-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  font-family: "Segoe UI Emoji", "Apple Color Emoji",
+    sans-serif;
+  font-size: 23px;
+  line-height: 1;
+}
+
+/* ========================================
+   CURRENT PLAN GREEN HIGHLIGHT
+======================================== */
+
+.ans-page .ans-overview-main
+.ans-overview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  width: 100%;
+  min-height: 60px;
+
+  margin-top: 12px;
+  padding: 12px 20px;
+
+  background: #edf7f0;
+  border: 1px solid #edf5ed;
+  border-radius: 11px;
+}
+
+/* FREE PLUS PLAN NAME */
+
+.ans-page .ans-overview-main
+.ans-overview-heading h2 {
+  margin: 0;
+  padding-right: 24px;
+
+  border-right: 1px solid #cad9d0;
+
+  color: #004535;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.4px;
+}
+
+/* ACTIVE BADGE */
+
+.ans-page .ans-overview-main
+.ans-overview-heading .ans-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 7px 12px;
+  border-radius: 20px;
+
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+/* ========================================
+   SUBSCRIPTION DETAILS
+======================================== */
+
+.ans-page .ans-overview-main
+.ans-overview-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.ans-page .ans-overview-main
+.ans-overview-detail {
+  min-height: 67px;
+  padding: 12px 14px;
+
+  background: #fcfbf9;
+  border: 1px solid #ebe7df;
+  border-radius: 11px;
+}
+
+/* BILLING BUTTON SPACING */
+
+.ans-page .ans-overview-actions {
+  margin-top: 13px;
+  gap: 10px;
+}
+
+/* ========================================
+   PAYMENT HISTORY TITLE
+======================================== */
+
+.ans-page .ans-payment-card-header {
+  min-height: 39px;
+  margin-bottom: 13px;
+}
+
+.ans-page .ans-payment-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ans-page .ans-payment-card-title h2 {
+  margin: 0;
+
+  color: #004535;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.35px;
+}
+
+/* GREEN CREDIT CARD ICON */
+
+.ans-page .ans-payment-heading-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 40px;
+  height: 40px;
+
+  background: #e9f6ed;
+  border: 1px solid #dff0e4;
+  border-radius: 10px;
+
+  color: #00845c;
+}
+
+.ans-page .ans-payment-heading-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 600px) {
+  .ans-page .ans-current-title,
+  .ans-page .ans-payment-card-title h2 {
+    font-size: 19px;
+  }
+
+  .ans-page .ans-current-emoji {
+    font-size: 21px;
+  }
+
+  .ans-page .ans-overview-main
+  .ans-overview-heading {
+    min-height: 55px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .ans-page .ans-overview-main
+  .ans-overview-heading h2 {
+    font-size: 20px;
+    padding-right: 14px;
+  }
+}
+
+@media (max-width: 440px) {
+  .ans-page .ans-overview-main
+  .ans-overview-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* COMPACT SUBSCRIPTION PAGE HEADER */
+
+main.anp-page:has(.ans-page) {
+  padding-top: 18px !important;
+}
+
+main.anp-page:has(.ans-page) .anp-page-header {
+  min-height: 78px !important;
+  padding: 12px 18px !important;
+  margin-bottom: 12px !important;
+  border-radius: 13px;
+}
+
+main.anp-page:has(.ans-page) .anp-page-header h1 {
+  margin: 0 0 4px !important;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+main.anp-page:has(.ans-page) .anp-page-header p {
+  margin: 0 !important;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  main.anp-page:has(.ans-page) .anp-page-header {
+    min-height: 72px !important;
+    padding: 12px 14px !important;
+  }
+}
+
+/* =====================================
+   AVAILABLE PLANS - KEEP 2 COLUMNS
+===================================== */
+
+/* Desktop - 4 cards */
+
+.ans-page .ans-plans-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px;
+}
+
+/* Small desktop / Tablet - 2 cards */
+
+@media (max-width: 1100px) {
+  .ans-page .ans-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px;
+  }
+}
+
+/* Smaller screens - keep 2 cards */
+
+@media (max-width: 600px) {
+  .ans-page .ans-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px;
+  }
+
+  .ans-page .ans-plan {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .ans-page .ans-plan h3 {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .ans-page .ans-plan-price strong {
+    font-size: 18px;
+  }
+
+  .ans-page .ans-plan-price {
+    gap: 4px;
+  }
+
+  .ans-page .ans-feature {
+    font-size: 10px;
+  }
+
+  .ans-page .ans-plan-bottom .ans-button {
+    padding: 8px 5px;
+    font-size: 10px;
+    white-space: normal;
+  }
+}

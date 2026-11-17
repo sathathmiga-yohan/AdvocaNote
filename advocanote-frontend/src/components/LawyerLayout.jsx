@@ -19,7 +19,7 @@ import {
 } from "react-router-dom";
 
 import { createPortal } from "react-dom";
-
+import "./LawyerSidebarResponsive.css";
 import {
   Menu,
   Search,

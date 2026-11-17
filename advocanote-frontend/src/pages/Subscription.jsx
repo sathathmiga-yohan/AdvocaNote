@@ -230,6 +230,8 @@ export default function Subscription() {
   const [payments, setPayments] =
     useState([]);
 
+  const [showAllPayments, setShowAllPayments] = useState(false);
+
   const [loading, setLoading] =
     useState(true);
 
@@ -419,16 +421,16 @@ export default function Subscription() {
 
 
 
-const visiblePlans = plans.filter((plan) => {
-  // Only show active subscription plans.
-  if (plan.is_active !== true) {
-    return false;
-  }
+  const visiblePlans = plans.filter((plan) => {
+    // Only show active subscription plans.
+    if (plan.is_active !== true) {
+      return false;
+    }
 
-  return `${plan.name} ${plan.description || ""}`
-    .toLowerCase()
-    .includes(searchTerm);
-});
+    return `${plan.name} ${plan.description || ""}`
+      .toLowerCase()
+      .includes(searchTerm);
+  });
 
 
   const visiblePayments = payments.filter(
@@ -446,6 +448,27 @@ const visiblePlans = plans.filter((plan) => {
         .includes(searchTerm);
     }
   );
+
+
+  const sortedPayments = [...visiblePayments].sort((a, b) => {
+    const aTime = Date.parse(
+      a.paid_at || a.created_at || ""
+    );
+
+    const bTime = Date.parse(
+      b.paid_at || b.created_at || ""
+    );
+
+    return (
+      (Number.isFinite(bTime) ? bTime : 0) -
+      (Number.isFinite(aTime) ? aTime : 0)
+    );
+  });
+
+  const displayedPayments = showAllPayments
+    ? sortedPayments
+    : sortedPayments.slice(0, 3);
+
 
   // =====================================
   // STRIPE CHECKOUT
@@ -897,9 +920,7 @@ const visiblePlans = plans.filter((plan) => {
               </p>
             </div>
 
-            <div className="anp-header-icon">
-              <Crown size={25} />
-            </div>
+
           </div>
 
           <div className="ans-page">
@@ -988,22 +1009,28 @@ const visiblePlans = plans.filter((plan) => {
             ) : (
               <>
 
-                {/* =========================
-                    CURRENT SUBSCRIPTION
-                ========================= */}
 
-                <section
-                  className="ans-overview"
-                  style={{
-                    gridTemplateColumns: "minmax(0, 1fr)",
-                  }}
-                >
+                {/* =====================================
+    CURRENT PLAN + PAYMENT HISTORY
+===================================== */}
+
+                <section className="ans-overview">
+
+                  {/* CURRENT PLAN - LEFT SIDE */}
+
                   <div className="ans-overview-main">
 
-                    <div className="ans-section-eyebrow">
-                      <Crown size={16} />
-                      CURRENT PLAN
+
+
+                    <div className="ans-current-header">
+                      <h2 className="ans-current-title">
+                        <span className="ans-current-emoji" aria-hidden="true">
+                          👑
+                        </span>
+                        Current Plan
+                      </h2>
                     </div>
+
 
                     <div className="ans-overview-heading">
 
@@ -1021,9 +1048,7 @@ const visiblePlans = plans.filter((plan) => {
                       >
                         <span className="ans-status-dot" />
 
-                        {formatStatus(
-                          subscriptionStatus
-                        )}
+                        {formatStatus(subscriptionStatus)}
                       </span>
 
                     </div>
@@ -1036,9 +1061,7 @@ const visiblePlans = plans.filter((plan) => {
                         <CalendarDays size={19} />
 
                         <div>
-                          <span>
-                            Period ends
-                          </span>
+                          <span>Period ends</span>
 
                           <strong>
                             {formatDate(
@@ -1052,9 +1075,7 @@ const visiblePlans = plans.filter((plan) => {
                         <ShieldCheck size={19} />
 
                         <div>
-                          <span>
-                            Billing status
-                          </span>
+                          <span>Billing status</span>
 
                           <strong>
                             {subscription?.cancel_at_period_end
@@ -1105,6 +1126,153 @@ const visiblePlans = plans.filter((plan) => {
                     </div>
 
                   </div>
+
+                  {/* PAYMENT HISTORY - RIGHT SIDE */}
+
+                  <section className="ans-payment-card">
+
+                    <div className="ans-payment-card-header">
+
+                      <div className="ans-payment-card-title">
+
+                        <span className="ans-payment-heading-icon">
+                          <CreditCard size={19} strokeWidth={2} />
+                        </span>
+
+
+                        <h2>Payment History</h2>
+                      </div>
+
+                      {sortedPayments.length > 3 && (
+                        <button
+                          type="button"
+                          className="ans-payment-view-all"
+                          onClick={() =>
+                            setShowAllPayments((previous) => !previous)
+                          }
+                        >
+                          {showAllPayments ? "Show Less" : "View All"}
+
+                          <ArrowUpRight size={15} />
+                        </button>
+                      )}
+
+                    </div>
+
+                    {/* CHECK PENDING PAYMENTS */}
+
+                    {payments.some(
+                      (payment) => payment.status === "pending"
+                    ) && (
+                        <button
+                          type="button"
+                          className="ans-button ans-button-outline ans-payment-check"
+                          onClick={handleCleanupPayments}
+                          disabled={actionLoading !== null}
+                        >
+                          <RefreshCw size={15} />
+
+                          {actionLoading === "cleanup"
+                            ? "Checking..."
+                            : "Check Pending Payments"}
+                        </button>
+                      )}
+
+                    {/* PAYMENT RECORDS */}
+
+                    {visiblePayments.length === 0 ? (
+
+                      <div className="ans-empty ans-payment-empty">
+                        <Receipt size={25} />
+
+                        <h3>No payments found</h3>
+                      </div>
+
+                    ) : (
+
+                      <div className="ans-table-wrapper ans-payment-preview-table">
+
+                        <table className="ans-table">
+
+                          <thead>
+                            <tr>
+                              <th>Plan</th>
+                              <th>Date</th>
+                              <th>Amount</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+
+                            {displayedPayments.map((payment) => {
+
+                              const relatedPlan = plans.find(
+                                (plan) =>
+                                  Number(plan.id) ===
+                                  Number(payment.plan_id)
+                              );
+
+                              return (
+                                <tr key={payment.id}>
+
+                                  <td>
+                                    <div className="ans-payment-name">
+
+                                      <span className="ans-payment-icon">
+                                        <CreditCard size={17} />
+                                      </span>
+
+                                      <div>
+                                        <strong>
+                                          {relatedPlan?.name ||
+                                            `Plan #${payment.plan_id}`}
+                                        </strong>
+                                      </div>
+
+                                    </div>
+                                  </td>
+
+                                  <td className="ans-date-cell">
+                                    <Clock3 size={15} />
+
+                                    {formatDate(
+                                      payment.paid_at ||
+                                      payment.created_at
+                                    )}
+                                  </td>
+
+                                  <td className="ans-amount">
+                                    {formatMoney(
+                                      payment.amount,
+                                      payment.currency
+                                    )}
+                                  </td>
+
+                                  <td>
+                                    <span
+                                      className={`ans-payment-status ans-payment-${String(
+                                        payment.status
+                                      ).toLowerCase()}`}
+                                    >
+                                      {formatStatus(payment.status)}
+                                    </span>
+                                  </td>
+
+                                </tr>
+                              );
+                            })}
+
+                          </tbody>
+
+                        </table>
+
+                      </div>
+
+                    )}
+
+                  </section>
+
                 </section>
 
                 {/* =========================
@@ -1113,17 +1281,11 @@ const visiblePlans = plans.filter((plan) => {
 
                 <section className="ans-section">
 
+
                   <div className="ans-section-header">
-
-                    <h2>
-                      Available Plans
-                    </h2>
-
-                    <div className="ans-header-icon">
-                      <Wallet size={19} />
-                    </div>
-
+                    <h2>Available Plans</h2>
                   </div>
+
 
                   {visiblePlans.length === 0 ? (
                     <div className="ans-empty">
@@ -1352,145 +1514,6 @@ const visiblePlans = plans.filter((plan) => {
                           </article>
                         );
                       })}
-
-                    </div>
-                  )}
-
-                </section>
-
-                {/* =========================
-                    PAYMENT HISTORY
-                ========================= */}
-
-                <section className="ans-section">
-
-                  <div className="ans-section-header">
-
-                    <h2>
-                      Payment History
-                    </h2>
-
-                    <div className="ans-header-icon">
-                      <Receipt size={19} />
-                    </div>
-
-                  </div>
-
-                  {/* CHECK PENDING PAYMENTS */}
-
-                  {payments.some(
-                    (payment) =>
-                      payment.status === "pending"
-                  ) && (
-                      <button
-                        type="button"
-                        className="ans-button ans-button-outline"
-                        style={{
-                          marginBottom: 12,
-                        }}
-                        onClick={handleCleanupPayments}
-                        disabled={
-                          actionLoading !== null
-                        }
-                      >
-                        <RefreshCw size={16} />
-
-                        {actionLoading === "cleanup"
-                          ? "Checking..."
-                          : "Check Pending Payments"}
-                      </button>
-                    )}
-
-                  {/* PAYMENT RECORDS */}
-
-                  {visiblePayments.length === 0 ? (
-                    <div className="ans-empty">
-                      <Receipt size={26} />
-                      <h3>
-                        No payments found
-                      </h3>
-                    </div>
-                  ) : (
-                    <div className="ans-table-wrapper">
-
-                      <table className="ans-table">
-
-                        <thead>
-                          <tr>
-                            <th>Plan</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-
-                        <tbody>
-
-                          {visiblePayments.map((payment) => {
-
-                            const relatedPlan =
-                              plans.find(
-                                (plan) =>
-                                  Number(plan.id) ===
-                                  Number(payment.plan_id)
-                              );
-
-                            return (
-                              <tr key={payment.id}>
-
-                                <td>
-                                  <div className="ans-payment-name">
-
-                                    <span className="ans-payment-icon">
-                                      <CreditCard size={17} />
-                                    </span>
-
-                                    <div>
-                                      <strong>
-                                        {relatedPlan?.name ||
-                                          `Plan #${payment.plan_id}`}
-                                      </strong>
-                                    </div>
-
-                                  </div>
-                                </td>
-
-                                <td className="ans-date-cell">
-                                  <Clock3 size={15} />
-
-                                  {formatDate(
-                                    payment.paid_at ||
-                                    payment.created_at
-                                  )}
-                                </td>
-
-                                <td className="ans-amount">
-                                  {formatMoney(
-                                    payment.amount,
-                                    payment.currency
-                                  )}
-                                </td>
-
-                                <td>
-                                  <span
-                                    className={`ans-payment-status ans-payment-${String(
-                                      payment.status
-                                    ).toLowerCase()}`}
-                                  >
-                                    {formatStatus(
-                                      payment.status
-                                    )}
-                                  </span>
-                                </td>
-
-                              </tr>
-                            );
-
-                          })}
-
-                        </tbody>
-
-                      </table>
 
                     </div>
                   )}

@@ -13,9 +13,14 @@ import {
 
 import {
   Bell,
+  BellRing,
   CalendarDays,
   CheckCheck,
   ListTodo,
+  CalendarClock,
+  Mail,
+  Inbox,
+  Sparkles,
 } from "lucide-react";
 
 import { useLawyerLayout } from "./LawyerLayout";
@@ -25,7 +30,6 @@ const API = (
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
-
 
 async function notificationRequest(path, method = "GET") {
   const token = sessionStorage.getItem(
@@ -62,7 +66,6 @@ async function notificationRequest(path, method = "GET") {
   return data;
 }
 
-
 function getNotificationType(pathname) {
   const path = pathname.toLowerCase();
 
@@ -70,9 +73,7 @@ function getNotificationType(pathname) {
     return "hearing";
   }
 
-  if (
-    /^\/(tasks?([^/]*?)|deadlines?)(\/|$)/.test(path)
-  ) {
+  if (/^\/(tasks?|deadlines?)(\/|$)/.test(path)) {
     return "task";
   }
 
@@ -88,7 +89,60 @@ function getNotificationType(pathname) {
   return "core";
 }
 
+function formatReminderDate(value) {
+  if (!value) return "";
 
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})/
+  );
+
+  if (!match) return String(value);
+
+  const [, year, month, day] = match;
+
+  const date = new Date(
+    Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    )
+  );
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function getNotificationMeta(type) {
+  if (type === "hearing") {
+    return {
+      label: "Hearing",
+      icon: CalendarDays,
+      className: "hearing",
+    };
+  }
+
+  if (type === "event") {
+    return {
+      label: "Event",
+      icon: CalendarClock,
+      className: "event",
+    };
+  }
+
+  return {
+    label: "Task",
+    icon: ListTodo,
+    className: "task",
+  };
+}
 
 export default function NotificationBell() {
   const { user } = useLawyerLayout();
@@ -98,10 +152,13 @@ export default function NotificationBell() {
   const holderRef = useRef(null);
 
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [busyId, setBusyId] = useState(null);
   const [markingAll, setMarkingAll] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -110,6 +167,8 @@ export default function NotificationBell() {
     () => getNotificationType(pathname),
     [pathname]
   );
+
+  // FETCH NOTIFICATIONS
 
   useEffect(() => {
     let active = true;
@@ -122,8 +181,6 @@ export default function NotificationBell() {
       return;
     }
 
-    setNotifications([]);
-    setUnreadCount(0);
     setLoading(true);
 
     async function refreshNotifications() {
@@ -179,11 +236,14 @@ export default function NotificationBell() {
     };
   }, [user?.id, notificationType, refreshKey]);
 
+  // CLOSE ON ROUTE CHANGE
 
   useEffect(() => {
     setOpen(false);
+    setActiveTab("all");
   }, [pathname]);
 
+  // OUTSIDE CLICK
 
   useEffect(() => {
     if (!open) return;
@@ -226,18 +286,19 @@ export default function NotificationBell() {
     };
   }, [open]);
 
-
   function toggleNotifications() {
-    setOpen((previous) => !previous);
+    if (!open) {
+      setActiveTab("all");
+      setRefreshKey((previous) => previous + 1);
+    }
 
-    setRefreshKey(
-      (previous) => previous + 1
-    );
+    setOpen((previous) => !previous);
   }
 
+  // CLICK NOTIFICATION
 
   async function handleNotificationClick(item) {
-    if (busyId !== null) return;
+    if (busyId !== null || markingAll) return;
 
     setBusyId(item.id);
     setError("");
@@ -291,9 +352,14 @@ export default function NotificationBell() {
     }
   }
 
+  // MARK ALL AS READ
 
   async function handleMarkAllAsRead() {
-    if (markingAll || unreadCount === 0) {
+    if (
+      markingAll ||
+      busyId !== null ||
+      unreadCount === 0
+    ) {
       return;
     }
 
@@ -324,11 +390,16 @@ export default function NotificationBell() {
     }
   }
 
+  // MARK SINGLE AS UNREAD
 
   async function handleMarkAsUnread(event, item) {
     event.stopPropagation();
 
-    if (busyId !== null || !item.is_read) {
+    if (
+      busyId !== null ||
+      markingAll ||
+      !item.is_read
+    ) {
       return;
     }
 
@@ -345,17 +416,15 @@ export default function NotificationBell() {
         previous.map((notification) =>
           notification.id === item.id
             ? {
-              ...notification,
-              is_read: false,
-              read_at: null,
-            }
+                ...notification,
+                is_read: false,
+                read_at: null,
+              }
             : notification
         )
       );
 
-      setUnreadCount(
-        (previous) => previous + 1
-      );
+      setUnreadCount((previous) => previous + 1);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -363,326 +432,281 @@ export default function NotificationBell() {
     }
   }
 
-
   const sectionLabel =
     notificationType === "hearing"
       ? "Hearing reminders"
       : notificationType === "task"
         ? "Task reminders"
-        : "All reminders";
+        : "Your legal workspace updates";
 
+  const filteredNotifications =
+    activeTab === "unread"
+      ? notifications.filter((item) => !item.is_read)
+      : notifications;
 
   return (
-    <div
-      ref={holderRef}
-      className="ald-dropdown-holder anb-holder"
-      style={{
-        position: "relative",
-        display: "inline-flex",
-      }}
-    >
+    <div ref={holderRef} className="anb-holder">
+
+      {/* BELL */}
+
       <button
         type="button"
-        className="anb-trigger"
+        className={`anb-trigger ${open ? "is-active" : ""}`}
         onClick={toggleNotifications}
         aria-label={`Notifications, ${unreadCount} unread`}
         aria-expanded={open}
+        aria-controls="anb-notification-panel"
         title="Notifications"
-        style={{
-          position: "relative",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          border: "1px solid #e4e5df",
-          background: "#ffffff",
-          color: "#004535",
-          cursor: "pointer",
-        }}
       >
-        <Bell size={20} />
+        <Bell size={20} strokeWidth={1.9} />
 
         {unreadCount > 0 && (
-          <span
-            className="anb-count"
-            style={{
-              position: "absolute",
-              top: -6,
-              right: -7,
-              minWidth: 19,
-              height: 19,
-              padding: "0 4px",
-              borderRadius: 20,
-              background: "#b18a4c",
-              color: "#ffffff",
-              fontSize: 10,
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {unreadCount > 99
-              ? "99+"
-              : unreadCount}
+          <span className="anb-count">
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
+      {/* PREMIUM POPUP */}
+
       {open && (
         <div
-          className="ald-top-popover anb-popover"
+          id="anb-notification-panel"
+          className="anb-popover"
           role="region"
-          aria-label="Notification list"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 12px)",
-            right: 0,
-            width: "min(380px, calc(100vw - 24px))",
-            maxWidth: "calc(100vw - 24px)",
-            borderRadius: 16,
-            background: "#fffdf8",
-            border: "1px solid #e8e1d1",
-            boxShadow:
-              "0 16px 36px rgba(0, 40, 30, 0.13)",
-            zIndex: 1000,
-            overflow: "hidden",
-          }}
+          aria-label="Notification center"
         >
-          <div
-            style={{
-              padding: "16px",
-              borderBottom: "1px solid #eee8df",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <div>
-                <strong
-                  style={{
-                    fontSize: 16,
-                    color: "#004535",
-                  }}
-                >
-                  Notifications
-                </strong>
 
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#78857e",
-                    marginTop: 4,
-                  }}
-                >
-                  {sectionLabel}
-                </div>
+          {/* BRAND HEADER */}
+
+          <div className="anb-header">
+            <div className="anb-header-main">
+
+              <div className="anb-header-icon">
+                <BellRing size={21} strokeWidth={1.8} />
               </div>
 
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "#004535",
-                  background: "#eef4ef",
-                  borderRadius: 20,
-                  padding: "6px 10px",
-                }}
-              >
-                {unreadCount} unread
+              <div className="anb-header-content">
+                <h3>Notifications</h3>
+                <p>{sectionLabel}</p>
+              </div>
+
+              <span className="anb-header-status">
+                <span className="anb-status-dot" />
+                {unreadCount > 0
+                  ? `${unreadCount} new`
+                  : "All read"}
               </span>
             </div>
 
-            {unreadCount > 0 && (
+            <div className="anb-header-bottom">
+              <Sparkles size={13} />
+              <span>
+                Stay on top of your legal work
+              </span>
+            </div>
+          </div>
+
+          {/* FILTERS + ACTION */}
+
+          <div className="anb-toolbar">
+
+            <div
+              className="anb-tabs"
+              aria-label="Filter notifications"
+            >
               <button
                 type="button"
-                onClick={handleMarkAllAsRead}
-                disabled={markingAll || busyId !== null}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "transparent",
-                  border: 0,
-                  color: "#004535",
-                  cursor: "pointer",
-                  fontSize: 12,
-                  marginTop: 12,
-                  padding: 0,
-                }}
+                className={`anb-tab ${
+                  activeTab === "all" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("all")}
+                aria-pressed={activeTab === "all"}
               >
-                <CheckCheck size={15} />
+                All
+                <span>{notifications.length}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`anb-tab ${
+                  activeTab === "unread" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("unread")}
+                aria-pressed={activeTab === "unread"}
+              >
+                Unread
+                <span>{unreadCount}</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="anb-mark-all"
+              onClick={handleMarkAllAsRead}
+              disabled={
+                unreadCount === 0 ||
+                markingAll ||
+                busyId !== null
+              }
+              title="Mark all notifications as read"
+            >
+              <CheckCheck size={15} />
+              <span>
                 {markingAll
                   ? "Updating..."
-                  : "Mark all as read"}
-              </button>
-            )}
+                  : "Mark all read"}
+              </span>
+            </button>
           </div>
+
+          {/* ERROR */}
 
           {error && (
-            <p
-              role="alert"
-              style={{
-                margin: 12,
-                color: "#b42318",
-                fontSize: 12,
-              }}
-            >
+            <div className="anb-error" role="alert">
               {error}
-            </p>
+            </div>
           )}
 
-          <div
-            className="anb-list"
-            style={{
-              maxHeight: 350,
-              overflowY: "auto",
-            }}
-          >
+          {/* LIST */}
+
+          <div className="anb-list">
+
             {loading ? (
-              <p
-                style={{
-                  padding: 20,
-                  textAlign: "center",
-                  color: "#7c857f",
-                  fontSize: 13,
-                }}
-              >
-                Loading notifications...
-              </p>
-            ) : notifications.length === 0 ? (
-              <p
-                style={{
-                  padding: 20,
-                  textAlign: "center",
-                  color: "#7c857f",
-                  fontSize: 13,
-                }}
-              >
-                No notifications available.
-              </p>
+              <div className="anb-empty-state">
+                <div className="anb-empty-icon">
+                  <Bell size={23} />
+                </div>
+                <p>Loading notifications...</p>
+              </div>
+            ) : filteredNotifications.length === 0 ? (
+              <div className="anb-empty-state">
+                <div className="anb-empty-icon">
+                  <Inbox size={25} strokeWidth={1.6} />
+                </div>
+
+                <strong>
+                  {activeTab === "unread"
+                    ? "You're all caught up!"
+                    : "No notifications yet"}
+                </strong>
+
+                <p>
+                  {activeTab === "unread"
+                    ? "You have no unread reminders."
+                    : "Your reminders will appear here."}
+                </p>
+              </div>
             ) : (
-              notifications.map((item) => (
-                <div
-                  key={item.id}
-                  className={`anb-item ${item.is_read ? "is-read" : "is-unread"
+              filteredNotifications.map((item) => {
+                const meta = getNotificationMeta(
+                  item.type
+                );
+
+                const IconComponent = meta.icon;
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`anb-item ${
+                      item.is_read
+                        ? "is-read"
+                        : "is-unread"
                     }`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "12px 14px",
-                    background: item.is_read
-                      ? "#fffdf8"
-                      : "#f0f5ef",
-                    borderBottom:
-                      "1px solid #eee8df",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleNotificationClick(item)
-                    }
-                    disabled={busyId !== null}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      flex: 1,
-                      minWidth: 0,
-                      textAlign: "left",
-                      background: "transparent",
-                      border: 0,
-                      cursor: "pointer",
-                      color: "#004535",
-                    }}
                   >
-                    {item.type === "hearing" ? (
-                      <CalendarDays size={19} />
-                    ) : (
-                      <ListTodo size={19} />
-                    )}
 
-                    <span
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 5,
-                        minWidth: 0,
-                        flex: 1,
-                      }}
-                    >
-                      <strong
-                        style={{
-                          fontSize: 13,
-                          fontWeight: item.is_read
-                            ? 500
-                            : 700,
-                        }}
-                      >
-                        {item.title}
-                      </strong>
-
-                      <small
-                        style={{
-                          fontSize: 11,
-                          color: "#7b8780",
-                        }}
-                      >
-                        {item.type === "hearing"
-                          ? "Hearing"
-                          : item.type === "event"
-                            ? "Event"
-                            : "Task"}
-                        {" · "}
-                        {item.reminder_date}
-                      </small>
-                    </span>
-                  </button>
-
-                  {item.is_read ? (
                     <button
                       type="button"
-                      onClick={(event) =>
-                        handleMarkAsUnread(event, item)
+                      className="anb-item-main"
+                      onClick={() =>
+                        handleNotificationClick(item)
                       }
-                      disabled={busyId !== null}
-                      title="Mark as unread"
-                      aria-label="Mark as unread"
-                      style={{
-                        background: "transparent",
-                        border: 0,
-                        color: "#8a958e",
-                        cursor: "pointer",
-                        fontSize: 11,
-                        padding: 4,
-                      }}
+                      disabled={
+                        busyId !== null ||
+                        markingAll
+                      }
                     >
-                      Unread
+
+                      <span
+                        className={`anb-item-icon ${meta.className}`}
+                      >
+                        <IconComponent
+                          size={19}
+                          strokeWidth={1.9}
+                        />
+                      </span>
+
+                      <span className="anb-item-content">
+
+                        <span className="anb-item-top">
+                          <span
+                            className={`anb-type ${meta.className}`}
+                          >
+                            {meta.label}
+                          </span>
+
+                          {!item.is_read && (
+                            <span className="anb-new-label">
+                              NEW
+                            </span>
+                          )}
+                        </span>
+
+                        <strong className="anb-item-title">
+                          {item.title}
+                        </strong>
+
+                        <small className="anb-item-date">
+                          {formatReminderDate(
+                            item.reminder_date
+                          )}
+                        </small>
+
+                      </span>
                     </button>
-                  ) : (
-                    <span
-                      title="Unread"
-                      style={{
-                        width: 8,
-                        height: 8,
-                        minWidth: 8,
-                        borderRadius: "50%",
-                        background: "#b18a4c",
-                      }}
-                    />
-                  )}
-                </div>
-              ))
+
+                    <div className="anb-item-action">
+                      {item.is_read ? (
+                        <button
+                          type="button"
+                          className="anb-unread-action"
+                          onClick={(event) =>
+                            handleMarkAsUnread(
+                              event,
+                              item
+                            )
+                          }
+                          disabled={
+                            busyId !== null ||
+                            markingAll
+                          }
+                          title="Mark as unread"
+                          aria-label="Mark as unread"
+                        >
+                          <Mail size={15} />
+                        </button>
+                      ) : (
+                        <span
+                          className="anb-unread-dot"
+                          title="Unread"
+                        />
+                      )}
+                    </div>
+
+                  </div>
+                );
+              })
             )}
+
           </div>
+
+          {/* FOOTER */}
+
+          <div className="anb-footer">
+            <span className="anb-footer-dot" />
+            Notifications refresh automatically
+          </div>
+
         </div>
       )}
     </div>
