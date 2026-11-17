@@ -83,5 +83,6 @@ class PlanResponse(BaseModel):
     billing_interval: str
     features: list[str]
     trial_days: int
+    daily_action_limit: int | None = None
     is_active: bool
     created_at: datetime

@@ -46,6 +46,43 @@ LEGAL NOTES:
   several separate notes using the SAME source_ids.
 - Each note point must be at most 110 characters.
 - Use short, relevant categories.
+CATEGORY RULES:
+
+Every legal note must belong to exactly ONE of these
+eight main categories.
+
+For Tamil output:
+1. வழக்கு முன்னேற்றம்
+2. நீதிமன்ற நடவடிக்கைகள்
+3. தீர்ப்புகள் மற்றும் உத்தரவுகள்
+4. சாட்சியங்கள் மற்றும் ஆதாரங்கள்
+5. சட்டக் குறிப்புகள் மற்றும் வாதங்கள்
+6. ஆவணங்கள்
+7. வாடிக்கையாளர் தொடர்புகள்
+8. பிற சட்ட நடவடிக்கைகள்
+
+For English output:
+1. Case Progress
+2. Court Proceedings
+3. Judgments and Orders
+4. Witnesses and Evidence
+5. Legal Notes and Arguments
+6. Documents
+7. Client Communications
+8. Other Legal Activities
+
+Choose the category based on each individual note's meaning.
+
+Court appearances and next hearing dates belong to
+Court Proceedings, not Judgments and Orders.
+
+Only actual judgments, rulings and court orders belong to
+Judgments and Orders.
+
+Never omit a valid activity just because it does not fit
+the first seven groups. Use Other Legal Activities.
+
+Do not invent additional category names.
 - Never copy an entire paragraph as one note.
 - Do not combine unrelated activities.
 - Avoid generic categories when a specific category fits.
@@ -700,105 +737,148 @@ def extract_source_tasks(statement):
 # ==========================================
 
 def source_category(text, language=None):
-    patterns = [
-        (
-            r"அவகாச.*(?:வழங்க|அனுமதி)|"
-            r"(?:judge|court)\s+granted|"
-            r"granted.*(?:time|extension)",
-            "நீதிமன்ற முடிவு",
-            "Court Decision",
+    """
+    Classify each legal note into one of
+    the eight AdvocaNote main categories.
+    """
+
+    text = normalize(text)
+
+    is_tamil = (
+        language == "ta"
+        if language in {"ta", "en"}
+        else bool(TAMIL.search(text))
+    )
+
+    groups = {
+        "progress": (
+            "வழக்கு முன்னேற்றம்",
+            "Case Progress",
         ),
-        (
-            r"தீர்ப்ப|judgment|verdict",
-            "தீர்ப்பு",
-            "Judgment",
+        "court": (
+            "நீதிமன்ற நடவடிக்கைகள்",
+            "Court Proceedings",
         ),
-        (
-            r"சிறை|தண்டனை|imprison|sentenc",
-            "தண்டனை",
-            "Sentence",
+        "decision": (
+            "தீர்ப்புகள் மற்றும் உத்தரவுகள்",
+            "Judgments and Orders",
         ),
-        (
-            r"(?:ஆவண|document|filing).*(?:சமர்ப்பிக்க|தாக்கல்|submit|file)|"
-            r"(?:சமர்ப்பிக்க|தாக்கல்|submit|file).*(?:ஆவண|document)",
-            "ஆவணச் சமர்ப்பிப்பு",
-            "Document Submission",
+        "evidence": (
+            "சாட்சியங்கள் மற்றும் ஆதாரங்கள்",
+            "Witnesses and Evidence",
         ),
-        (
-            r"அடுத்த\s+விசாரணை|next\s+hearing",
-            "அடுத்த விசாரணை",
-            "Next Hearing",
+        "arguments": (
+            "சட்டக் குறிப்புகள் மற்றும் வாதங்கள்",
+            "Legal Notes and Arguments",
         ),
-        (
-            r"அவகாச.*(?:கேட்ட|கோர)|request.*(?:time|extension)",
-            "அவகாசக் கோரிக்கை",
-            "Time Extension Request",
-        ),
-        (
-            r"அவகாச.*(?:வழங்க|அனுமதி)|granted.*(?:time|extension)",
-            "நீதிமன்ற முடிவு",
-            "Court Decision",
-        ),
-        (
-            r"உத்தரவ|court\s+order",
-            "நீதிமன்ற உத்தரவு",
-            "Court Order",
-        ),
-        (
-            r"ஆட்சேப|எதிர்ப்பு|objection",
-            "ஆட்சேபனை",
-            "Objection",
-        ),
-        (
-            r"ஆஜரா|ஆஜரான|appeared|present\s+at\s+the\s+hearing",
-            "ஆஜர்",
-            "Appearance",
-        ),
-        (
-            r"சாட்ச|witness",
-            "சாட்சி",
-            "Witness",
-        ),
-        (
-            r"ஆவண|document|filing",
+        "documents": (
             "ஆவணங்கள்",
             "Documents",
         ),
+        "clients": (
+            "வாடிக்கையாளர் தொடர்புகள்",
+            "Client Communications",
+        ),
+        "other": (
+            "பிற சட்ட நடவடிக்கைகள்",
+            "Other Legal Activities",
+        ),
+    }
+
+    # Classify using the actual note text.
+    # Specific activities come before general ones.
+
+    patterns = [
         (
-            r"பிணை|bail",
-            "பிணை",
-            "Bail",
+            r"வாடிக்கையாள|கட்சிக்கார|"
+            r"\bclient\b|\bcustomer\b",
+            "clients",
         ),
         (
-            r"விசாரணை|hearing",
-            "விசாரணை",
-            "Hearing",
+            r"சாட்சிய|சாட்சிகள|சாட்சி|ஆதார|"
+            r"\bwitness(?:es)?\b|"
+            r"\bevidence\b|\bexhibit(?:s)?\b",
+            "evidence",
+        ),
+        (
+            r"ஆவண|கோப்புகள|கோப்பின|"
+            r"கோப்பை|கோப்புகளை|"
+            r"சான்றளிக்கப்பட்ட\s+நகல்|நகலை|"
+            r"\bdocument(?:s)?\b|"
+            r"\bcase\s+file(?:s)?\b|"
+            r"\bcertified\s+cop(?:y|ies)\b|"
+            r"\bfiling\b|\baffidavit\b",
+            "documents",
+        ),
+        (
+            r"அடுத்த\s+விசாரணை|"
+            r"மறு\s*விசாரணை|"
+            r"ஒத்திவைக்க|ஆஜர|"
+            r"நீதிமன்றத்திற்கு\s*செல்ல|"
+            r"\bnext\s+hearing\b|"
+            r"\badjourn(?:ed|ment)?\b|"
+            r"\bappear(?:ed|ing)?\s+"
+            r"(?:in|before|at)\s+court\b|"
+            r"\battend(?:ed|ing)?\s+"
+            r"(?:the\s+)?(?:court|hearing)\b",
+            "court",
+        ),
+        (
+            r"தீர்ப்ப|உத்தரவ|"
+            r"குற்றவாளியாக|குற்றவாளி\s+என|"
+            r"விடுதலை\s+செய்|"
+            r"தண்டனை\s+விதி|சிறைத்தண்டனை|"
+            r"பிணை\s+(?:வழங்க|மறுக்க)|"
+            r"அவகாசம்\s+வழங்க|"
+            r"\bjudg(?:e)?ment\b|\bverdict\b|"
+            r"\bcourt\s+order\b|"
+            r"\bconvict(?:ed|ion)?\b|"
+            r"\bacquit(?:ted|tal)?\b|"
+            r"\bsentenc(?:ed|ing|e)\b|"
+            r"\bbail\s+(?:granted|denied)\b",
+            "decision",
+        ),
+        (
+            r"வாத|ஆட்சேப|"
+            r"எதிர்ப்பு\s+தெரிவி|"
+            r"சட்டப்பிரிவு|சட்ட\s+கருத்து|"
+            r"சட்டக்\s*குறிப்பு|"
+            r"\bargument(?:s)?\b|"
+            r"\bobjection(?:s)?\b|"
+            r"\bsubmission(?:s)?\b|"
+            r"\blegal\s+"
+            r"(?:opinion|provision|analysis)\b",
+            "arguments",
+        ),
+        (
+            r"நீதிமன்ற|விசாரணை|"
+            r"விசாரிக்க|விசாரிக்கப்பட்ட|"
+            r"\bcourt\b|\bhearing\b|"
+            r"\btrial\b|\bproceedings\b",
+            "court",
+        ),
+        (
+            r"வழக்க|குற்றச்சாட்ட|புகார்|"
+            r"\bcase\b|\bcharge(?:s)?\b|"
+            r"\bcomplaint\b",
+            "progress",
         ),
     ]
 
-    is_tamil = (
-       language == "ta"
-       if language in {"ta", "en"}
-       else bool(TAMIL.search(text))
-    )
+    group = "other"
 
-    for pattern, tamil, english in patterns:
+    for pattern, candidate in patterns:
         if re.search(
             pattern,
             text,
             re.IGNORECASE,
         ):
-            return (
-                tamil
-                if is_tamil
-                else english
-            )
+            group = candidate
+            break
 
-    return (
-        "முக்கிய சட்டக் குறிப்பு"
-        if is_tamil
-        else "Important Legal Point"
-    )
+    return groups[group][
+        0 if is_tamil else 1
+    ]
 
 
 # ==========================================
@@ -980,38 +1060,16 @@ def analyze_legal_transcript(
                 if not checked:
                     continue
 
+
                 point, ids = checked
 
-                category = normalize(
-                    item.get("category")
+                # Classify each note into one of
+                # the 8 AdvocaNote main categories.
+
+                category = source_category(
+                    point,
+                    language=output_language,
                 )
-
-                if (
-                    not category
-                    or len(category) > 45
-                    or not target_language_matches(
-                        category,
-                        output_language,
-                    )
-                ):
-                    category = source_category(
-                        " ".join(
-                            batch[index - 1]
-                            for index in ids
-                        ),
-                        language=output_language,
-                    )
-
-                if category.casefold() in {
-                    "other",
-                    "others",
-                    "மற்றவை",
-                    "முக்கிய சட்டக் குறிப்பு",
-                    "important legal point",
-                }:
-                    point = shorten_other_point(
-                        point
-                    )
 
                 add_unique(
                     point,
@@ -1021,6 +1079,7 @@ def analyze_legal_transcript(
                 )
 
                 covered.update(ids)
+
 
             for index, statement in enumerate(
                 batch,

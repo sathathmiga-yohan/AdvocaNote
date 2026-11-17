@@ -1905,3 +1905,266 @@
   color: #77766f;
   font-size: 11px;
 }
+
+/* ==========================================
+   ADVOCANOTE CALENDAR
+   CLEAN EVENT DISPLAY IMPROVEMENT
+   UI ONLY - NO FUNCTION CHANGES
+========================================== */
+
+/* 1. KEEP CALENDAR CELL COMPACT */
+
+.acp-page .acp-day {
+  height: 76px !important;
+  min-height: 76px !important;
+  padding: 4px 5px !important;
+  overflow: hidden;
+}
+
+/* 2. DATE NUMBER */
+
+.acp-page .acp-day-num {
+  min-width: 20px !important;
+  width: 20px;
+  height: 19px !important;
+  padding: 0 2px !important;
+
+  border-radius: 6px;
+  font-size: 10px !important;
+  line-height: 19px;
+}
+
+/* 3. EVENT CONTAINER */
+
+.acp-page .acp-day-events {
+  display: flex !important;
+  flex-direction: column !important;
+
+  gap: 2px !important;
+  margin-top: 2px !important;
+
+  min-width: 0;
+}
+
+/* 4. COMPACT EVENT LABELS */
+
+.acp-page .acp-day-events .acp-event {
+  display: block !important;
+
+  width: 100% !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  flex: 0 0 16px;
+
+  padding: 2px 5px !important;
+
+  border-radius: 5px !important;
+  border-left-width: 3px !important;
+
+  font-family: Inter, Arial, sans-serif;
+  font-size: 10px !important;
+  font-weight: 500;
+  line-height: 12px !important;
+
+  text-align: left;
+
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* 5. HEARING - SOFT GREEN */
+
+.acp-page .acp-event.acp-event-hearing {
+  background: #e3f3e9 !important;
+  color: #07583b !important;
+  border-left-color: #159665 !important;
+}
+
+/* 6. TASK - SOFT RED */
+
+.acp-page .acp-event.acp-event-task {
+  background: #ffe7e8 !important;
+  color: #b42330 !important;
+  border-left-color: #df454e !important;
+}
+
+/* 7. CUSTOM EVENT - SOFT GOLD */
+
+.acp-page .acp-event.acp-event-custom {
+  background: #faecd7 !important;
+  color: #8a5a16 !important;
+  border-left-color: #d69a36 !important;
+}
+
+/* 8. MORE EVENTS BUTTON */
+
+.acp-page .acp-day-events .acp-more {
+  display: block;
+
+  width: fit-content;
+  height: 10px;
+  min-height: 10px;
+
+  padding: 0 3px !important;
+
+  border: none;
+  background: transparent;
+
+  color: #006748;
+  font-size: 9px !important;
+  font-weight: 600;
+  line-height: 10px;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.acp-page .acp-more:hover {
+  color: #003e2e;
+  text-decoration: underline;
+}
+
+/* ==========================================
+   SELECTED DATE - FULL EVENT TITLES
+========================================== */
+
+/* 9. SELECTED EVENTS CONTAINER */
+
+.acp-page .acp-selected-events {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px !important;
+  min-width: 0;
+}
+
+/* 10. FULL TEXT EVENT CARDS */
+
+.acp-page .acp-selected-events .acp-event {
+  display: block !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 37px !important;
+  max-height: none !important;
+
+  padding: 10px 12px !important;
+
+  border-radius: 8px !important;
+  border-left-width: 3px !important;
+
+  font-size: 12px !important;
+  font-weight: 500;
+  line-height: 1.55 !important;
+
+  text-align: left;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+
+  overflow-wrap: anywhere;
+  word-break: normal;
+
+  cursor: pointer;
+}
+
+/* 11. SELECTED HEARING */
+
+.acp-page
+.acp-selected-events
+.acp-event-hearing {
+  background: #eaf7ef !important;
+  color: #07543a !important;
+  border-left-color: #159665 !important;
+}
+
+/* 12. SELECTED TASK */
+
+.acp-page
+.acp-selected-events
+.acp-event-task {
+  background: #fff0f0 !important;
+  color: #a52b34 !important;
+  border-left-color: #df454e !important;
+}
+
+/* 13. SELECTED CUSTOM EVENT */
+
+.acp-page
+.acp-selected-events
+.acp-event-custom {
+  background: #fff5e6 !important;
+  color: #865b20 !important;
+  border-left-color: #d69a36 !important;
+}
+
+/* 14. CARD HOVER */
+
+.acp-page .acp-selected-events .acp-event:hover {
+  filter: brightness(0.97);
+}
+
+/* ==========================================
+   UPCOMING EVENTS - BETTER READABILITY
+========================================== */
+
+.acp-page .acp-upcoming-info {
+  min-width: 0;
+}
+
+.acp-page .acp-upcoming-info strong {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+
+  overflow-wrap: anywhere;
+
+  font-size: 11px !important;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   LIST VIEW - READABLE EVENT TITLES
+========================================== */
+
+.acp-page .acp-list-row {
+  min-width: 0;
+  gap: 10px;
+}
+
+.acp-page .acp-list-row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   RESPONSIVE EVENT DISPLAY
+========================================== */
+
+@media (max-width: 700px) {
+  .acp-page .acp-day {
+    padding: 4px 3px !important;
+  }
+
+  .acp-page .acp-day-events .acp-event {
+    font-size: 9px !important;
+    padding: 2px 3px !important;
+  }
+
+  .acp-page .acp-selected-events .acp-event {
+    font-size: 11px !important;
+    padding: 9px 10px !important;
+  }
+}

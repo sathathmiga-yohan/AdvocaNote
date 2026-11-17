@@ -333,13 +333,15 @@ export default function TasksPremium() {
             setCases(caseList);
 
             // Get all tasks from every lawyer case.
+
             const results = await Promise.allSettled(
                 caseList.map((item) =>
                     apiRequest(
-                        `/diary/case/${encodeURIComponent(item.id)}/tasks`
+                        `/tasks/case/${encodeURIComponent(item.id)}`
                     )
                 )
             );
+
 
             const loadedTasks = results.flatMap(
                 (result) =>

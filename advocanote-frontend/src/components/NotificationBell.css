@@ -1,77 +1,241 @@
 
 .anb-holder {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.anb-holder .ald-notify {
+.anb-trigger {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
+.anb-trigger:hover {
+  background: #f4f6f1 !important;
+  border-color: #b18a4c !important;
+}
+
+.anb-trigger:active {
+  transform: scale(0.96);
+}
+
+.anb-trigger:focus-visible {
+  outline: 2px solid #b18a4c;
+  outline-offset: 3px;
+}
+
+.anb-trigger svg {
+  flex-shrink: 0;
+}
+
+.anb-count,
 .anb-badge {
   position: absolute;
-  top: -5px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
+  top: -6px;
+  right: -7px;
+  min-width: 19px;
+  height: 19px;
   padding: 0 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 20px;
   background: #b18a4c;
-  color: white;
+  color: #ffffff;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
 }
 
 .anb-popover {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 12px);
   right: 0;
+  left: auto;
   z-index: 1000;
-  width: min(310px, 90vw);
-  max-height: 350px;
-  overflow-y: auto;
-  background: #fff;
+  width: min(380px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  padding: 0;
+  overflow: hidden;
+  background: #fffdf8;
+  border: 1px solid #e8e1d1;
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(0, 40, 30, 0.13);
+  animation: anbFadeIn 0.18s ease-out;
+}
+
+.anb-popover strong {
+  color: #004535;
+}
+
+.anb-popover button {
+  font-family: inherit;
+}
+
+.anb-popover button:focus-visible {
+  outline: 2px solid #b18a4c;
+  outline-offset: -2px;
+  border-radius: 5px;
 }
 
 .anb-list {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-top: 12px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  max-height: 350px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .anb-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px;
-  border: 1px solid #eee9dc;
-  border-radius: 9px;
-  background: #faf9f5;
-  color: #004535;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #eee8df;
+  border-radius: 0;
+  transition: filter 0.2s ease;
+}
+
+.anb-item:last-child {
+  border-bottom: 0;
+}
+
+.anb-item:hover {
+  filter: brightness(0.97);
+}
+
+.anb-item.is-unread {
+  border-left: 3px solid #b18a4c;
+}
+
+.anb-item.is-read {
+  border-left: 3px solid transparent;
+}
+
+.anb-item > button:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
   text-align: left;
   cursor: pointer;
 }
 
-.anb-item:hover {
-  background: #f3efe5;
+.anb-item > button:first-child:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.anb-item svg {
+  flex-shrink: 0;
 }
 
 .anb-item span {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  min-width: 0;
 }
 
-.anb-item b {
-  font-size: 12px;
-  font-weight: 600;
+.anb-item strong {
+  display: block;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
 .anb-item small {
+  display: block;
+  color: #7b8780;
   font-size: 11px;
-  color: #77766f;
+  line-height: 1.5;
+}
+
+.anb-item.is-read strong {
+  color: #65776c;
+  font-weight: 500;
+}
+
+.anb-item.is-unread strong {
+  color: #004535;
+  font-weight: 700;
+}
+
+.anb-item button[title="Mark as unread"]:hover {
+  color: #004535 !important;
+  text-decoration: underline;
+}
+
+.anb-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.anb-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.anb-list::-webkit-scrollbar-thumb {
+  background: #d8d6ca;
+  border-radius: 10px;
+}
+
+.anb-list::-webkit-scrollbar-thumb:hover {
+  background: #b18a4c;
+}
+
+@keyframes anbFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .anb-popover {
+    width: min(340px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+  }
+
+  .anb-item {
+    gap: 8px;
+    padding: 11px 12px;
+  }
+
+  .anb-item strong {
+    font-size: 12px;
+  }
+
+  .anb-item small {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anb-popover {
+    animation: none;
+  }
+
+  .anb-trigger,
+  .anb-item {
+    transition: none;
+  }
 }

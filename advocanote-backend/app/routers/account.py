@@ -3,6 +3,8 @@ import hashlib
 import logging
 import re
 import secrets
+import stripe
+from app.config import settings
 
 from datetime import datetime, timedelta, timezone
 from typing import Literal
@@ -281,17 +283,56 @@ def close_my_account(
     if (
         subscription is not None
         and subscription.stripe_subscription_id
-        and str(
-            subscription.status or ""
-        ).lower() not in closed_statuses
     ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Please cancel your active Stripe "
-                "subscription before closing "
-                "your account."
-            ),
+        # Verify real cancellation status from Stripe.
+        if not settings.STRIPE_SECRET_KEY:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe is not configured.",
+            )
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        try:
+            stripe_subscription = stripe.Subscription.retrieve(
+                subscription.stripe_subscription_id
+            ).to_dict()
+        except Exception:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Unable to verify subscription cancellation "
+                    "with Stripe. Please try again."
+                ),
+            )
+
+        stripe_status = str(
+            stripe_subscription.get("status") or ""
+        ).lower()
+
+        cancellation_scheduled = (
+            stripe_subscription.get("cancel_at_period_end")
+            is True
+        )
+
+        if (
+            stripe_status not in closed_statuses
+            and not cancellation_scheduled
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Your Stripe subscription is still "
+                    "set to renew. Please cancel the "
+                    "subscription before closing your account."
+                ),
+            )
+
+        # Stripe has confirmed cancellation
+        # or cancellation at the end of this period.
+        subscription.status = stripe_status
+        subscription.cancel_at_period_end = (
+            cancellation_scheduled
         )
 
     # --------------------------------------
@@ -864,8 +905,7 @@ def complete_account_recovery(
 
         # Only transfer Google's identity when
         # the original Google identity was verified.
-        if verified_method == "google":
-            user.google_sub = None
+        user.google_sub = None
 
         # Original cases, diary entries, tasks,
         # hearings, payments and attachments

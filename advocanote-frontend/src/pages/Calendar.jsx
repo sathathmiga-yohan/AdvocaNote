@@ -537,6 +537,7 @@ export default function Calendar({
                   : item.type,
 
               caseNo,
+              caseId: caseId ?? null,
 
               // Show actual Case No for hearings
               title: isHearing
@@ -608,6 +609,7 @@ export default function Calendar({
           uniqueTasks.set(String(task.id), {
             id: `backend-task-${task.id}`,
             taskId: task.id,
+            caseId: task.case_id ?? task.case?.id ?? null,
             title: task.title || "Untitled Task",
             date: deadline,
             type: "task",
@@ -1055,6 +1057,40 @@ export default function Calendar({
     }
   }
 
+
+  function openUpcomingEvent(event) {
+    const caseId =
+      event.caseId ??
+      event.case_id ??
+      event.case?.id ??
+      null;
+
+    const caseNo = String(
+      event.caseNo ||
+      event.case_number ||
+      ""
+    ).trim();
+
+    // Open the matching case diary
+    if (caseId != null || caseNo) {
+      navigate("/cases", {
+        state: {
+          calendarCaseId:
+            caseId != null ? String(caseId) : null,
+          calendarCaseNo: caseNo,
+          calendarEventDate: event.date,
+        },
+      });
+
+      return;
+    }
+
+    // Events without a linked case keep
+    // their original calendar behavior.
+    openEvent(event);
+  }
+
+
   // =====================================
   // LOGOUT
   // =====================================
@@ -1391,7 +1427,7 @@ export default function Calendar({
                             <div className="acp-day-events">
 
                               {dayEvents
-                                .slice(0, 3)
+                                .slice(0, 2)
                                 .map((event) => (
 
                                   <button
@@ -1400,9 +1436,7 @@ export default function Calendar({
                                     className={
                                       `acp-event acp-event-${event.type}`
                                     }
-                                    onClick={() =>
-                                      openEvent(event)
-                                    }
+                                    onClick={() => openUpcomingEvent(event)}
                                     title={event.title}
                                   >
                                     {event.title}
@@ -1410,7 +1444,7 @@ export default function Calendar({
 
                                 ))}
 
-                              {dayEvents.length > 3 && (
+                              {dayEvents.length > 2 && (
 
                                 <button
                                   type="button"
@@ -1419,7 +1453,7 @@ export default function Calendar({
                                     selectDay(key)
                                   }
                                 >
-                                  +{dayEvents.length - 3} more
+                                  +{dayEvents.length - 2} more
                                 </button>
 
                               )}
@@ -1652,14 +1686,40 @@ export default function Calendar({
 
                     return (
 
+
                       <button
                         type="button"
                         key={event.id}
                         className="acp-upcoming-row"
-                        onClick={() =>
-                          openEvent(event)
-                        }
+                        onClick={() => {
+                          const caseId =
+                            event.caseId ??
+                            event.case_id ??
+                            event.case?.id ??
+                            null;
+
+                          const caseNo = String(
+                            event.caseNo ||
+                            event.case_number ||
+                            ""
+                          ).trim();
+
+                          if (caseId == null && !caseNo) {
+                            openEvent(event);
+                            return;
+                          }
+
+                          navigate("/cases", {
+                            state: {
+                              calendarCaseId:
+                                caseId != null ? String(caseId) : null,
+                              calendarCaseNo: caseNo,
+                              calendarEventDate: event.date,
+                            },
+                          });
+                        }}
                       >
+
 
                         <span className="acp-date-chip">
 

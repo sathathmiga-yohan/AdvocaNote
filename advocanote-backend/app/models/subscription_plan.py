@@ -9,7 +9,6 @@ from sqlalchemy import (
     String,
     Numeric,
     JSON,
-    ForeignKey,
     func,
     text,
 )
@@ -63,6 +62,22 @@ class SubscriptionPlan(Base):
         Integer,
         nullable=False,
         server_default=text("0")
+    )
+
+    # =====================================
+    # DAILY ACTION USAGE LIMIT
+    # =====================================
+    # None = Unlimited usage
+    # 3 = Maximum 3 actions per day
+    #
+    # Free Trial = Unlimited
+    # Basic = 3
+    # Premium = Unlimited
+    # Annual = Unlimited
+
+    daily_action_limit: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
     )
 
     is_active: Mapped[bool] = mapped_column(

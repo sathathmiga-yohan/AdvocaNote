@@ -23,6 +23,11 @@ from app.models.subscription import Subscription
 from app.schemas.subscription import PlanResponse
 
 
+from app.services.subscription_trial import (
+    PLAN_SETTINGS,
+    start_free_trial_if_eligible,
+)
+
 from app.config import settings
 from app.models.payment import Payment
 
@@ -57,12 +62,16 @@ class StartTrialRequest(BaseModel):
 
 
 
+
 class SubscriptionStatusResponse(BaseModel):
+
     plan_id: int | None
     plan_name: str | None
     status: str
+
     trial_ends_at: datetime | None
     current_period_end: datetime | None
+
     cancel_at_period_end: bool = False
 
     # Billing details
@@ -71,12 +80,28 @@ class SubscriptionStatusResponse(BaseModel):
     billing_cycle: str | None = None
     can_cancel: bool = False
 
+    # =====================================
+    # DAILY USAGE RESTRICTIONS
+    # =====================================
+
+    # None = Unlimited or no active plan
+    # 3 = Basic plan daily action limit
+
+    daily_action_limit: int | None = None
+
+    # True only for an eligible unlimited plan
+    is_unlimited: bool = False
 
 
 def subscription_response(
     db: Session,
     subscription: Subscription | None
 ):
+
+    # =====================================
+    # NO SUBSCRIPTION
+    # =====================================
+
     if subscription is None:
         return {
             "plan_id": None,
@@ -89,7 +114,13 @@ def subscription_response(
             "currency": None,
             "billing_cycle": None,
             "can_cancel": False,
+            "daily_action_limit": None,
+            "is_unlimited": False,
         }
+
+    # =====================================
+    # GET SUBSCRIPTION PLAN
+    # =====================================
 
     plan = db.get(
         SubscriptionPlan,
@@ -97,7 +128,7 @@ def subscription_response(
     )
 
     effective_status = subscription.status
-
+    # Free Trial expired
     if subscription.status == "trialing":
         if (
             subscription.trial_ends_at is None
@@ -105,34 +136,115 @@ def subscription_response(
         ):
             effective_status = "expired"
 
+    # Paid subscription expired
+    elif subscription.status == "active":
+        if (
+            subscription.current_period_end is None
+            or subscription.current_period_end <= utc_now()
+        ):
+            effective_status = "expired"
+
+    # =====================================
+    # CHECK FREE TRIAL EXPIRY
+    # =====================================
+
+    if subscription.status == "trialing":
+
+        if (
+            subscription.trial_ends_at is None
+            or subscription.trial_ends_at <= utc_now()
+        ):
+            effective_status = "expired"
+
+    # =====================================
+    # DETERMINE DAILY USAGE LIMIT
+    # =====================================
+
+    daily_action_limit = None
+    is_unlimited = False
+
+    if effective_status == "trialing":
+
+        # Free trial:
+        # All features with unlimited usage
+
+        daily_action_limit = None
+        is_unlimited = True
+
+    elif effective_status == "active" and plan:
+
+        # Paid subscription:
+        # Basic = 3 actions per day
+        # Premium = Unlimited
+        # Annual = Unlimited
+
+        daily_action_limit = (
+            plan.daily_action_limit
+        )
+
+        is_unlimited = (
+            daily_action_limit is None
+        )
+
+    # =====================================
+    # STRIPE CANCELLATION ACCESS
+    # =====================================
+
     can_cancel = bool(
         subscription.stripe_subscription_id
         and subscription.stripe_customer_id
-        and effective_status in ("active", "trialing")
+        and effective_status in (
+            "active",
+            "trialing"
+        )
         and not subscription.cancel_at_period_end
     )
 
+    # =====================================
+    # SUBSCRIPTION RESPONSE
+    # =====================================
+
     return {
         "plan_id": subscription.plan_id,
-        "plan_name": plan.name if plan else None,
+
+        "plan_name": (
+            plan.name if plan else None
+        ),
+
         "status": effective_status,
-        "trial_ends_at": subscription.trial_ends_at,
+
+        "trial_ends_at": (
+            subscription.trial_ends_at
+        ),
+
         "current_period_end": (
             subscription.current_period_end
         ),
+
         "cancel_at_period_end": bool(
             subscription.cancel_at_period_end
         ),
+
         "price": (
             str(plan.price) if plan else None
         ),
+
         "currency": (
             plan.currency if plan else None
         ),
+
         "billing_cycle": (
-            plan.billing_interval if plan else None
+            plan.billing_interval
+            if plan else None
         ),
+
         "can_cancel": can_cancel,
+
+        "daily_action_limit": (
+            daily_action_limit
+        ),
+
+        "is_unlimited": is_unlimited,
     }
 
 
@@ -160,79 +272,58 @@ def get_available_plans(
 # START FREE TRIAL
 # =====================================
 
+# =====================================
+# START FREE TRIAL
+# =====================================
+
 @router.post(
     "/trial",
     response_model=SubscriptionStatusResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def start_trial(
     data: StartTrialRequest,
     db: Session = Depends(get_db),
-    user: User = Depends(require_lawyer)
+    user: User = Depends(require_lawyer),
 ):
 
-    if not user.is_email_verified:
+    if data.plan_id != PLAN_SETTINGS["basic"]["id"]:
         raise HTTPException(
-            status_code=403,
-            detail="Verify your email before starting a trial"
+            status_code=422,
+            detail="Free Trial must use the Basic plan",
         )
 
-    existing = db.scalar(
-        select(Subscription)
-        .where(Subscription.user_id == user.id)
+    created = start_free_trial_if_eligible(
+        user.id
     )
 
-    if existing:
+    if not created:
         raise HTTPException(
             status_code=409,
-            detail="Subscription or trial already exists"
+            detail=(
+                "Free Trial already started "
+                "or subscription already exists"
+            ),
         )
 
-    plan = db.get(
-        SubscriptionPlan,
-        data.plan_id
+    db.expire_all()
+
+    subscription = db.scalar(
+        select(Subscription).where(
+            Subscription.user_id == user.id
+        )
     )
 
-    if plan is None or not plan.is_active:
+    if subscription is None:
         raise HTTPException(
-            status_code=404,
-            detail="Active plan not found"
+            status_code=500,
+            detail="Unable to load Free Trial",
         )
 
-    if plan.trial_days <= 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Free trial is not available for this plan"
-        )
-
-    start = utc_now()
-    end = start + timedelta(days=plan.trial_days)
-
-    subscription = Subscription(
-        user_id=user.id,
-        plan_id=plan.id,
-        status="trialing",
-        started_at=start,
-        trial_ends_at=end,
-        current_period_start=start,
-        current_period_end=end,
+    return subscription_response(
+        db,
+        subscription,
     )
-
-    db.add(subscription)
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail="Subscription already exists"
-        )
-
-    db.refresh(subscription)
-
-    return subscription_response(db, subscription)
-
 
 # =====================================
 # MY SUBSCRIPTION
@@ -272,7 +363,9 @@ def create_checkout(
     user: User = Depends(require_lawyer)
 ):
 
-    # 2. Find selected plan
+    # =====================================
+    # 1. FIND SELECTED PLAN
+    # =====================================
 
     plan = db.get(
         SubscriptionPlan,
@@ -291,7 +384,9 @@ def create_checkout(
             detail="Plan is not connected to Stripe"
         )
 
-    # 3. Check existing subscription
+    # =====================================
+    # 2. CHECK EXISTING SUBSCRIPTION
+    # =====================================
 
     existing = db.scalar(
         select(Subscription).where(
@@ -301,60 +396,97 @@ def create_checkout(
 
     if existing:
 
-        # Active, trialing and other subscriptions
-        # cannot create a second Checkout.
-        if existing.status != "canceled":
-            raise HTTPException(
-                status_code=409,
-                detail="Existing subscription must be managed first",
+        # Allow an expired local free trial
+        # to proceed to Stripe Checkout.
+
+        expired_local_trial = (
+            existing.status == "trialing"
+            and existing.trial_ends_at is not None
+            and existing.trial_ends_at <= utc_now()
+            and existing.stripe_subscription_id is None
+            and existing.stripe_customer_id is None
+        )
+
+        if not expired_local_trial:
+
+            # Active subscriptions and valid trials
+            # cannot create another Checkout.
+
+            if existing.status != "canceled":
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Existing subscription "
+                        "must be managed first"
+                    ),
+                )
+
+            # Verify previously canceled
+            # Stripe subscription.
+
+            if (
+                not existing.stripe_subscription_id
+                or not existing.stripe_customer_id
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Previous subscription "
+                        "requires verification"
+                    ),
+                )
+
+            try:
+                old_stripe_sub = (
+                    stripe.Subscription.retrieve(
+                        existing.stripe_subscription_id
+                    ).to_dict()
+                )
+
+            except stripe.error.StripeError as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail=(
+                        "Unable to verify "
+                        "previous subscription"
+                    ),
+                ) from exc
+
+            old_customer = old_stripe_sub.get(
+                "customer"
             )
 
-        # Never allow re-subscription without verifying
-        # the previous Stripe subscription.
-        if (
-            not existing.stripe_subscription_id
-            or not existing.stripe_customer_id
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Previous subscription requires verification",
+            if isinstance(old_customer, dict):
+                old_customer = old_customer.get("id")
+
+            metadata = (
+                old_stripe_sub.get("metadata") or {}
             )
 
-        try:
-            old_stripe_sub = stripe.Subscription.retrieve(
-                existing.stripe_subscription_id
-            ).to_dict()
+            if (
+                old_stripe_sub.get("status")
+                != "canceled"
+                or old_customer
+                != existing.stripe_customer_id
+                or metadata.get("user_id")
+                != str(user.id)
+                or metadata.get("plan_id")
+                != str(existing.plan_id)
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Previous Stripe subscription "
+                        "is not fully canceled"
+                    ),
+                )
 
-        except stripe.error.StripeError as exc:
-            raise HTTPException(
-                status_code=502,
-                detail="Unable to verify previous subscription",
-            ) from exc
+        # Payment must be verified before
+        # activating the selected paid plan.
 
-        old_customer = old_stripe_sub.get("customer")
-
-        if isinstance(old_customer, dict):
-            old_customer = old_customer.get("id")
-
-        metadata = old_stripe_sub.get("metadata") or {}
-
-        if (
-            old_stripe_sub.get("status") != "canceled"
-            or old_customer != existing.stripe_customer_id
-            or metadata.get("user_id") != str(user.id)
-            or metadata.get("plan_id") != str(existing.plan_id)
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Previous Stripe subscription is not fully canceled",
-            )
-
-        # Safe to continue to Stripe Checkout.
-        # Do not activate the plan here.
-        # Successful payment is processed separately.
-
-
-    # 4. Reuse an unfinished Checkout
+    # =====================================
+    # 3. REUSE UNFINISHED CHECKOUT
+    # =====================================
 
     pending = db.scalars(
         select(Payment)
@@ -366,11 +498,14 @@ def create_checkout(
         .order_by(Payment.id.desc())
     ).all()
 
-   
     try:
+
         for payment in pending:
-            old_session = stripe.checkout.Session.retrieve(
-                payment.stripe_checkout_session_id
+
+            old_session = (
+                stripe.checkout.Session.retrieve(
+                    payment.stripe_checkout_session_id
+                )
             )
 
             if old_session.status == "complete":
@@ -384,27 +519,35 @@ def create_checkout(
 
             if old_session.status == "open":
 
-                # Confirm old checkout belongs to lawyer
-                if old_session.client_reference_id != str(user.id):
+                # Verify checkout ownership.
+
+                if (
+                    old_session.client_reference_id
+                    != str(user.id)
+                ):
                     raise HTTPException(
                         status_code=403,
                         detail="Checkout ownership mismatch"
                     )
 
-                # Same plan: reuse previous checkout
+                # Reuse Checkout for the same plan.
+
                 if payment.plan_id == plan.id:
                     return {
                         "checkout_url": old_session.url,
                         "session_id": old_session.id
                     }
 
-                # Different plan: expire old checkout
+                # Expire Checkout for a different plan.
+
                 stripe.checkout.Session.expire(
                     old_session.id
                 )
 
-        
-        # 5. Prepare Stripe Customer
+        # =====================================
+        # 4. PREPARE STRIPE CUSTOMER
+        # =====================================
+
         customer_data = {
             "customer_email": user.email
         }
@@ -414,7 +557,10 @@ def create_checkout(
                 "customer": existing.stripe_customer_id
             }
 
-        # Test Clock - only for the selected test lawyer
+        # =====================================
+        # 5. STRIPE TEST CLOCK
+        # =====================================
+
         test_email = os.getenv(
             "ADVOCANOTE_TEST_LAWYER_EMAIL", ""
         ).strip().lower()
@@ -427,28 +573,43 @@ def create_checkout(
             "ADVOCANOTE_TEST_CLOCK_ID", ""
         ).strip()
 
-        if test_email and user.email.strip().lower() == test_email:
+        if (
+            test_email
+            and user.email.strip().lower() == test_email
+        ):
 
-            if not settings.STRIPE_SECRET_KEY.startswith("sk_test_"):
+            if not settings.STRIPE_SECRET_KEY.startswith(
+                "sk_test_"
+            ):
                 raise HTTPException(
                     status_code=403,
-                    detail="Test Clock requires Stripe Test Mode"
+                    detail=(
+                        "Test Clock requires "
+                        "Stripe Test Mode"
+                    )
                 )
 
             if not test_customer_id or not test_clock_id:
                 raise HTTPException(
                     status_code=503,
-                    detail="Test Clock configuration is incomplete"
+                    detail=(
+                        "Test Clock configuration "
+                        "is incomplete"
+                    )
                 )
 
             if (
                 existing
                 and existing.stripe_customer_id
-                and existing.stripe_customer_id != test_customer_id
+                and existing.stripe_customer_id
+                != test_customer_id
             ):
                 raise HTTPException(
                     status_code=409,
-                    detail="Lawyer already has another Stripe customer"
+                    detail=(
+                        "Lawyer already has "
+                        "another Stripe customer"
+                    )
                 )
 
             customer = stripe.Customer.retrieve(
@@ -469,7 +630,10 @@ def create_checkout(
                 customer.get("email") or ""
             ).strip().lower()
 
-            if customer_email and customer_email != test_email:
+            if (
+                customer_email
+                and customer_email != test_email
+            ):
                 raise HTTPException(
                     status_code=409,
                     detail="Test Customer email mismatch"
@@ -479,10 +643,11 @@ def create_checkout(
                 "customer": test_customer_id
             }
 
+        # =====================================
+        # 6. CREATE STRIPE CHECKOUT
+        # =====================================
 
         base_url = settings.FRONTEND_URL.rstrip("/")
-
-        # 6. Create Stripe Checkout Session
 
         session = stripe.checkout.Session.create(
             mode="subscription",
@@ -516,13 +681,15 @@ def create_checkout(
             **customer_data
         )
 
-    except stripe.error.StripeError:
+    except stripe.error.StripeError as exc:
         raise HTTPException(
             status_code=502,
             detail="Unable to create Stripe Checkout"
-        )
+        ) from exc
 
-    # 7. Store pending payment in MySQL
+    # =====================================
+    # 7. SAVE PENDING PAYMENT
+    # =====================================
 
     payment = Payment(
         user_id=user.id,
@@ -541,24 +708,33 @@ def create_checkout(
 
     try:
         db.commit()
+
     except Exception:
         db.rollback()
 
         try:
-            stripe.checkout.Session.expire(session.id)
+            stripe.checkout.Session.expire(
+                session.id
+            )
+
         except stripe.error.StripeError:
             pass
 
         raise HTTPException(
             status_code=503,
-            detail="Checkout record could not be saved"
+            detail=(
+                "Checkout record could not be saved"
+            )
         )
+
+    # =====================================
+    # 8. RETURN CHECKOUT DETAILS
+    # =====================================
 
     return {
         "checkout_url": session.url,
         "session_id": session.id
     }
-
 
 # =====================================
 # LAWYER PAYMENT HISTORY

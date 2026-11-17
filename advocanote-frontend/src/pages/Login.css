@@ -1973,3 +1973,51 @@ body {
     max-width: 360px !important;
   }
 }
+
+/* ==========================================
+   ADVOCANOTE LOGIN
+   MATCH REGISTER LEFT CONTENT POSITION
+========================================== */
+
+/* DESKTOP */
+
+@media (min-width: 1251px) {
+
+  /* MOVE ALL LEFT CONTENT DOWN AND RIGHT */
+
+  .login-page.auth-sync
+  > .login-left.an-hero
+  > .an-hero-inner {
+    padding-top: clamp(105px, 6.9vw, 120px) !important;
+    padding-left: clamp(60px, 4.75vw, 85px) !important;
+    padding-right: 20px !important;
+    padding-bottom: 25px !important;
+  }
+
+  /* RESET OLD LOGO TOP MARGIN */
+
+  .login-page.auth-sync
+  > .login-left.an-hero
+  > .an-hero-inner
+  > .an-hero-brand {
+    margin: 0 0 16px 12px !important;
+  }
+}
+
+/* SMALL LAPTOP - SAME REGISTER SPACING */
+
+@media (min-width: 975px) and (max-width: 1250px) {
+
+  .login-page.auth-sync
+  > .login-left.an-hero
+  > .an-hero-inner {
+    padding: 48px 16px 25px 28px !important;
+  }
+
+  .login-page.auth-sync
+  > .login-left.an-hero
+  > .an-hero-inner
+  > .an-hero-brand {
+    margin: 0 0 17px 12px !important;
+  }
+}

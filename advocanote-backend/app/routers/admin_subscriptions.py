@@ -254,6 +254,84 @@ def update_plan(
 
     return plan
 
+# =====================================
+# UPDATE DAILY ACTION LIMIT
+# =====================================
+
+# None = Unlimited
+# 3 = Three actions per day
+# Applies across all app features
+
+class PlanDailyLimitUpdate(BaseModel):
+
+    model_config = ConfigDict(
+        extra="forbid"
+    )
+
+    daily_action_limit: int | None = Field(
+        ...,
+        ge=1,
+        description=(
+            "Maximum daily actions, "
+            "or null for unlimited usage"
+        ),
+    )
+
+
+@router.patch("/plans/{plan_id}/daily-limit")
+def update_plan_daily_limit(
+    plan_id: int,
+    data: PlanDailyLimitUpdate,
+    db: Session = Depends(get_db),
+):
+
+    plan = db.get(
+        SubscriptionPlan,
+        plan_id,
+    )
+
+    if plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Subscription plan not found",
+        )
+
+    # Configure usage limit without
+    # modifying Stripe price or billing.
+    #
+    # Changes also affect existing
+    # subscribers on this plan once
+    # usage enforcement is enabled.
+
+    plan.daily_action_limit = (
+        data.daily_action_limit
+    )
+
+    try:
+        db.commit()
+        db.refresh(plan)
+
+    except Exception:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=503,
+            detail="Could not update plan daily action limit",
+        )
+
+    return {
+        "plan_id": plan.id,
+        "plan_name": plan.name,
+        "daily_action_limit": (
+            plan.daily_action_limit
+        ),
+        "usage_policy": (
+            "unlimited"
+            if plan.daily_action_limit is None
+            else "limited"
+        ),
+    }
+
 
 # =====================================
 # LINK EXISTING STRIPE PRICE SCHEMA
@@ -589,6 +667,10 @@ def get_admin_subscriptions_overview(
     # PLAN DETAILS
     # =================================
 
+    # =================================
+    # PLAN DETAILS
+    # =================================
+
     plan_rows = [
         {
             "id": plan.id,
@@ -598,14 +680,24 @@ def get_admin_subscriptions_overview(
             ),
             "price": str(plan.price),
             "currency": plan.currency,
-            "billing_interval":
-                plan.billing_interval,
+            "billing_interval": (
+                plan.billing_interval
+            ),
             "features": plan.features,
             "trial_days": plan.trial_days,
+
+            # Daily usage restriction
+            # None means unlimited usage
+
+            "daily_action_limit": (
+                plan.daily_action_limit
+            ),
+
             "is_active": bool(plan.is_active),
         }
         for plan in plans
     ]
+
 
     # =================================
     # PAYMENT HISTORY

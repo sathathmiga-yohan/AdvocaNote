@@ -313,14 +313,27 @@ export default function Register() {
       setSuccess(
         "Registration request completed successfully."
       );
+
     } catch (err) {
-      setError(
+      const errorMessage =
         err?.message ||
-        "Registration failed. Please try again."
-      );
+        "Registration failed. Please try again.";
+
+      if (
+        /email already registered|email already exists|already in use/i.test(
+          errorMessage
+        )
+      ) {
+        setError(
+          "This email is already registered. If you previously closed your account, select 'Restore or Start Fresh' below."
+        );
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
+
   };
 
   // =====================================

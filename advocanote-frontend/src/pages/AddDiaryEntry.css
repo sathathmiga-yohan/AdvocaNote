@@ -1198,3 +1198,469 @@ label[for="next-hearing-purpose"] {
   min-width: 0;
   flex-wrap: wrap;
 }
+
+/* =========================================
+   ADD DIARY ENTRY - ORGANIZED STEP SECTION
+   Keep original five-column diary table
+========================================= */
+
+/* Court proceedings table cell */
+
+.ade2-app .ade2-diary-table td.ade2-step-cell {
+  min-width: 0;
+  padding: 13px;
+  vertical-align: top;
+}
+
+/* 1. Input method selection */
+
+.ade2-app .ade2-step-cell .ade2-step-tabs {
+  display: block;
+  margin-bottom: 13px;
+}
+
+.ade2-app .ade2-step-cell .ade2-input-caption {
+  display: block;
+  margin-bottom: 9px;
+  color: #38584c;
+  font: 600 12px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-step-cell .ade2-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ade2-app .ade2-step-cell .ade2-mode-switch button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 8px;
+  border: 1px solid #dde5de;
+  border-radius: 9px;
+  background: #f8faf8;
+  color: #42584d;
+  font: 600 12px Inter, Arial, sans-serif;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-mode-switch button.ade2-tab-active {
+  border-color: #d3b66e;
+  background: #fff5dc;
+  color: #004535;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-mode-switch button:hover:not(:disabled) {
+  border-color: #9dbdac;
+}
+
+/* 2. Voice recording section */
+
+.ade2-app .ade2-step-cell .ade2-voice-ai {
+  margin: 0 0 13px !important;
+  padding: 13px !important;
+  border: 1px solid #dce9df !important;
+  border-radius: 10px !important;
+  background: #f4faf5 !important;
+}
+
+.ade2-app .ade2-step-cell .ade2-voice-ai > strong {
+  color: #004535;
+  font: 600 13px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-voice-ai > div:first-of-type {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-voice-ai > div:first-of-type > button {
+  min-height: 38px;
+  padding: 8px 11px;
+  white-space: nowrap;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-voice-ai > div:first-of-type > label:last-child {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #e3ebe3;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-voice-ai input[type="file"] {
+  max-width: 180px !important;
+  min-width: 0;
+}
+
+/* 3. Court proceedings / transcript */
+
+.ade2-app .ade2-step-cell .ade2-transcript {
+  margin-top: 0;
+  padding: 13px;
+  border: 1px solid #e6eae6;
+  border-radius: 10px;
+  background: #f8faf9;
+}
+
+.ade2-app .ade2-step-cell .ade2-transcript > strong {
+  margin-bottom: 11px;
+  color: #004535;
+  font: 600 13px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-step-cell .ade2-transcript textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid #dce4df;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #263831;
+  font: 13px/1.6 Inter, Arial, sans-serif;
+  resize: vertical;
+}
+
+.ade2-app .ade2-step-cell .ade2-transcript textarea:focus {
+  border-color: #00644c;
+  outline: 2px solid rgba(0, 91, 65, 0.09);
+}
+
+/* 4. AI language selector */
+
+.ade2-app .ade2-step-cell .ade2-transcript > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-transcript select {
+  min-height: 36px;
+  border: 1px solid #dbe4dc;
+  border-radius: 7px;
+  background: #fff;
+}
+
+/* 5. AI analyse button */
+
+.ade2-app .ade2-step-cell .ade2-transcript > button {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 41px;
+  margin-top: 12px !important;
+  padding: 10px;
+  border: 1px solid #bed6c7;
+  border-radius: 8px;
+  background: #eaf5ee;
+  color: #004535;
+  font: 600 12px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-step-cell
+.ade2-transcript > button:hover:not(:disabled) {
+  background: #dceee3;
+}
+
+/* AI analysis results */
+
+.ade2-app .ade2-step-cell .ade2-point-preview {
+  margin-top: 13px;
+  padding: 13px;
+  border: 1px solid #d2e7d7;
+  border-radius: 9px;
+  background: #f0f9f2;
+}
+
+@media (max-width: 1150px) {
+  .ade2-app .ade2-step-cell
+  .ade2-voice-ai > div:first-of-type {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ade2-app .ade2-step-cell
+  .ade2-voice-ai > div:first-of-type > label:last-child {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .ade2-app .ade2-step-cell .ade2-mode-switch {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================
+   ADVOCANOTE - UNIFIED COURT PROCEEDINGS
+   Manual Typing + Voice-to-Text + Optional AI
+   Original 5-column table preserved
+========================================== */
+
+.ade2-app .ade2-step-cell {
+  padding: 12px;
+}
+
+.ade2-app .ade2-unified-editor,
+.ade2-app .ade2-ai-assist {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #e2e8e2;
+  border-radius: 10px;
+  background: #fbfdfb;
+}
+
+/* HEADINGS */
+
+.ade2-app .ade2-editor-heading,
+.ade2-app .ade2-ai-assist-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ade2-app .ade2-editor-heading strong,
+.ade2-app .ade2-ai-assist-heading strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #004535;
+  font: 600 13px/1.35 Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-editor-heading span,
+.ade2-app .ade2-ai-assist-heading > span {
+  color: #697d71;
+  font: 11px Inter, Arial, sans-serif;
+  white-space: nowrap;
+}
+
+/* COMMON TEXTAREA */
+
+.ade2-app .ade2-unified-textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 155px;
+  padding: 11px 12px;
+  border: 1px solid #dce5de;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #183c30;
+  resize: vertical;
+  font: 13px/1.6 Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-unified-textarea:focus {
+  outline: 2px solid rgba(0, 69, 53, 0.11);
+  border-color: #0a795b;
+}
+
+.ade2-app .ade2-unified-textarea[readonly] {
+  background: #f9fbf9;
+}
+
+/* VOICE TOOLBAR */
+
+.ade2-app .ade2-voice-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.ade2-app .ade2-voice-language {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #435b50;
+  font: 11px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-voice-language select,
+.ade2-app .ade2-ai-assist-controls select {
+  min-height: 35px;
+  padding: 5px 7px;
+  border: 1px solid #d9e3d9;
+  border-radius: 7px;
+  background: #fff;
+  color: #004535;
+  font: 12px Inter, Arial, sans-serif;
+}
+
+/* VOICE BUTTONS */
+
+.ade2-app .ade2-voice-action,
+.ade2-app .ade2-upload-action,
+.ade2-app .ade2-whisper-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 11px;
+  border: 1px solid #c8ded1;
+  border-radius: 8px;
+  background: #fff;
+  color: #004535;
+  font: 600 11px Inter, Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.ade2-app .ade2-voice-action {
+  border-color: #004535;
+  background: #004535;
+  color: #fff;
+}
+
+.ade2-app .ade2-voice-action.is-recording {
+  border-color: #a22a2a;
+  background: #a22a2a;
+}
+
+.ade2-app .ade2-upload-action {
+  position: relative;
+  cursor: pointer;
+}
+
+.ade2-app .ade2-upload-action input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ade2-app .ade2-upload-action:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ade2-app .ade2-voice-action:disabled,
+.ade2-app .ade2-ai-run:disabled,
+.ade2-app .ade2-whisper-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* AUDIO PLAYBACK */
+
+.ade2-app .ade2-recorded-audio {
+  display: grid;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.ade2-app .ade2-recorded-audio audio {
+  width: 100%;
+}
+
+.ade2-app .ade2-recording {
+  margin: 10px 0 0;
+}
+
+.ade2-app .ade2-voice-privacy,
+.ade2-app .ade2-processing-note {
+  display: block;
+  margin-top: 10px;
+  color: #687b70;
+  font: 11px/1.55 Inter, Arial, sans-serif;
+}
+
+/* OPTIONAL AI SECTION */
+
+.ade2-app .ade2-ai-assist {
+  margin-top: 12px;
+  border-color: #e9e1cd;
+  background: #fffdf7;
+}
+
+.ade2-app .ade2-ai-assist p {
+  margin: 0 0 11px;
+  color: #6c756c;
+  font: 11px/1.5 Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-ai-assist-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ade2-app .ade2-ai-assist-controls label {
+  color: #3e594d;
+  font: 11px Inter, Arial, sans-serif;
+}
+
+/* AI ANALYSE BUTTON */
+
+.ade2-app .ade2-ai-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 37px;
+  flex: 1 1 100%;
+  border: 1px solid #b7d5c1;
+  border-radius: 8px;
+  background: #e7f3eb;
+  color: #004535;
+  font: 600 12px Inter, Arial, sans-serif;
+}
+
+.ade2-app .ade2-ai-run:hover:not(:disabled) {
+  background: #d9eade;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1180px) {
+  .ade2-app .ade2-voice-toolbar {
+    align-items: stretch;
+  }
+
+  .ade2-app .ade2-voice-language {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ade2-app .ade2-editor-heading {
+    flex-wrap: wrap;
+  }
+
+  .ade2-app .ade2-voice-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ade2-app .ade2-voice-action,
+  .ade2-app .ade2-upload-action {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

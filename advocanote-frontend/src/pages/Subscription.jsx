@@ -1,12 +1,15 @@
 
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
 
-import { useLocation } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import {
   Crown,
@@ -22,62 +25,61 @@ import {
   Wallet,
   LoaderCircle,
   Check,
+  Menu,
+  Search,
+  ChevronDown,
+  UserRound,
+  LogOut,
 } from "lucide-react";
 
+import {
+  LawyerTopbarPortal,
+  LawyerTopbarAvatar,
+  useLawyerLayout,
+} from "../components/LawyerLayout";
+
+import { logoutUser } from "../services/auth";
+
+import "./MyLegalDiary.css";
 import "./AccountPages.css";
 import "./Subscription.css";
 
-// ======================================
-// BACKEND API CONFIGURATION
-// ======================================
+// =====================================
+// API CONFIGURATION
+// =====================================
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
   "http://127.0.0.1:8000"
-).replace(/\/$/, "");
-
-// ======================================
-// AUTH TOKEN
-// ======================================
-
+).replace(/\/+$/, "");
 
 function getAccessToken() {
-  const token = sessionStorage.getItem(
-    "advocanote_access_token"
+  return (
+    sessionStorage
+      .getItem("advocanote_access_token")
+      ?.replace(/^Bearer\s+/i, "") || null
   );
-
-  if (!token) {
-    return null;
-  }
-
-  return token.replace(/^Bearer\s+/i, "");
 }
-// ======================================
-// API HELPER
-// ======================================
 
-async function apiRequest(
-  endpoint,
-  options = {}
-) {
+async function apiRequest(endpoint, options = {}) {
   const token = getAccessToken();
-
-  const headers = {
-    ...(options.body
-      ? { "Content-Type": "application/json" }
-      : {}),
-    ...(token
-      ? { Authorization: `Bearer ${token}` }
-      : {}),
-    ...(options.headers || {}),
-  };
 
   const response = await fetch(
     `${API_BASE}${endpoint}`,
     {
       ...options,
-      headers,
       credentials: "include",
+      headers: {
+        ...(options.body
+          ? { "Content-Type": "application/json" }
+          : {}),
+
+        ...(token
+          ? { Authorization: `Bearer ${token}` }
+          : {}),
+
+        ...(options.headers || {}),
+      },
     }
   );
 
@@ -86,27 +88,24 @@ async function apiRequest(
     .catch(() => null);
 
   if (!response.ok) {
-    let message =
-      "Unable to complete your request.";
+    const detail =
+      typeof result?.detail === "string"
+        ? result.detail
+        : "Unable to complete your request.";
 
-    if (typeof result?.detail === "string") {
-      message = result.detail;
-    }
-
-    if (response.status === 401) {
-      message =
-        "Your login session has expired. Please log in again.";
-    }
-
-    throw new Error(message);
+    throw new Error(
+      response.status === 401
+        ? "Your login session has expired. Please log in again."
+        : detail
+    );
   }
 
   return result;
 }
 
-// ======================================
+// =====================================
 // FORMAT HELPERS
-// ======================================
+// =====================================
 
 function formatMoney(amount, currency = "LKR") {
   const value = Number(amount);
@@ -124,17 +123,15 @@ function formatMoney(amount, currency = "LKR") {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return "Not available";
-  }
+  if (!value) return "Not available";
 
   const raw = String(value);
 
-  const normalized = /(?:Z|[+-]\d{2}:\d{2})$/i.test(raw)
-    ? raw
-    : `${raw}Z`;
-
-  const date = new Date(normalized);
+  const date = new Date(
+    /(?:Z|[+-]\d{2}:\d{2})$/i.test(raw)
+      ? raw
+      : `${raw}Z`
+  );
 
   if (Number.isNaN(date.getTime())) {
     return "Not available";
@@ -148,10 +145,8 @@ function formatDate(value) {
   }).format(date);
 }
 
-function formatStatus(status) {
-  const value = String(status || "unknown");
-
-  return value
+function formatStatus(value) {
+  return String(value || "unknown")
     .replaceAll("_", " ")
     .replace(/\b\w/g, (letter) =>
       letter.toUpperCase()
@@ -163,30 +158,21 @@ function getPlanFeatures(plan) {
 
   if (Array.isArray(features)) {
     return features
-      .map((feature) => {
-        if (typeof feature === "string") {
-          return feature;
-        }
-
-        return (
-          feature?.name ||
-          feature?.label ||
-          feature?.feature_name ||
-          ""
-        );
-      })
+      .map((item) =>
+        typeof item === "string"
+          ? item
+          : item?.name ||
+            item?.label ||
+            item?.feature_name ||
+            ""
+      )
       .filter(Boolean);
   }
 
-  if (
-    features &&
-    typeof features === "object"
-  ) {
+  if (features && typeof features === "object") {
     return Object.entries(features)
       .filter(([, enabled]) => enabled === true)
-      .map(([name]) =>
-        formatStatus(name)
-      );
+      .map(([name]) => formatStatus(name));
   }
 
   return [];
@@ -198,30 +184,55 @@ function getPlanInterval(plan) {
     plan?.interval ||
     plan?.billing_cycle;
 
-  if (interval === "month" || interval === "monthly") {
+  if (
+    interval === "month" ||
+    interval === "monthly"
+  ) {
     return "month";
   }
 
-  if (interval === "year" || interval === "yearly") {
+  if (
+    interval === "year" ||
+    interval === "yearly"
+  ) {
     return "year";
   }
 
   return "billing cycle";
 }
 
-// ======================================
+// =====================================
 // SUBSCRIPTION PAGE
-// ======================================
+// =====================================
 
 export default function Subscription() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // EXISTING COMMON LAWYER LAYOUT
+
+  const { user, openSidebar } = useLawyerLayout();
+
+  // TOPBAR STATE
+
+  const [profileOpen, setProfileOpen] =
+    useState(false);
+
+  const [search, setSearch] = useState("");
+
+  // SUBSCRIPTION STATE
 
   const [plans, setPlans] = useState([]);
+
   const [subscription, setSubscription] =
     useState(null);
-  const [payments, setPayments] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [payments, setPayments] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
   const [actionLoading, setActionLoading] =
     useState(null);
 
@@ -231,13 +242,20 @@ export default function Subscription() {
   const [upgradePreview, setUpgradePreview] =
     useState(null);
 
+  const displayName =
+    user?.full_name ||
+    user?.name ||
+    [user?.first_name, user?.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    "Lawyer";
 
-  // ====================================
-  // FETCH REAL BACKEND DATA
-  // ====================================
+  // =====================================
+  // FETCH SUBSCRIPTION DATA
+  // =====================================
 
-  const loadSubscriptionData =
-    useCallback(async () => {
+  const loadSubscriptionData = useCallback(
+    async () => {
       setLoading(true);
       setError("");
 
@@ -270,20 +288,22 @@ export default function Subscription() {
       } catch (err) {
         setError(
           err.message ||
-          "Failed to load subscription details."
+            "Failed to load subscription details."
         );
       } finally {
         setLoading(false);
       }
-    }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     loadSubscriptionData();
   }, [loadSubscriptionData]);
 
-  // ====================================
-  // VERIFY STRIPE SUCCESS REDIRECT
-  // ====================================
+  // =====================================
+  // VERIFY STRIPE PAYMENT
+  // =====================================
 
   useEffect(() => {
     if (
@@ -291,7 +311,7 @@ export default function Subscription() {
       "/subscription/cancel"
     ) {
       setNotice(
-        "Stripe Checkout was canceled. You can review your subscription below."
+        "Payment checkout was canceled."
       );
       return;
     }
@@ -303,15 +323,13 @@ export default function Subscription() {
       return;
     }
 
-    const params = new URLSearchParams(
+    const sessionId = new URLSearchParams(
       location.search
-    );
-
-    const sessionId = params.get("session_id");
+    ).get("session_id");
 
     if (!sessionId) {
       setNotice(
-        "Checking your subscription details. Please refresh if needed."
+        "Checking subscription status. Refresh if needed."
       );
       return;
     }
@@ -319,9 +337,7 @@ export default function Subscription() {
     let cancelled = false;
 
     async function verifyPayment() {
-      setNotice(
-        "Verifying your payment with AdvocaNote..."
-      );
+      setNotice("Verifying payment...");
 
       try {
         const result = await apiRequest(
@@ -330,28 +346,20 @@ export default function Subscription() {
           )}`
         );
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
-        if (
+        setNotice(
           result?.payment_status === "paid" &&
-          result?.subscription_status === "active"
-        ) {
-          setNotice(
-            "Your payment has been verified and your subscription is active."
-          );
-        } else {
-          setNotice(
-            "Your payment is still being processed. Please refresh to check again."
-          );
-        }
+            result?.subscription_status === "active"
+            ? "Payment verified. Your plan is active."
+            : "Payment processing. Refresh to check the status."
+        );
 
         await loadSubscriptionData();
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setNotice(
-            "Payment verification is pending. Please refresh shortly or contact support if it does not update."
+            "Payment verification pending. Please check again later."
           );
         }
       }
@@ -368,45 +376,73 @@ export default function Subscription() {
     loadSubscriptionData,
   ]);
 
-  // ====================================
+  // =====================================
   // CURRENT PLAN
-  // ====================================
+  // =====================================
 
-  const currentPlan = useMemo(() => {
-    if (!subscription?.plan_id) {
-      return null;
-    }
-
-    return plans.find(
-      (plan) =>
-        Number(plan.id) ===
-        Number(subscription.plan_id)
-    ) || null;
-  }, [plans, subscription]);
+  const currentPlan = useMemo(
+    () =>
+      plans.find(
+        (plan) =>
+          Number(plan.id) ===
+          Number(subscription?.plan_id)
+      ) || null,
+    [plans, subscription]
+  );
 
   const subscriptionStatus =
     subscription?.status || "not_subscribed";
 
-  const hasSubscription =
-    Boolean(subscription?.plan_id);
+  const hasSubscription = Boolean(
+    subscription?.plan_id
+  );
 
   const isActive =
     subscriptionStatus === "active";
-
 
   const canSubscribe =
     !hasSubscription ||
     subscriptionStatus === "canceled";
 
+  // =====================================
+  // SEARCH PLANS AND PAYMENTS
+  // =====================================
 
-  // ====================================
+  const searchTerm =
+    search.trim().toLowerCase();
+
+  const visiblePlans = plans.filter(
+    (plan) =>
+      plan.name !== "Basic Sandbox Test" &&
+      `${plan.name} ${plan.description || ""}`
+        .toLowerCase()
+        .includes(searchTerm)
+  );
+
+  const visiblePayments = payments.filter(
+    (payment) => {
+      const relatedPlan = plans.find(
+        (plan) =>
+          Number(plan.id) ===
+          Number(payment.plan_id)
+      );
+
+      return `${
+        relatedPlan?.name || ""
+      } ${payment.status || ""} ${
+        payment.amount || ""
+      }`
+        .toLowerCase()
+        .includes(searchTerm);
+    }
+  );
+
+  // =====================================
   // STRIPE CHECKOUT
-  // ====================================
+  // =====================================
 
   async function handleCheckout(planId) {
-    if (!canSubscribe || actionLoading) {
-      return;
-    }
+    if (!canSubscribe || actionLoading) return;
 
     setActionLoading(`checkout-${planId}`);
     setError("");
@@ -428,23 +464,19 @@ export default function Subscription() {
         );
       }
 
-      window.location.assign(
-        result.checkout_url
-      );
+      window.location.assign(result.checkout_url);
     } catch (err) {
       setError(err.message);
       setActionLoading(null);
     }
   }
 
-  // ====================================
-  // STRIPE BILLING PORTAL
-  // ====================================
+  // =====================================
+  // MANAGE BILLING
+  // =====================================
 
   async function handleManageBilling() {
-    if (actionLoading) {
-      return;
-    }
+    if (actionLoading) return;
 
     setActionLoading("manage");
     setError("");
@@ -463,22 +495,23 @@ export default function Subscription() {
         );
       }
 
-      window.location.assign(
-        result.portal_url
-      );
+      window.location.assign(result.portal_url);
     } catch (err) {
       setError(err.message);
       setActionLoading(null);
     }
   }
 
-
-  // ====================================
+  // =====================================
   // PLAN CHANGE PREVIEW
-  // ====================================
+  // =====================================
 
   async function handlePreviewPlanChange(plan) {
-    if (!isActive || !currentPlan || actionLoading) {
+    if (
+      !isActive ||
+      !currentPlan ||
+      actionLoading
+    ) {
       return;
     }
 
@@ -508,18 +541,16 @@ export default function Subscription() {
       );
 
       setNotice(
-        `Plan change preview: ${result.current_plan} → ` +
-        `${result.new_plan}. Estimated invoice: ` +
-        `${formatMoney(
-          result.estimated_invoice_total,
-          result.currency
-        )}. No payment has been made.`
+        `${result.current_plan} → ${result.new_plan}. Estimated charge: ` +
+          `${formatMoney(
+            result.estimated_invoice_total,
+            result.currency
+          )}. No payment has been made.`
       );
 
-
       if (
-        isActive &&
-        Number(plan.price) > Number(currentPlan.price)
+        Number(plan.price) >
+        Number(currentPlan.price)
       ) {
         setUpgradePreview({
           planId: plan.id,
@@ -530,31 +561,36 @@ export default function Subscription() {
       } else {
         setUpgradePreview(null);
       }
-
-
     } catch (err) {
       setError(
-        err.message || "Unable to preview plan change."
+        err.message ||
+          "Unable to preview plan change."
       );
     } finally {
       setActionLoading(null);
     }
   }
 
+  // =====================================
+  // CONFIRM UPGRADE
+  // =====================================
 
   async function handleConfirmUpgrade() {
-    if (!upgradePreview || !isActive || actionLoading) {
+    if (
+      !upgradePreview ||
+      !isActive ||
+      actionLoading
+    ) {
       return;
     }
 
     const approved = window.confirm(
-      `Confirm upgrade to ${upgradePreview.planName}?\n\n` +
-      `Estimated payment: ${formatMoney(
-        upgradePreview.amount,
-        upgradePreview.currency
-      )}\n\n` +
-      "Stripe Sandbox will attempt payment. " +
-      "The final amount may differ."
+      `Upgrade to ${upgradePreview.planName}?\n\n` +
+        `Estimated payment: ${formatMoney(
+          upgradePreview.amount,
+          upgradePreview.currency
+        )}\n\n` +
+        "The final amount may differ."
     );
 
     if (!approved) return;
@@ -578,31 +614,45 @@ export default function Subscription() {
 
       setNotice(
         result.payment_pending
-          ? "Upgrade payment is pending. Your plan will update after payment confirmation."
-          : "Upgrade submitted to Stripe. Refresh your subscription after payment verification."
+          ? "Upgrade payment pending. Your plan will update after confirmation."
+          : "Upgrade submitted. Refresh after payment verification."
       );
 
       await loadSubscriptionData();
     } catch (err) {
       setError(
-        err.message || "Unable to upgrade subscription."
+        err.message ||
+          "Unable to upgrade subscription."
       );
     } finally {
       setActionLoading(null);
     }
   }
 
+  // =====================================
+  // SCHEDULE DOWNGRADE
+  // =====================================
 
   async function handleScheduleDowngrade(plan) {
-    if (!isActive || !currentPlan || actionLoading) return;
+    if (
+      !isActive ||
+      !currentPlan ||
+      actionLoading
+    ) {
+      return;
+    }
 
-    const oldInterval = getPlanInterval(currentPlan);
-    const newInterval = getPlanInterval(plan);
+    const oldInterval =
+      getPlanInterval(currentPlan);
+
+    const newInterval =
+      getPlanInterval(plan);
 
     const monthlyDowngrade =
       oldInterval === "month" &&
       newInterval === "month" &&
-      Number(plan.price) < Number(currentPlan.price);
+      Number(plan.price) <
+        Number(currentPlan.price);
 
     const intervalChange =
       ["month", "year"].includes(oldInterval) &&
@@ -615,11 +665,11 @@ export default function Subscription() {
     }
 
     const approved = window.confirm(
-      `Schedule change from ${currentPlan.name} to ${plan.name}?\n\n` +
-      `Your current plan remains active until ${formatDate(
-        subscription.current_period_end
-      )}.\n\n` +
-      "The new billing plan starts at renewal, subject to payment."
+      `Schedule ${currentPlan.name} → ${plan.name}?\n\n` +
+        `Current plan ends: ${formatDate(
+          subscription.current_period_end
+        )}.\n` +
+        "The new plan starts at renewal, subject to payment."
     );
 
     if (!approved) return;
@@ -641,17 +691,24 @@ export default function Subscription() {
       );
 
       setNotice(
-        `${result.current_plan} → ${result.next_plan} ` +
-        `scheduled for ${formatDate(result.effective_at)}.`
+        `${result.current_plan} → ${result.next_plan} scheduled for ` +
+          `${formatDate(result.effective_at)}.`
       );
 
       await loadSubscriptionData();
     } catch (err) {
-      setError(err.message || "Unable to schedule plan change.");
+      setError(
+        err.message ||
+          "Unable to schedule plan change."
+      );
     } finally {
       setActionLoading(null);
     }
   }
+
+  // =====================================
+  // CHECK PENDING PAYMENTS
+  // =====================================
 
   async function handleCleanupPayments() {
     if (actionLoading) return;
@@ -671,370 +728,462 @@ export default function Subscription() {
       await loadSubscriptionData();
 
       setNotice(
-        `Payment check completed. ` +
-        `${result.expired} unused checkout(s) expired. ` +
-        `${result.verification_pending} payment(s) need verification. ` +
-        `${result.still_open} checkout(s) remain open.`
+        `Payment check completed. ${result.expired} expired, ` +
+          `${result.verification_pending} pending verification, ` +
+          `${result.still_open} still open.`
       );
-
     } catch (err) {
       setError(
-        err.message || "Unable to clean pending payments."
+        err.message ||
+          "Unable to check pending payments."
       );
     } finally {
       setActionLoading(null);
     }
   }
 
+  // =====================================
+  // COMMON TOPBAR LOGOUT
+  // =====================================
 
+  async function signOut() {
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      sessionStorage.removeItem(
+        "advocanote_access_token"
+      );
 
-  // ====================================
-  // RENDER
-  // ====================================
+      sessionStorage.removeItem(
+        "advocanote_refresh_token"
+      );
+
+      sessionStorage.removeItem(
+        "advocanote_auth_toast"
+      );
+
+      navigate("/login", {
+        replace: true,
+      });
+    }
+  }
+
+  // =====================================
+  // PAGE RENDER
+  // =====================================
 
   return (
-    <main className="anp-page">
-      <div className="anp-container">
+    <>
+      {/* =====================================
+          EXISTING COMMON LAWYER TOPBAR
+      ===================================== */}
 
-        {/* PAGE HEADER */}
+      <LawyerTopbarPortal>
 
-        <div className="anp-page-header">
-          <div>
-            <div className="anp-eyebrow">
-              ADVOCANOTE
-            </div>
+        {/* MOBILE SIDEBAR */}
 
-            <h1>Subscription & Billing</h1>
+        <button
+          type="button"
+          className="ald-mobile-menu"
+          aria-label="Open sidebar"
+          onClick={openSidebar}
+        >
+          <Menu size={22} />
+        </button>
 
-            <p>
-              View your subscription, explore plans,
-              and manage payments securely.
-            </p>
-          </div>
+        {/* SEARCH BAR */}
 
-          <div className="anp-header-icon">
-            <Crown size={28} />
+        <div className="ald-global-search">
+          <Search size={20} />
+
+          <input
+            type="search"
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+            placeholder="Search plans or payments..."
+            aria-label="Search plans or payments"
+          />
+        </div>
+
+        {/* PROFILE SECTION */}
+
+        <div className="ald-topbar-actions">
+          <div className="ald-topbar-divider" />
+
+          <div className="ald-dropdown-holder">
+
+            <button
+              type="button"
+              className="ald-account"
+              aria-label="Account menu"
+              aria-expanded={profileOpen}
+              onClick={() =>
+                setProfileOpen(
+                  (previous) => !previous
+                )
+              }
+            >
+              <LawyerTopbarAvatar />
+
+              <span className="ald-account-text">
+                <strong>{displayName}</strong>
+                <small>Attorney-at-Law</small>
+              </span>
+
+              <ChevronDown size={18} />
+            </button>
+
+            {/* PROFILE DROPDOWN */}
+
+            {profileOpen && (
+              <div className="ald-top-popover ald-account-popover">
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    navigate("/profile");
+                  }}
+                >
+                  <UserRound size={16} />
+                  My Profile
+                </button>
+
+                <button
+                  type="button"
+                  onClick={signOut}
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+
+              </div>
+            )}
+
           </div>
         </div>
 
-        <div className="ans-page">
+      </LawyerTopbarPortal>
 
-          {/* NOTIFICATIONS */}
+      {/* =====================================
+          SUBSCRIPTION MAIN CONTENT
+      ===================================== */}
 
-          {notice && (
-            <div className="ans-message ans-message-info">
-              <CheckCircle2 size={19} />
-              <span>{notice}</span>
-            </div>
-          )}
+      <main className="anp-page">
 
+        <div className="anp-container">
 
-          {upgradePreview && (
-            <div className="ans-plan-note">
-              <div>
-                <strong>
-                  Confirm upgrade to {upgradePreview.planName}
-                </strong>
+          {/* PAGE HEADER */}
 
-                <p>
-                  Estimated payment:{" "}
-                  {formatMoney(
-                    upgradePreview.amount,
-                    upgradePreview.currency
-                  )}
-                </p>
-
-                <p>
-                  This is an estimate. Stripe may calculate
-                  a different final amount.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="ans-button ans-button-primary"
-                onClick={() =>
-                  handleConfirmUpgrade()
-                }
-                disabled={actionLoading !== null}
-              >
-                {actionLoading === "upgrade"
-                  ? "Processing..."
-                  : "Confirm Upgrade"}
-              </button>
-
-              <button
-                type="button"
-                className="ans-button ans-button-outline"
-                onClick={() => setUpgradePreview(null)}
-                disabled={actionLoading !== null}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
-
-          {error && (
-            <div
-              className="ans-message ans-message-error"
-              role="alert"
-            >
-              <AlertCircle size={19} />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* LOADING */}
-
-          {loading ? (
-            <div className="ans-loading">
-              <LoaderCircle
-                className="ans-spin"
-                size={28}
-              />
+          <div className="anp-page-header">
+            <div>
+              <h1>Subscription & Billing</h1>
               <p>
-                Loading your subscription details...
+                Manage your plan and payments.
               </p>
             </div>
-          ) : (
-            <>
 
-              {/* CURRENT SUBSCRIPTION */}
+            <div className="anp-header-icon">
+              <Crown size={25} />
+            </div>
+          </div>
 
-              <section className="ans-overview">
+          <div className="ans-page">
 
-                <div className="ans-overview-main">
+            {/* PAYMENT NOTIFICATIONS */}
 
-                  <div className="ans-section-eyebrow">
-                    <Crown size={16} />
-                    YOUR MEMBERSHIP
-                  </div>
+            {notice && (
+              <div className="ans-message ans-message-info">
+                <CheckCircle2 size={18} />
+                <span>{notice}</span>
+              </div>
+            )}
 
-                  <div className="ans-overview-heading">
-                    <div>
+            {/* UPGRADE CONFIRMATION */}
 
-                      <p className="ans-overview-caption">
-                        {subscriptionStatus === "canceled"
-                          ? "Previous subscription"
-                          : "Current subscription"}
-                      </p>
+            {upgradePreview && (
+              <div className="ans-plan-note">
 
+                <div>
+                  <strong>
+                    Upgrade to {upgradePreview.planName}
+                  </strong>
+
+                  <p>
+                    Estimated payment:{" "}
+                    {formatMoney(
+                      upgradePreview.amount,
+                      upgradePreview.currency
+                    )}
+                  </p>
+
+                  <p>
+                    Final amount may differ.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="ans-button ans-button-primary"
+                  onClick={handleConfirmUpgrade}
+                  disabled={actionLoading !== null}
+                >
+                  {actionLoading === "upgrade"
+                    ? "Processing..."
+                    : "Confirm Upgrade"}
+                </button>
+
+                <button
+                  type="button"
+                  className="ans-button ans-button-outline"
+                  onClick={() =>
+                    setUpgradePreview(null)
+                  }
+                  disabled={actionLoading !== null}
+                >
+                  Cancel
+                </button>
+
+              </div>
+            )}
+
+            {/* ERROR MESSAGE */}
+
+            {error && (
+              <div
+                className="ans-message ans-message-error"
+                role="alert"
+              >
+                <AlertCircle size={18} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* LOADING */}
+
+            {loading ? (
+              <div className="ans-loading">
+                <LoaderCircle
+                  className="ans-spin"
+                  size={26}
+                />
+                <p>
+                  Loading subscriptions...
+                </p>
+              </div>
+            ) : (
+              <>
+
+                {/* =========================
+                    CURRENT SUBSCRIPTION
+                ========================= */}
+
+                <section
+                  className="ans-overview"
+                  style={{
+                    gridTemplateColumns: "minmax(0, 1fr)",
+                  }}
+                >
+                  <div className="ans-overview-main">
+
+                    <div className="ans-section-eyebrow">
+                      <Crown size={16} />
+                      CURRENT PLAN
+                    </div>
+
+                    <div className="ans-overview-heading">
 
                       <h2>
                         {subscription?.plan_name ||
                           currentPlan?.name ||
                           "No Active Plan"}
                       </h2>
-                    </div>
 
-                    <span
-                      className={`ans-status ${isActive
-                        ? "ans-status-active"
-                        : "ans-status-neutral"
+                      <span
+                        className={`ans-status ${
+                          isActive
+                            ? "ans-status-active"
+                            : "ans-status-neutral"
                         }`}
-                    >
-                      <span className="ans-status-dot" />
-                      {formatStatus(
-                        subscriptionStatus
+                      >
+                        <span className="ans-status-dot" />
+
+                        {formatStatus(
+                          subscriptionStatus
+                        )}
+                      </span>
+
+                    </div>
+
+                    {/* SUBSCRIPTION DETAILS */}
+
+                    <div className="ans-overview-details">
+
+                      <div className="ans-overview-detail">
+                        <CalendarDays size={19} />
+
+                        <div>
+                          <span>
+                            Period ends
+                          </span>
+
+                          <strong>
+                            {formatDate(
+                              subscription?.current_period_end
+                            )}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="ans-overview-detail">
+                        <ShieldCheck size={19} />
+
+                        <div>
+                          <span>
+                            Billing status
+                          </span>
+
+                          <strong>
+                            {subscription?.cancel_at_period_end
+                              ? "Cancellation scheduled"
+                              : isActive
+                                ? "Active"
+                                : "Not active"}
+                          </strong>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* BILLING ACTIONS */}
+
+                    <div className="ans-overview-actions">
+
+                      {hasSubscription && (
+                        <button
+                          type="button"
+                          className="ans-button ans-button-primary"
+                          onClick={handleManageBilling}
+                          disabled={actionLoading !== null}
+                        >
+                          <CreditCard size={17} />
+
+                          {actionLoading === "manage"
+                            ? "Opening..."
+                            : "Manage Billing"}
+
+                          <ArrowUpRight size={16} />
+                        </button>
                       )}
-                    </span>
-                  </div>
 
-                  <p className="ans-overview-description">
-                    {isActive
-                      ? "Your subscription is active. Your available features depend on your current plan."
-                      : hasSubscription
-                        ? "Your subscription details are shown below. Manage billing or contact support if you need help."
-                        : "Choose an available plan to start your AdvocaNote subscription."}
-                  </p>
-
-                  <div className="ans-overview-details">
-
-                    <div className="ans-overview-detail">
-                      <CalendarDays size={20} />
-
-                      <div>
-                        <span>
-                          Current period ends
-                        </span>
-
-                        <strong>
-                          {formatDate(
-                            subscription?.current_period_end
-                          )}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <div className="ans-overview-detail">
-                      <ShieldCheck size={20} />
-
-                      <div>
-                        <span>
-                          Billing arrangement
-                        </span>
-
-                        <strong>
-                          {subscription?.cancel_at_period_end
-                            ? "Cancellation scheduled"
-                            : isActive
-                              ? "Active subscription"
-                              : "Not active"}
-                        </strong>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <div className="ans-overview-actions">
-
-                    {hasSubscription && (
                       <button
                         type="button"
-                        className="ans-button ans-button-primary"
-                        onClick={handleManageBilling}
+                        className="ans-button ans-button-outline"
+                        onClick={loadSubscriptionData}
                         disabled={
+                          loading ||
                           actionLoading !== null
                         }
                       >
-                        <CreditCard size={18} />
-
-                        {actionLoading === "manage"
-                          ? "Opening Billing..."
-                          : "Manage Billing"}
-
-                        <ArrowUpRight size={17} />
+                        <RefreshCw size={16} />
+                        Refresh
                       </button>
-                    )}
 
-                    <button
-                      type="button"
-                      className="ans-button ans-button-outline"
-                      onClick={loadSubscriptionData}
-                      disabled={loading}
-                    >
-                      <RefreshCw size={17} />
-                      Refresh Details
-                    </button>
+                    </div>
+
+                  </div>
+                </section>
+
+                {/* =========================
+                    AVAILABLE PLANS
+                ========================= */}
+
+                <section className="ans-section">
+
+                  <div className="ans-section-header">
+
+                    <h2>
+                      Available Plans
+                    </h2>
+
+                    <div className="ans-header-icon">
+                      <Wallet size={19} />
+                    </div>
 
                   </div>
 
-                </div>
+                  {visiblePlans.length === 0 ? (
+                    <div className="ans-empty">
+                      <Crown size={26} />
+                      <h3>
+                        No plans available
+                      </h3>
+                    </div>
+                  ) : (
+                    <div className="ans-plans-grid">
 
-                <div className="ans-overview-side">
-
-                  <div className="ans-side-icon">
-                    <Crown
-                      size={31}
-                      strokeWidth={1.5}
-                    />
-                  </div>
-
-                  <span>
-                    ADVOCANOTE MEMBERSHIP
-                  </span>
-
-                  <h3>
-                    Your legal work,
-                    <br />
-                    better organized.
-                  </h3>
-
-                  <p>
-                    Manage your legal activities
-                    with the features available
-                    in your subscription.
-                  </p>
-
-                </div>
-
-              </section>
-
-              {/* AVAILABLE PLANS */}
-
-              <section className="ans-section">
-
-                <div className="ans-section-header">
-                  <div>
-                    <span className="ans-small-label">
-                      FLEXIBLE SUBSCRIPTIONS
-                    </span>
-
-                    <h2>Available Plans</h2>
-
-                    <p>
-                      Choose a plan that suits
-                      your legal practice.
-                    </p>
-                  </div>
-
-                  <div className="ans-header-icon">
-                    <Wallet size={21} />
-                  </div>
-                </div>
-
-                {hasSubscription && (
-                  <div className="ans-plan-note">
-                    <ShieldCheck size={18} />
-
-                    <p>
-                      You already have a subscription
-                      record. Use Manage Billing for
-                      billing changes. Starting another
-                      Checkout is disabled to prevent
-                      duplicate subscriptions.
-                    </p>
-                  </div>
-                )}
-
-                {plans.length === 0 ? (
-                  <div className="ans-empty">
-                    <Crown size={28} />
-
-                    <h3>No plans available</h3>
-
-                    <p>
-                      Subscription plans will appear
-                      here when the admin enables them.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="ans-plans-grid">
-
-
-                    {plans
-                      .filter(
-                        (plan) => plan.name !== "Basic Sandbox Test"
-                      )
-                      .map((plan) => {
+                      {visiblePlans.map((plan) => {
 
                         const features =
                           getPlanFeatures(plan);
 
-
                         const selected =
-                          ["active", "trialing"].includes(subscriptionStatus) &&
+                          ["active", "trialing"].includes(
+                            subscriptionStatus
+                          ) &&
                           Number(subscription?.plan_id) ===
-                          Number(plan.id);
-
+                            Number(plan.id);
 
                         const busy =
                           actionLoading ===
                           `checkout-${plan.id}`;
 
+                        const oldInterval =
+                          getPlanInterval(currentPlan);
+
+                        const nextInterval =
+                          getPlanInterval(plan);
+
+                        const canChangePlan =
+                          isActive &&
+                          !selected &&
+                          currentPlan &&
+                          (
+                            (
+                              oldInterval === "month" &&
+                              nextInterval === "month"
+                            ) ||
+                            (
+                              ["month", "year"].includes(
+                                oldInterval
+                              ) &&
+                              ["month", "year"].includes(
+                                nextInterval
+                              ) &&
+                              oldInterval !== nextInterval
+                            )
+                          );
+
                         return (
                           <article
                             key={plan.id}
-                            className={`ans-plan ${selected
-                              ? "ans-plan-selected"
-                              : ""
-                              }`}
+                            className={`ans-plan ${
+                              selected
+                                ? "ans-plan-selected"
+                                : ""
+                            }`}
                           >
 
+                            {/* PLAN ICON */}
+
                             <div className="ans-plan-top">
+
                               <div className="ans-plan-icon">
-                                <Crown size={21} />
+                                <Crown size={20} />
                               </div>
 
                               {selected && (
@@ -1043,9 +1192,14 @@ export default function Subscription() {
                                   Current Plan
                                 </span>
                               )}
+
                             </div>
 
-                            <h3>{plan.name}</h3>
+                            {/* PLAN NAME */}
+
+                            <h3>
+                              {plan.name}
+                            </h3>
 
                             {plan.description && (
                               <p className="ans-plan-description">
@@ -1053,7 +1207,10 @@ export default function Subscription() {
                               </p>
                             )}
 
+                            {/* PLAN PRICE */}
+
                             <div className="ans-plan-price">
+
                               <strong>
                                 {formatMoney(
                                   plan.price,
@@ -1062,286 +1219,275 @@ export default function Subscription() {
                               </strong>
 
                               <span>
-                                / {getPlanInterval(plan)}
+                                {" "}
+                                / {nextInterval}
                               </span>
+
                             </div>
+
+                            {/* FEATURES */}
 
                             {features.length > 0 && (
                               <div className="ans-plan-features">
+
                                 {features.map(
                                   (feature, index) => (
                                     <div
                                       key={`${feature}-${index}`}
                                       className="ans-feature"
                                     >
-                                      <CheckCircle2 size={17} />
-                                      <span>{feature}</span>
+                                      <CheckCircle2 size={16} />
+                                      <span>
+                                        {feature}
+                                      </span>
                                     </div>
                                   )
                                 )}
+
                               </div>
                             )}
 
+                            {/* PLAN BUTTON */}
 
                             <div className="ans-plan-bottom">
 
-
-                              {isActive &&
-                                !selected &&
-                                currentPlan &&
-                                (
-                                  (
-                                    getPlanInterval(currentPlan) === "month" &&
-                                    getPlanInterval(plan) === "month"
-                                  ) ||
-                                  (
-                                    ["month", "year"].includes(getPlanInterval(currentPlan)) &&
-                                    ["month", "year"].includes(getPlanInterval(plan)) &&
-                                    getPlanInterval(currentPlan) !== getPlanInterval(plan)
-                                  )
-                                ) ? (
-
-
+                              {canChangePlan ? (
                                 <button
                                   type="button"
                                   className="ans-button ans-button-primary"
-                                  disabled={actionLoading !== null}
-
-
+                                  disabled={
+                                    actionLoading !== null
+                                  }
                                   onClick={() => {
-                                    const intervalChanged =
-                                      getPlanInterval(currentPlan) !== getPlanInterval(plan);
 
                                     if (
-                                      intervalChanged ||
-                                      Number(plan.price) < Number(currentPlan.price)
+                                      oldInterval !== nextInterval ||
+                                      Number(plan.price) <
+                                        Number(currentPlan.price)
                                     ) {
-                                      handleScheduleDowngrade(plan);
+                                      handleScheduleDowngrade(
+                                        plan
+                                      );
                                     } else {
-                                      handlePreviewPlanChange(plan);
+                                      handlePreviewPlanChange(
+                                        plan
+                                      );
                                     }
+
                                   }}
-
-
                                 >
 
-
-                                  {actionLoading === `preview-${plan.id}` ||
-                                    actionLoading === `downgrade-${plan.id}`
+                                  {actionLoading ===
+                                    `preview-${plan.id}` ||
+                                  actionLoading ===
+                                    `downgrade-${plan.id}`
                                     ? "Processing..."
-                                    : getPlanInterval(currentPlan) !== getPlanInterval(plan)
+                                    : oldInterval !== nextInterval
                                       ? "Schedule Billing Change"
-                                      : Number(plan.price) < Number(currentPlan.price)
+                                      : Number(plan.price) <
+                                          Number(currentPlan.price)
                                         ? "Schedule Downgrade"
-                                        : "Preview Plan Change"}
+                                        : "Preview Upgrade"}
 
+                                  <ArrowUpRight size={16} />
 
-
-                                  <ArrowUpRight size={17} />
                                 </button>
-
                               ) : (
-
                                 <button
                                   type="button"
-                                  className={`ans-button ${selected
-                                    ? "ans-button-current"
-                                    : "ans-button-primary"
-                                    }`}
+                                  className={`ans-button ${
+                                    selected
+                                      ? "ans-button-current"
+                                      : "ans-button-primary"
+                                  }`}
                                   disabled={
                                     !canSubscribe ||
                                     actionLoading !== null
                                   }
-                                  onClick={() => handleCheckout(plan.id)}
+                                  onClick={() =>
+                                    handleCheckout(plan.id)
+                                  }
                                 >
 
                                   {selected
                                     ? "Current Plan"
                                     : !canSubscribe
-                                      ? "Subscription Exists"
+                                      ? "Unavailable"
                                       : busy
                                         ? "Redirecting..."
-                                        : subscriptionStatus === "canceled"
+                                        : subscriptionStatus ===
+                                            "canceled"
                                           ? "Subscribe Again"
                                           : "Choose Plan"}
 
+                                  {!selected &&
+                                    canSubscribe && (
+                                      <ArrowUpRight
+                                        size={16}
+                                      />
+                                    )}
 
-                                  {!selected && canSubscribe && (
-                                    <ArrowUpRight size={17} />
-                                  )}
                                 </button>
-
                               )}
 
                             </div>
-
 
                           </article>
                         );
                       })}
 
+                    </div>
+                  )}
+
+                </section>
+
+                {/* =========================
+                    PAYMENT HISTORY
+                ========================= */}
+
+                <section className="ans-section">
+
+                  <div className="ans-section-header">
+
+                    <h2>
+                      Payment History
+                    </h2>
+
+                    <div className="ans-header-icon">
+                      <Receipt size={19} />
+                    </div>
+
                   </div>
-                )}
 
-              </section>
+                  {/* CHECK PENDING PAYMENTS */}
 
-              {/* PAYMENT HISTORY */}
-
-              <section className="ans-section">
-
-                <div className="ans-section-header">
-                  <div>
-                    <span className="ans-small-label">
-                      BILLING RECORDS
-                    </span>
-
-                    <h2>Payment History</h2>
-
-                    <p>
-                      View your previous subscription
-                      payments and their status.
-                    </p>
-                  </div>
-
-                  <div className="ans-header-icon">
-                    <Receipt size={21} />
-                  </div>
-                </div>
-
-                {payments.some(
-                  (payment) => payment.status === "pending"
-                ) && (
+                  {payments.some(
+                    (payment) =>
+                      payment.status === "pending"
+                  ) && (
                     <button
                       type="button"
                       className="ans-button ans-button-outline"
+                      style={{
+                        marginBottom: 12,
+                      }}
                       onClick={handleCleanupPayments}
-                      disabled={actionLoading !== null}
+                      disabled={
+                        actionLoading !== null
+                      }
                     >
-                      <RefreshCw size={17} />
+                      <RefreshCw size={16} />
 
                       {actionLoading === "cleanup"
-                        ? "Checking Payments..."
+                        ? "Checking..."
                         : "Check Pending Payments"}
                     </button>
                   )}
 
+                  {/* PAYMENT RECORDS */}
 
-                {payments.length === 0 ? (
-                  <div className="ans-empty">
-                    <Receipt size={28} />
+                  {visiblePayments.length === 0 ? (
+                    <div className="ans-empty">
+                      <Receipt size={26} />
+                      <h3>
+                        No payments found
+                      </h3>
+                    </div>
+                  ) : (
+                    <div className="ans-table-wrapper">
 
-                    <h3>No payments yet</h3>
+                      <table className="ans-table">
 
-                    <p>
-                      Your payment history will
-                      appear here after you
-                      make a payment.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="ans-table-wrapper">
-                    <table className="ans-table">
+                        <thead>
+                          <tr>
+                            <th>Plan</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
 
-                      <thead>
-                        <tr>
-                          <th>Payment</th>
-                          <th>Date</th>
-                          <th>Amount</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
+                        <tbody>
 
-                      <tbody>
+                          {visiblePayments.map((payment) => {
 
-                        {payments.map((payment) => {
-                          const relatedPlan =
-                            plans.find(
-                              (plan) =>
-                                Number(plan.id) ===
-                                Number(payment.plan_id)
+                            const relatedPlan =
+                              plans.find(
+                                (plan) =>
+                                  Number(plan.id) ===
+                                  Number(payment.plan_id)
+                              );
+
+                            return (
+                              <tr key={payment.id}>
+
+                                <td>
+                                  <div className="ans-payment-name">
+
+                                    <span className="ans-payment-icon">
+                                      <CreditCard size={17} />
+                                    </span>
+
+                                    <div>
+                                      <strong>
+                                        {relatedPlan?.name ||
+                                          `Plan #${payment.plan_id}`}
+                                      </strong>
+                                    </div>
+
+                                  </div>
+                                </td>
+
+                                <td className="ans-date-cell">
+                                  <Clock3 size={15} />
+
+                                  {formatDate(
+                                    payment.paid_at ||
+                                      payment.created_at
+                                  )}
+                                </td>
+
+                                <td className="ans-amount">
+                                  {formatMoney(
+                                    payment.amount,
+                                    payment.currency
+                                  )}
+                                </td>
+
+                                <td>
+                                  <span
+                                    className={`ans-payment-status ans-payment-${String(
+                                      payment.status
+                                    ).toLowerCase()}`}
+                                  >
+                                    {formatStatus(
+                                      payment.status
+                                    )}
+                                  </span>
+                                </td>
+
+                              </tr>
                             );
 
-                          return (
-                            <tr key={payment.id}>
+                          })}
 
-                              <td>
-                                <div className="ans-payment-name">
-                                  <span className="ans-payment-icon">
-                                    <CreditCard size={17} />
-                                  </span>
+                        </tbody>
 
-                                  <div>
-                                    <strong>
-                                      {relatedPlan?.name ||
-                                        `Plan #${payment.plan_id}`}
-                                    </strong>
+                      </table>
 
-                                    <small>
-                                      Payment #{payment.id}
-                                    </small>
-                                  </div>
-                                </div>
-                              </td>
+                    </div>
+                  )}
 
-                              <td className="ans-date-cell">
-                                <Clock3 size={15} />
+                </section>
 
-                                {formatDate(
-                                  payment.paid_at ||
-                                  payment.created_at
-                                )}
-                              </td>
+              </>
+            )}
 
-                              <td className="ans-amount">
-                                {formatMoney(
-                                  payment.amount,
-                                  payment.currency
-                                )}
-                              </td>
-
-                              <td>
-                                <span
-                                  className={`ans-payment-status ans-payment-${String(
-                                    payment.status
-                                  ).toLowerCase()}`}
-                                >
-                                  {formatStatus(
-                                    payment.status
-                                  )}
-                                </span>
-                              </td>
-
-                            </tr>
-                          );
-                        })}
-
-                      </tbody>
-
-                    </table>
-                  </div>
-                )}
-
-              </section>
-
-              {/* SECURITY NOTE */}
-
-              <div className="ans-security-note">
-                <ShieldCheck size={19} />
-
-                <p>
-                  Subscription payments are
-                  processed through Stripe.
-                  AdvocaNote displays billing
-                  information received from
-                  your account's backend records.
-                </p>
-              </div>
-
-            </>
-          )}
+          </div>
 
         </div>
-      </div>
-    </main>
+
+      </main>
+    </>
   );
 }

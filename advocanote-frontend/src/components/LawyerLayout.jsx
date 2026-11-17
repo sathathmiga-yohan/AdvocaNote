@@ -1,10 +1,14 @@
 
 import {
+  Children,
+  cloneElement,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -16,21 +20,38 @@ import {
 
 import { createPortal } from "react-dom";
 
+import {
+  Menu,
+  Search,
+  ChevronDown,
+  UserRound,
+  LogOut,
+} from "lucide-react";
+
 import LawyerSidebar from "./LawyerSidebar";
 import Toast from "./Toast";
 import ProfileAvatar from "./ProfileAvatar";
 import FirstLoginOnboarding from "./FirstLoginOnboarding";
+import SubscriptionGate from "./SubscriptionGate";
+import NotificationBell from "./NotificationBell";
 
 import {
   getCurrentUser,
   logoutUser,
 } from "../services/auth";
 
-// =====================================
-// LAWYER LAYOUT CONTEXT
-// =====================================
+import "./LawyerUnifiedTopbar.css";
+
+
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
+
 
 const LawyerLayoutContext = createContext(null);
+
 
 export function useLawyerLayout() {
   const context = useContext(LawyerLayoutContext);
@@ -44,39 +65,108 @@ export function useLawyerLayout() {
   return context;
 }
 
-// =====================================
-// MAIN LAWYER LAYOUT
-// =====================================
+
+function findSearchInput(children) {
+  let found = null;
+
+  function visit(nodes) {
+    Children.forEach(nodes, (node) => {
+      if (found || !isValidElement(node)) {
+        return;
+      }
+
+      if (
+        node.type === "input" &&
+        (
+          !node.props.type ||
+          node.props.type === "text" ||
+          node.props.type === "search"
+        )
+      ) {
+        found = node;
+        return;
+      }
+
+      if (node.props.children) {
+        visit(node.props.children);
+      }
+    });
+  }
+
+  visit(children);
+
+  return found;
+}
+
 
 export default function LawyerLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  const profileRef = useRef(null);
+
   const [user, setUser] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [topbarHost, setTopbarHost] = useState(null);
 
-  // SUCCESS NOTIFICATION
+  const [topbarHost, setTopbarHost] = useState(null);
+  const [topbarSearchHost, setTopbarSearchHost] =
+    useState(null);
+
+  const [profileOpen, setProfileOpen] = useState(false);
   const [toast, setToast] = useState(null);
+
 
   const closeToast = useCallback(() => {
     setToast(null);
   }, []);
 
-  // =====================================
-  // LOAD CURRENT LAWYER
-  // =====================================
 
   useEffect(() => {
     let active = true;
 
-    getCurrentUser()
-      .then((value) => {
+    async function initializeLawyer() {
+      try {
+        const value = await getCurrentUser();
+
+        if (!active) return;
+
+        const token = sessionStorage.getItem(
+          "advocanote_access_token"
+        );
+
+        if (value?.role === "lawyer" && token) {
+          try {
+            const response = await fetch(
+              `${API_URL}/subscriptions/access`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            const subscription = await response
+              .json()
+              .catch(() => null);
+
+            if (!response.ok) {
+              console.error(
+                "Subscription initialization failed:",
+                subscription
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Unable to initialize subscription:",
+              error
+            );
+          }
+        }
+
         if (!active) return;
 
         setUser(value);
-
-        // SUCCESS TOAST AFTER AUTHENTICATION
 
         const notification = sessionStorage.getItem(
           "advocanote_auth_toast"
@@ -107,9 +197,7 @@ export default function LawyerLayout() {
             });
           }
         }
-      })
-
-      .catch((error) => {
+      } catch (error) {
         if (!active) return;
 
         console.error(
@@ -132,33 +220,70 @@ export default function LawyerLayout() {
         navigate("/login", {
           replace: true,
         });
-      });
+      }
+    }
+
+    initializeLawyer();
 
     return () => {
       active = false;
     };
   }, [navigate]);
 
-  // =====================================
-  // CLOSE SIDEBAR ON NAVIGATION
-  // =====================================
 
   useEffect(() => {
     setSidebarOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
 
-  // =====================================
-  // LOGOUT
-  // =====================================
+
+  useEffect(() => {
+    if (!profileOpen) return;
+
+    function handleOutsideClick(event) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick
+    );
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [profileOpen]);
+
 
   const logout = async () => {
     try {
       await logoutUser();
     } catch (error) {
-      console.error(
-        "Logout error:",
-        error
-      );
+      console.error("Logout error:", error);
     } finally {
       sessionStorage.removeItem(
         "advocanote_access_token"
@@ -172,20 +297,21 @@ export default function LawyerLayout() {
         "advocanote_auth_toast"
       );
 
+      setUser(null);
+      setProfileOpen(false);
+
       navigate("/login", {
         replace: true,
       });
     }
   };
 
-  // =====================================
-  // SHARED CONTEXT
-  // =====================================
 
   const context = useMemo(
     () => ({
       user,
       topbarHost,
+      topbarSearchHost,
 
       openSidebar: () => {
         setSidebarOpen(true);
@@ -195,12 +321,9 @@ export default function LawyerLayout() {
         setSidebarOpen(false);
       },
     }),
-    [user, topbarHost]
+    [user, topbarHost, topbarSearchHost]
   );
 
-  // =====================================
-  // PAGE SPECIFIC CLASS
-  // =====================================
 
   const pageClass =
     pathname === "/cases"
@@ -209,78 +332,158 @@ export default function LawyerLayout() {
         ? "ade2-app"
         : "";
 
+
+  const displayName =
+    user?.full_name ||
+    user?.name ||
+    [user?.first_name, user?.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    "Lawyer";
+
+
   if (!user) return null;
 
-  // =====================================
-  // MAIN LAYOUT
-  // =====================================
 
   return (
     <LawyerLayoutContext.Provider value={context}>
-
       <div className={`ald-app ${pageClass}`}>
-
-        {/* PERSISTENT LAWYER SIDEBAR */}
-
         <LawyerSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onLogout={logout}
         />
 
-        {/* MAIN WORKSPACE */}
-
         <div className="ald-workspace">
-
-          {/* SHARED TOPBAR PORTAL HOST */}
-
           <header
-            className="ald-topbar"
+            className="ald-topbar alu-topbar"
             ref={setTopbarHost}
-          />
+          >
+            <button
+              type="button"
+              className="alu-mobile-menu"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+            >
+              <Menu size={23} />
+            </button>
 
-          {/* CURRENT PAGE */}
+            <div
+              ref={setTopbarSearchHost}
+              className="ald-global-search alu-search"
+              role="search"
+            >
+              <Search
+                size={22}
+                className="alu-search-icon"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="alu-topbar-actions">
+              <NotificationBell />
+
+              <div className="alu-divider" />
+
+              <div
+                ref={profileRef}
+                className="alu-profile-holder"
+              >
+                <button
+                  type="button"
+                  className="alu-account"
+                  onClick={() =>
+                    setProfileOpen((previous) => !previous)
+                  }
+                  aria-label="Account menu"
+                  aria-expanded={profileOpen}
+                  aria-haspopup="true"
+                >
+                  <ProfileAvatar
+                    user={user}
+                    size={36}
+                  />
+
+                  <span className="alu-account-info">
+                    <strong>{displayName}</strong>
+                    <small>Attorney-at-Law</small>
+                  </span>
+
+                  <ChevronDown
+                    size={18}
+                    className="alu-account-chevron"
+                  />
+                </button>
+
+                {profileOpen && (
+                  <div className="alu-account-popover">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        navigate("/profile");
+                      }}
+                    >
+                      <UserRound size={17} />
+                      My Profile
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={logout}
+                    >
+                      <LogOut size={17} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
 
           <Outlet />
-
         </div>
-
-        {/* SUCCESS TOAST */}
 
         <Toast
           toast={toast}
           onClose={closeToast}
         />
 
-        {/* MANDATORY FIRST LOGIN ONBOARDING */}
-
         <FirstLoginOnboarding user={user} />
 
+        <SubscriptionGate />
       </div>
-
     </LawyerLayoutContext.Provider>
   );
 }
 
-// =====================================
-// SHARED TOPBAR PORTAL
-// =====================================
 
 export function LawyerTopbarPortal({ children }) {
-  const { topbarHost } = useLawyerLayout();
+  const { topbarSearchHost } = useLawyerLayout();
 
-  return topbarHost
-    ? createPortal(children, topbarHost)
-    : null;
+  const searchInput = findSearchInput(children);
+
+  if (!topbarSearchHost || !searchInput) {
+    return null;
+  }
+
+  return createPortal(
+    cloneElement(searchInput, {
+      className: "alu-search-input",
+      placeholder: "Search cases, hearings, tasks...",
+    }),
+    topbarSearchHost
+  );
 }
 
-// =====================================
-// SHARED LAWYER PROFILE AVATAR
-// =====================================
 
 export function LawyerTopbarAvatar() {
   const { user } = useLawyerLayout();
 
-  return <ProfileAvatar user={user} size={36} />;
+  return (
+    <ProfileAvatar
+      user={user}
+      size={36}
+    />
+  );
 }
-

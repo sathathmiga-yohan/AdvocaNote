@@ -1916,9 +1916,37 @@ export default function AddDiaryEntry() {
       return;
     }
 
+
+    // Manual approved tasks only
     const approvedTasks = tasks.filter(
-      (task) => task.status === "approved"
+      (task) =>
+        task.id.startsWith("manual-") &&
+        task.status === "approved"
     );
+
+    // Only AI-generated suggestions
+    const aiSuggestions = tasks
+      .filter((task) =>
+        task.id.startsWith("ai-")
+      )
+      .map((task) => ({
+        title: task.title.trim(),
+        status: task.status || "pending",
+        deadline: task.deadline || null,
+        priority: task.priority || "Medium",
+      }));
+
+    if (
+      aiSuggestions.some(
+        (item) => item.title.length < 3
+      )
+    ) {
+      setError(
+        "Check AI suggestion titles before saving."
+      );
+      return;
+    }
+
 
     if (
       approvedTasks.some(
@@ -1999,10 +2027,38 @@ export default function AddDiaryEntry() {
             point_notes:
               null,
 
-            approved_tasks: approvedTasks.map((task) => ({
-              title: task.title.trim(),
-              deadline: task.deadline || null,
-            })),
+
+
+            /* MANUAL APPROVED TASKS ONLY */
+
+            approved_tasks: approvedTasks
+              .filter((task) =>
+                String(task.id).startsWith("manual-")
+              )
+              .map((task) => ({
+                title: task.title.trim(),
+                deadline: task.deadline || null,
+              })),
+
+            /* AI GENERATED TASKS ONLY */
+
+            ai_suggestions: tasks
+              .filter((task) =>
+                String(task.id).startsWith("ai-") &&
+                task.title?.trim()
+              )
+              .map((task) => ({
+                title: task.title.trim(),
+                deadline: task.deadline || null,
+                priority: task.priority || "Medium",
+                status:
+                  task.status === "approved"
+                    ? "approved"
+                    : task.status === "rejected"
+                      ? "rejected"
+                      : "pending",
+              })),
+
           });
 
         if (recordedAudio) {
@@ -2397,37 +2453,15 @@ export default function AddDiaryEntry() {
           >
             <div className="ade2-sheet-scroll">
               <table className="ade2-diary-table">
+
                 <colgroup>
-                  <col
-                    style={{
-                      width: "17%",
-                    }}
-                  />
-
-                  <col
-                    style={{
-                      width: "19%",
-                    }}
-                  />
-
-                  <col
-                    style={{
-                      width: "16%",
-                    }}
-                  />
-
-                  <col
-                    style={{
-                      width: "32%",
-                    }}
-                  />
-
-                  <col
-                    style={{
-                      width: "16%",
-                    }}
-                  />
+                  <col style={{ width: "15%" }} />
+                  <col style={{ width: "18%" }} />
+                  <col style={{ width: "14%" }} />
+                  <col style={{ width: "39%" }} />
+                  <col style={{ width: "14%" }} />
                 </colgroup>
+
 
                 <thead>
                   <tr>
@@ -2722,103 +2756,38 @@ export default function AddDiaryEntry() {
                       />
                     </td>
 
-                    {/* COURT PROCEEDINGS */}
+                    {/* COURT PROCEEDINGS - MANUAL + VOICE IN ONE BOX */}
 
                     <td className="ade2-step-cell">
-                      <div className="ade2-step-tabs">
-                        <button
-                          type="button"
-                          className={
-                            draft.input_method ===
-                              "manual"
-                              ? "ade2-tab-active"
-                              : ""
-                          }
-                          disabled={
+                      <section className="ade2-unified-editor">
+                        <div className="ade2-editor-heading">
+                          <strong>Court Proceedings</strong>
+                          <span>Type or use voice</span>
+                        </div>
+
+                        {/* MANUAL AND VOICE USE THE SAME TEXTAREA */}
+
+                        <textarea
+                          className="ade2-unified-textarea"
+                          aria-label="Court proceedings"
+                          placeholder="Type what happened in court, or record your voice. You can edit the text here."
+                          value={draft.step_notes}
+                          readOnly={
                             recording ||
                             analyzingVoice ||
                             saving ||
-                            Boolean(
-                              pendingVoiceEntry
-                            )
+                            Boolean(pendingVoiceEntry)
                           }
-                          onClick={
-                            switchToManual
+                          onChange={(event) =>
+                            editProceedings(event.target.value)
                           }
-                        >
-                          <BookOpen
-                            size={17}
-                          />
+                        />
 
-                          Manual Typing
-                        </button>
+                        {/* VOICE CONTROLS - NO MODE SWITCH NEEDED */}
 
-                        <span className="ade2-helper">
-                          {voiceLanguage === "en"
-                            ? "English • Live Voice Typing"
-                            : "Tamil • Live Voice Typing"}
-                        </span>
-                      </div>
-
-                      {/* VOICE RECORDER */}
-
-                      <div
-                        className="ade2-voice-ai"
-                        style={{
-                          background:
-                            "#fffdf8",
-
-                          border:
-                            "1px solid #e7e1d4",
-
-                          borderRadius: 10,
-
-                          padding: 12,
-
-                          marginTop: 10,
-                        }}
-                      >
-                        <strong
-                          style={{
-                            display:
-                              "block",
-
-                            fontSize:
-                              13,
-
-                            marginBottom:
-                              10,
-                          }}
-                        >
-                          Voice Recording
-                        </strong>
-
-                        <div
-                          style={{
-                            display:
-                              "flex",
-
-                            flexWrap:
-                              "wrap",
-
-                            gap: 8,
-
-                            alignItems:
-                              "center",
-                          }}
-                        >
-                          {/* VOICE LANGUAGE SELECTION */}
-
-                          <label
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 8,
-                              fontSize: 12,
-                              fontWeight: 500,
-                            }}
-                          >
-                            Language
+                        <div className="ade2-voice-toolbar">
+                          <label className="ade2-voice-language">
+                            <span>Voice language</span>
 
                             <select
                               value={voiceLanguage}
@@ -2831,49 +2800,31 @@ export default function AddDiaryEntry() {
                                 saving ||
                                 Boolean(pendingVoiceEntry)
                               }
-                              style={{
-                                padding: "8px 10px",
-                                borderRadius: 7,
-                                border: "1px solid #d8d2c5",
-                                background: "#ffffff",
-                                color: "#004535",
-                                fontSize: 12,
-                              }}
                             >
                               <option value="ta">Tamil</option>
                               <option value="en">English</option>
                             </select>
                           </label>
-                          {/* START / STOP RECORDING */}
+
+                          {/* RECORD / STOP */}
 
                           <button
                             type="button"
+                            className={`ade2-voice-action ${recording ? "is-recording" : ""
+                              }`}
                             onClick={
-                              recording
-                                ? stopRecording
-                                : startRecording
+                              recording ? stopRecording : startRecording
                             }
                             disabled={
                               analyzingVoice ||
                               saving ||
-                              Boolean(
-                                pendingVoiceEntry
-                              )
-                            }
-                            className={
-                              recording
-                                ? "ade2-tab-active"
-                                : ""
+                              Boolean(pendingVoiceEntry)
                             }
                           >
                             {recording ? (
-                              <Square
-                                size={16}
-                              />
+                              <Square size={15} />
                             ) : (
-                              <Mic
-                                size={17}
-                              />
+                              <Mic size={16} />
                             )}
 
                             {recording
@@ -2883,33 +2834,9 @@ export default function AddDiaryEntry() {
 
                           {/* UPLOAD AUDIO */}
 
-                          <label
-                            style={{
-                              display:
-                                "inline-flex",
-
-                              gap: 6,
-
-                              alignItems:
-                                "center",
-
-                              cursor:
-                                recording ||
-                                  analyzingVoice ||
-                                  saving ||
-                                  pendingVoiceEntry
-                                  ? "not-allowed"
-                                  : "pointer",
-
-                              fontSize:
-                                12,
-                            }}
-                          >
-                            <Upload
-                              size={15}
-                            />
-
-                            Upload Audio
+                          <label className="ade2-upload-action">
+                            <Upload size={15} />
+                            <span>Upload Audio</span>
 
                             <input
                               type="file"
@@ -2918,24 +2845,11 @@ export default function AddDiaryEntry() {
                                 recording ||
                                 analyzingVoice ||
                                 saving ||
-                                Boolean(
-                                  pendingVoiceEntry
-                                )
+                                Boolean(pendingVoiceEntry)
                               }
-                              style={{
-                                maxWidth:
-                                  165,
-
-                                fontSize:
-                                  11,
-                              }}
                               onChange={(event) => {
-                                acceptAudioFile(
-                                  event.target.files?.[0]
-                                );
-
-                                event.target.value =
-                                  "";
+                                acceptAudioFile(event.target.files?.[0]);
+                                event.target.value = "";
                               }}
                             />
                           </label>
@@ -2947,72 +2861,37 @@ export default function AddDiaryEntry() {
                           <p className="ade2-recording">
                             <span className="ade2-rec-dot" />
 
-                            {liveSpeechState ===
-                              "listening"
-                              ? `Recording... ${voiceLanguage === "en" ? "English" : "Tamil"
-                              } text appears below as you speak.`
+                            {liveSpeechState === "listening"
+                              ? `Recording... ${voiceLanguage === "en"
+                                ? "English"
+                                : "Tamil"
+                              } text appears in the box above.`
                               : "Recording audio... Live voice typing may be unavailable."}
                           </p>
                         )}
 
-                        {/* AUDIO PLAYER */}
+                        {/* AUDIO PLAYBACK + WHISPER FALLBACK */}
 
                         {audioUrl && (
-                          <div
-                            style={{
-                              marginTop:
-                                12,
-                            }}
-                          >
-                            <audio
-                              src={
-                                audioUrl
-                              }
-                              controls
-                              style={{
-                                width:
-                                  "100%",
-                              }}
-                            />
+                          <div className="ade2-recorded-audio">
+                            <audio src={audioUrl} controls />
 
-                            {/* WHISPER FALLBACK */}
-
-                            {(liveSpeechState ===
-                              "fallback" ||
+                            {(liveSpeechState === "fallback" ||
                               !originalTranscript.trim()) && (
                                 <button
                                   type="button"
-                                  onClick={
-                                    convertVoiceToText
-                                  }
+                                  className="ade2-whisper-action"
+                                  onClick={convertVoiceToText}
                                   disabled={
                                     recording ||
                                     analyzingVoice ||
                                     saving ||
-                                    Boolean(
-                                      pendingVoiceEntry
-                                    )
+                                    Boolean(pendingVoiceEntry)
                                   }
-                                  style={{
-                                    marginTop:
-                                      8,
-
-                                    display:
-                                      "inline-flex",
-
-                                    alignItems:
-                                      "center",
-
-                                    gap:
-                                      6,
-                                  }}
                                 >
-                                  <Mic
-                                    size={16}
-                                  />
+                                  <Mic size={15} />
 
-                                  {voiceProcessingStep ===
-                                    "transcribing"
+                                  {voiceProcessingStep === "transcribing"
                                     ? "Converting with Whisper..."
                                     : "Convert with Whisper (Fallback)"}
                                 </button>
@@ -3020,97 +2899,42 @@ export default function AddDiaryEntry() {
                           </div>
                         )}
 
-                        {/* PROCESSING MESSAGE */}
+                        {/* WHISPER PROCESSING */}
 
-                        {analyzingVoice && (
-                          <small
-                            style={{
-                              display:
-                                "block",
+                        {analyzingVoice &&
+                          voiceProcessingStep === "transcribing" && (
+                            <small className="ade2-processing-note">
+                              Whisper is converting the saved audio
+                              on your CPU.
+                            </small>
+                          )}
 
-                              marginTop:
-                                8,
-                            }}
-                          >
-                            {voiceProcessingStep ===
-                              "transcribing"
-                              ? "Whisper fallback is converting your saved audio on the CPU."
-                              : "Qwen is analysing the edited text on your CPU."}
-                          </small>
-                        )}
-
-                        <small
-                          style={{
-                            display:
-                              "block",
-
-                            color:
-                              "#667085",
-
-                            marginTop:
-                              10,
-                          }}
-                        >
-                          Live voice typing uses
-                          the browser recognition
-                          service, which may process
-                          speech online. Original audio
-                          is uploaded privately to
-                          FastAPI only when you save.
+                        <small className="ade2-voice-privacy">
+                          Live voice recognition may use an online
+                          browser service. Original audio is
+                          uploaded to FastAPI only when you save.
                         </small>
-                      </div>
+                      </section>
 
-                      {/* EDITABLE TRANSCRIPT */}
+                      {/* OPTIONAL AI ASSISTANCE */}
 
-                      <div className="ade2-transcript">
-                        <strong>
-                          {draft.input_method ===
-                            "voice"
-                            ? "Voice Transcript (editable copy)"
-                            : "Court Proceedings"}
-                        </strong>
+                      <section className="ade2-ai-assist">
+                        <div className="ade2-ai-assist-heading">
+                          <strong>
+                            <Sparkles size={16} />
+                            AI Assistance
+                          </strong>
 
-                        <textarea
-                          aria-label="Court proceedings"
-                          placeholder="Write what happened in court, or record a voice note..."
-                          value={
-                            draft.step_notes
-                          }
-                          disabled={
-                            recording ||
-                            analyzingVoice ||
-                            saving ||
-                            Boolean(
-                              pendingVoiceEntry
-                            )
-                          }
-                          onChange={(event) =>
-                            editProceedings(
-                              event.target.value
-                            )
-                          }
-                        />
+                          <span>Optional</span>
+                        </div>
 
-                        {/* ANALYSE TEXT WITH AI */}
-                        {/* AI OUTPUT LANGUAGE */}
+                        <p>
+                          Analyse the proceedings only if you want
+                          AI-organised notes and suggested tasks.
+                        </p>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            marginTop: 12,
-                            marginBottom: 8,
-                          }}
-                        >
-                          <label
-                            htmlFor="ai-output-language"
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: "#344054",
-                            }}
-                          >
+                        <div className="ade2-ai-assist-controls">
+                          <label htmlFor="ai-output-language">
                             AI Notes Language
                           </label>
 
@@ -3133,198 +2957,118 @@ export default function AddDiaryEntry() {
                                 )
                               );
                             }}
-                            style={{
-                              padding: "8px 12px",
-                              borderRadius: 7,
-                              border: "1px solid #d8d2c5",
-                              background: "#fff",
-                              color: "#004535",
-                              fontSize: 12,
-                            }}
                           >
                             <option value="ta">Tamil</option>
                             <option value="en">English</option>
                           </select>
+
+                          <button
+                            type="button"
+                            className="ade2-ai-run"
+                            onClick={analyzeText}
+                            disabled={
+                              recording ||
+                              analyzingVoice ||
+                              saving ||
+                              !draft.step_notes.trim() ||
+                              Boolean(pendingVoiceEntry)
+                            }
+                          >
+                            <Sparkles size={16} />
+
+                            {voiceProcessingStep === "analyzing"
+                              ? "Analysing Text..."
+                              : "Analyse Text with AI"}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={
-                            analyzeText
-                          }
-                          disabled={
-                            recording ||
-                            analyzingVoice ||
-                            saving ||
-                            !draft.step_notes.trim() ||
-                            Boolean(
-                              pendingVoiceEntry
-                            )
-                          }
-                          style={{
-                            marginTop:
-                              10,
 
-                            display:
-                              "inline-flex",
+                        {/* AI PROCESSING STATUS */}
 
-                            alignItems:
-                              "center",
-
-                            gap:
-                              6,
-                          }}
-                        >
-                          <Sparkles
-                            size={16}
-                          />
-
-                          {voiceProcessingStep ===
-                            "analyzing"
-                            ? "Analysing Text..."
-                            : "Analyse Text with AI"}
-                        </button>
-
-                        {/* EDITED TEXT MESSAGE */}
-
-                        {originalTranscript &&
-                          draft.step_notes !==
-                          originalTranscript && (
-                            <small
-                              style={{
-                                display:
-                                  "block",
-
-                                marginTop:
-                                  8,
-                              }}
-                            >
-                              Transcript edited.
-                              Click Analyse Text
-                              with AI to refresh
-                              notes and tasks.
+                        {analyzingVoice &&
+                          voiceProcessingStep === "analyzing" && (
+                            <small className="ade2-processing-note">
+                              Qwen is analysing your edited text
+                              on the CPU.
                             </small>
                           )}
-                      </div>
 
-                      {/* AI LEGAL NOTES */}
+                        {originalTranscript &&
+                          draft.step_notes !== originalTranscript && (
+                            <small className="ade2-processing-note">
+                              Transcript edited. Analyse again to
+                              refresh AI notes and tasks.
+                            </small>
+                          )}
+                      </section>
+
+                      {/* AI LEGAL NOTES PREVIEW */}
 
                       {aiAnalysis && (
                         <div className="ade2-point-preview">
                           <button
                             type="button"
                             onClick={() =>
-                              setShowPoints(
-                                (old) =>
-                                  !old
-                              )
+                              setShowPoints((old) => !old)
                             }
                           >
-                            <Sparkles
-                              size={16}
-                            />
-
-                            AI Analysed
-                            Legal Notes
-
-                            <ChevronDown
-                              size={15}
-                            />
+                            <Sparkles size={16} />
+                            AI Analysed Legal Notes
+                            <ChevronDown size={15} />
                           </button>
 
                           {showPoints && (
-                            <div
-                              style={{
-                                marginTop:
-                                  12,
-                              }}
-                            >
+                            <div style={{ marginTop: 12 }}>
                               {aiAnalysis.notes.length ? (
                                 <StructuredLegalNotes
-                                  notes={
-                                    aiAnalysis.notes
-                                  }
+                                  notes={aiAnalysis.notes}
                                 />
                               ) : (
                                 <p>
-                                  No important
-                                  notes were
-                                  extracted.
-                                  Review the
-                                  transcript.
+                                  No important notes were extracted.
+                                  Review the proceedings text.
                                 </p>
                               )}
 
-                              {/* HIGHLIGHTS */}
+                              {/* CRITICAL HIGHLIGHTS */}
 
-                              {!!aiAnalysis
-                                .criticalHighlights
-                                .length && (
-                                  <div
-                                    style={{
-                                      marginTop:
-                                        14,
-                                    }}
-                                  >
-                                    <strong>
-                                      Critical Highlights
-                                    </strong>
+                              {!!aiAnalysis.criticalHighlights.length && (
+                                <div style={{ marginTop: 14 }}>
+                                  <strong>Critical Highlights</strong>
 
-                                    {aiAnalysis.criticalHighlights.map(
-                                      (
-                                        highlight,
-                                        index
-                                      ) => (
-                                        <p
-                                          key={
-                                            index
-                                          }
-                                          style={{
-                                            margin:
-                                              "7px 0",
-                                          }}
-                                        >
-                                          •{" "}
-                                          {
-                                            highlight
-                                          }
-                                        </p>
-                                      )
-                                    )}
-                                  </div>
-                                )}
+                                  {aiAnalysis.criticalHighlights.map(
+                                    (highlight, index) => (
+                                      <p
+                                        key={index}
+                                        style={{ margin: "7px 0" }}
+                                      >
+                                        • {highlight}
+                                      </p>
+                                    )
+                                  )}
+                                </div>
+                              )}
 
-                              {/* INCOMPLETE AI WARNING */}
+                              {/* AI ANALYSIS WARNING */}
 
                               {aiAnalysis.analysisIncomplete && (
-                                <small
-                                  style={{
-                                    display:
-                                      "block",
-
-                                    marginTop:
-                                      9,
-                                  }}
-                                >
-                                  Some details
-                                  could not be
-                                  fully verified
-                                  by AI. Review
-                                  the original text.
+                                <small className="ade2-processing-note">
+                                  Some details could not be fully
+                                  verified by AI. Review the
+                                  original text.
                                 </small>
                               )}
 
                               <small>
-                                AI notes are
-                                a review preview.
-                                Check facts and dates
-                                against the original
-                                transcript.
+                                AI notes are a review preview.
+                                Check facts and dates against
+                                the original proceedings text.
                               </small>
                             </div>
                           )}
                         </div>
                       )}
                     </td>
+
 
                     {/* NEXT HEARING */}
 

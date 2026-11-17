@@ -2318,3 +2318,23 @@ html {
     padding-top: 60px;
   }
 }
+
+/* =====================================
+   HERO HEADING FONT SIZE REDUCTION
+===================================== */
+
+/* Desktop / Laptop */
+@media (min-width: 1181px) and (max-width: 2099px) {
+  .an-hero h1 {
+    font-size: clamp(44px, 3.5vw, 58px);
+    line-height: 1.16;
+    letter-spacing: -1.8px;
+  }
+}
+
+/* Large TV / 4K */
+@media (min-width: 2100px) {
+  .an-hero h1 {
+    font-size: clamp(64px, 3.6vw, 82px);
+  }
+}

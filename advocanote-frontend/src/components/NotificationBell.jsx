@@ -1,7 +1,23 @@
 
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Bell, CalendarDays } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  Bell,
+  CalendarDays,
+  CheckCheck,
+  ListTodo,
+} from "lucide-react";
+
 import { useLawyerLayout } from "./LawyerLayout";
 import "./NotificationBell.css";
 
@@ -10,272 +26,663 @@ const API = (
   "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
 
-function dateKey(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
-function eventTime(date, time = "09:00") {
-  const [y, m, d] = date.split("-").map(Number);
-  const [h, min] = time.slice(0, 5).split(":").map(Number);
-
-  return new Date(y, m - 1, d, h, min).getTime();
-}
-
-function readStored(userId) {
-  try {
-    const saved = JSON.parse(
-      localStorage.getItem(
-        `advocanote_calendar_read_${userId}`
-      ) || "[]"
-    );
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
-}
-
-async function apiGet(path) {
+async function notificationRequest(path, method = "GET") {
   const token = sessionStorage.getItem(
     "advocanote_access_token"
   );
 
-  if (!token) throw new Error("Please log in again.");
+  if (!token) {
+    throw new Error("Please log in again.");
+  }
 
   const response = await fetch(`${API}${path}`, {
+    method,
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
   if (!response.ok) {
     throw new Error(
-      `Could not load notifications (${response.status})`
+      typeof data?.detail === "string"
+        ? data.detail
+        : `Notification request failed (${response.status})`
     );
   }
 
-  return response.json();
+  return data;
 }
+
+
+function getNotificationType(pathname) {
+  const path = pathname.toLowerCase();
+
+  if (/^\/hearings?(\/|$)/.test(path)) {
+    return "hearing";
+  }
+
+  if (
+    /^\/(tasks?([^/]*?)|deadlines?)(\/|$)/.test(path)
+  ) {
+    return "task";
+  }
+
+  if (
+    path === "/calendar" ||
+    path.startsWith("/calendar/") ||
+    path === "/my-legal-diary" ||
+    path.startsWith("/my-legal-diary/")
+  ) {
+    return "all";
+  }
+
+  return "core";
+}
+
+
 
 export default function NotificationBell() {
   const { user } = useLawyerLayout();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const holderRef = useRef(null);
 
   const [open, setOpen] = useState(false);
-  const [now, setNow] = useState(Date.now());
-  const [events, setEvents] = useState([]);
-  const [settings, setSettings] = useState({
-    hearing_reminders: false,
-    task_reminders: false,
-  });
-  const [readIds, setReadIds] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState(null);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const notificationType = useMemo(
+    () => getNotificationType(pathname),
+    [pathname]
+  );
 
   useEffect(() => {
-    if (!user?.id) return;
-
     let active = true;
-    setReadIds(readStored(user.id));
 
-    async function refresh() {
+    if (!user?.id) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setLoading(false);
+      setError("");
+      return;
+    }
+
+    setNotifications([]);
+    setUnreadCount(0);
+    setLoading(true);
+
+    async function refreshNotifications() {
       try {
-        const today = new Date();
-
-        const start = dateKey(
-          new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate() - 1
-          )
+        const data = await notificationRequest(
+          `/notifications?type=${notificationType}`
         );
-
-        const end = dateKey(
-          new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate() + 2
-          )
-        );
-
-        const [calendar, profile] = await Promise.all([
-          apiGet(
-            `/calendar/events?start_date=${start}&end_date=${end}`
-          ),
-          apiGet("/profile/me"),
-        ]);
 
         if (!active) return;
 
-        setEvents(calendar.events || []);
+        setNotifications(
+          Array.isArray(data?.notifications)
+            ? data.notifications
+            : []
+        );
 
-        const prefs =
-          profile.profile?.notification_preferences || {};
-
-        setSettings({
-          hearing_reminders: prefs.hearing_reminders === true,
-          task_reminders: prefs.task_reminders === true,
-        });
+        setUnreadCount(
+          Number(data?.unread_count) || 0
+        );
 
         setError("");
       } catch (err) {
         if (active) {
           setError(err.message);
         }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    refresh();
+    refreshNotifications();
 
-    const timer = setInterval(() => {
-      setNow(Date.now());
-      refresh();
-    }, 60000);
+    const timer = setInterval(
+      refreshNotifications,
+      60000
+    );
 
-    window.addEventListener("focus", refresh);
+    window.addEventListener(
+      "focus",
+      refreshNotifications
+    );
 
     return () => {
       active = false;
       clearInterval(timer);
-      window.removeEventListener("focus", refresh);
-    };
-  }, [user?.id]);
 
-  const reminders = useMemo(() => {
-    return events
-      .filter((event) => {
-        if (event.type === "custom") return true;
-
-        if (event.type === "hearing") {
-          return (
-            settings.hearing_reminders &&
-            String(event.status).toLowerCase() === "scheduled"
-          );
-        }
-
-        if (event.type === "task") {
-          return (
-            settings.task_reminders &&
-            !["completed", "cancelled", "canceled"].includes(
-              String(event.status || "").toLowerCase()
-            )
-          );
-        }
-
-        return false;
-      })
-      .map((event) => {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(event.date || "")) {
-          return null;
-        }
-
-        const timed =
-          event.type === "custom" &&
-          /^\d{2}:\d{2}/.test(event.time || "");
-
-        let reminderAt;
-        let expiresAt;
-
-        const due = eventTime(
-          event.date,
-          timed ? event.time : "09:00"
-        );
-
-        if (event.type === "custom") {
-          reminderAt = timed
-            ? due - 30 * 60 * 1000
-            : due;
-
-          expiresAt = timed
-            ? due + 60 * 60 * 1000
-            : eventTime(event.date, "23:59");
-        } else {
-          reminderAt = eventTime(event.date) - 24 * 60 * 60 * 1000;
-          expiresAt = eventTime(event.date, "23:59");
-        }
-
-        const id =
-          event.type === "task"
-            ? `backend-task-${event.record_id}`
-            : String(event.id);
-
-        return {
-          ...event,
-          id,
-          reminderAt,
-          expiresAt,
-        };
-      })
-      .filter(
-        (event) =>
-          event &&
-          now >= event.reminderAt &&
-          now <= event.expiresAt &&
-          !readIds.includes(String(event.id))
-      )
-      .sort((a, b) => a.reminderAt - b.reminderAt);
-  }, [events, settings, now, readIds]);
-
-  function openReminder(event) {
-    const updated = [
-      ...new Set([...readIds, String(event.id)]),
-    ];
-
-    setReadIds(updated);
-
-    try {
-      localStorage.setItem(
-        `advocanote_calendar_read_${user.id}`,
-        JSON.stringify(updated)
+      window.removeEventListener(
+        "focus",
+        refreshNotifications
       );
-    } catch {
-      // Keep the current page's read state.
+    };
+  }, [user?.id, notificationType, refreshKey]);
+
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handleOutsideClick(event) {
+      if (
+        holderRef.current &&
+        !holderRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
     }
 
-    setOpen(false);
-    navigate("/calendar");
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick
+    );
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [open]);
+
+
+  function toggleNotifications() {
+    setOpen((previous) => !previous);
+
+    setRefreshKey(
+      (previous) => previous + 1
+    );
   }
 
+
+  async function handleNotificationClick(item) {
+    if (busyId !== null) return;
+
+    setBusyId(item.id);
+    setError("");
+
+    try {
+      if (!item.is_read) {
+        await notificationRequest(
+          `/notifications/${item.id}/read`,
+          "PATCH"
+        );
+
+        setNotifications((previous) =>
+          previous.map((notification) =>
+            notification.id === item.id
+              ? {
+                  ...notification,
+                  is_read: true,
+                  read_at: new Date().toISOString(),
+                }
+              : notification
+          )
+        );
+
+        setUnreadCount((previous) =>
+          Math.max(0, previous - 1)
+        );
+      }
+
+      setOpen(false);
+
+      if (
+        item.type === "hearing" &&
+        notificationType !== "hearing"
+      ) {
+        navigate("/hearings");
+      } else if (
+        item.type === "task" &&
+        notificationType !== "task"
+      ) {
+        navigate("/tasks");
+      } else if (
+        item.type === "event" &&
+        !pathname.startsWith("/calendar")
+      ) {
+        navigate("/calendar");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+
+  async function handleMarkAllAsRead() {
+    if (markingAll || unreadCount === 0) {
+      return;
+    }
+
+    setMarkingAll(true);
+    setError("");
+
+    try {
+      await notificationRequest(
+        `/notifications/read-all?type=${notificationType}`,
+        "PATCH"
+      );
+
+      const readTime = new Date().toISOString();
+
+      setNotifications((previous) =>
+        previous.map((notification) => ({
+          ...notification,
+          is_read: true,
+          read_at: notification.read_at || readTime,
+        }))
+      );
+
+      setUnreadCount(0);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setMarkingAll(false);
+    }
+  }
+
+
+  async function handleMarkAsUnread(event, item) {
+    event.stopPropagation();
+
+    if (busyId !== null || !item.is_read) {
+      return;
+    }
+
+    setBusyId(item.id);
+    setError("");
+
+    try {
+      await notificationRequest(
+        `/notifications/${item.id}/unread`,
+        "PATCH"
+      );
+
+      setNotifications((previous) =>
+        previous.map((notification) =>
+          notification.id === item.id
+            ? {
+              ...notification,
+              is_read: false,
+              read_at: null,
+            }
+            : notification
+        )
+      );
+
+      setUnreadCount(
+        (previous) => previous + 1
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+
+  const sectionLabel =
+    notificationType === "hearing"
+      ? "Hearing reminders"
+      : notificationType === "task"
+        ? "Task reminders"
+        : "All reminders";
+
+
   return (
-    <div className="ald-dropdown-holder anb-holder">
-      <NotificationBell />
+    <div
+      ref={holderRef}
+      className="ald-dropdown-holder anb-holder"
+      style={{
+        position: "relative",
+        display: "inline-flex",
+      }}
+    >
+      <button
+        type="button"
+        className="anb-trigger"
+        onClick={toggleNotifications}
+        aria-label={`Notifications, ${unreadCount} unread`}
+        aria-expanded={open}
+        title="Notifications"
+        style={{
+          position: "relative",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          border: "1px solid #e4e5df",
+          background: "#ffffff",
+          color: "#004535",
+          cursor: "pointer",
+        }}
+      >
+        <Bell size={20} />
+
+        {unreadCount > 0 && (
+          <span
+            className="anb-count"
+            style={{
+              position: "absolute",
+              top: -6,
+              right: -7,
+              minWidth: 19,
+              height: 19,
+              padding: "0 4px",
+              borderRadius: 20,
+              background: "#b18a4c",
+              color: "#ffffff",
+              fontSize: 10,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {unreadCount > 99
+              ? "99+"
+              : unreadCount}
+          </span>
+        )}
+      </button>
 
       {open && (
-        <div className="ald-top-popover anb-popover">
-          <strong>Notifications</strong>
-
-          {error ? (
-            <p>{error}</p>
-          ) : reminders.length === 0 ? (
-            <p>No new reminders.</p>
-          ) : (
-            <div className="anb-list">
-              {reminders.map((event) => (
-                <button
-                  key={event.id}
-                  type="button"
-                  className="anb-item"
-                  onClick={() => openReminder(event)}
+        <div
+          className="ald-top-popover anb-popover"
+          role="region"
+          aria-label="Notification list"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 12px)",
+            right: 0,
+            width: "min(380px, calc(100vw - 24px))",
+            maxWidth: "calc(100vw - 24px)",
+            borderRadius: 16,
+            background: "#fffdf8",
+            border: "1px solid #e8e1d1",
+            boxShadow:
+              "0 16px 36px rgba(0, 40, 30, 0.13)",
+            zIndex: 1000,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "16px",
+              borderBottom: "1px solid #eee8df",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <div>
+                <strong
+                  style={{
+                    fontSize: 16,
+                    color: "#004535",
+                  }}
                 >
-                  <CalendarDays size={16} />
+                  Notifications
+                </strong>
 
-                  <span>
-                    <b>{event.title}</b>
-                    <small>
-                      {event.type === "custom"
-                        ? "Calendar"
-                        : event.type === "hearing"
-                          ? "Hearing"
-                          : "Task"}
-                      {" · "}
-                      {event.date}
-                    </small>
-                  </span>
-                </button>
-              ))}
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#78857e",
+                    marginTop: 4,
+                  }}
+                >
+                  {sectionLabel}
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "#004535",
+                  background: "#eef4ef",
+                  borderRadius: 20,
+                  padding: "6px 10px",
+                }}
+              >
+                {unreadCount} unread
+              </span>
             </div>
+
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={handleMarkAllAsRead}
+                disabled={markingAll || busyId !== null}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "transparent",
+                  border: 0,
+                  color: "#004535",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  marginTop: 12,
+                  padding: 0,
+                }}
+              >
+                <CheckCheck size={15} />
+                {markingAll
+                  ? "Updating..."
+                  : "Mark all as read"}
+              </button>
+            )}
+          </div>
+
+          {error && (
+            <p
+              role="alert"
+              style={{
+                margin: 12,
+                color: "#b42318",
+                fontSize: 12,
+              }}
+            >
+              {error}
+            </p>
           )}
+
+          <div
+            className="anb-list"
+            style={{
+              maxHeight: 350,
+              overflowY: "auto",
+            }}
+          >
+            {loading ? (
+              <p
+                style={{
+                  padding: 20,
+                  textAlign: "center",
+                  color: "#7c857f",
+                  fontSize: 13,
+                }}
+              >
+                Loading notifications...
+              </p>
+            ) : notifications.length === 0 ? (
+              <p
+                style={{
+                  padding: 20,
+                  textAlign: "center",
+                  color: "#7c857f",
+                  fontSize: 13,
+                }}
+              >
+                No notifications available.
+              </p>
+            ) : (
+              notifications.map((item) => (
+                <div
+                  key={item.id}
+                  className={`anb-item ${item.is_read ? "is-read" : "is-unread"
+                    }`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "12px 14px",
+                    background: item.is_read
+                      ? "#fffdf8"
+                      : "#f0f5ef",
+                    borderBottom:
+                      "1px solid #eee8df",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleNotificationClick(item)
+                    }
+                    disabled={busyId !== null}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      flex: 1,
+                      minWidth: 0,
+                      textAlign: "left",
+                      background: "transparent",
+                      border: 0,
+                      cursor: "pointer",
+                      color: "#004535",
+                    }}
+                  >
+                    {item.type === "hearing" ? (
+                      <CalendarDays size={19} />
+                    ) : (
+                      <ListTodo size={19} />
+                    )}
+
+                    <span
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
+                      <strong
+                        style={{
+                          fontSize: 13,
+                          fontWeight: item.is_read
+                            ? 500
+                            : 700,
+                        }}
+                      >
+                        {item.title}
+                      </strong>
+
+                      <small
+                        style={{
+                          fontSize: 11,
+                          color: "#7b8780",
+                        }}
+                      >
+                        {item.type === "hearing"
+                          ? "Hearing"
+                          : item.type === "event"
+                            ? "Event"
+                            : "Task"}
+                        {" · "}
+                        {item.reminder_date}
+                      </small>
+                    </span>
+                  </button>
+
+                  {item.is_read ? (
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        handleMarkAsUnread(event, item)
+                      }
+                      disabled={busyId !== null}
+                      title="Mark as unread"
+                      aria-label="Mark as unread"
+                      style={{
+                        background: "transparent",
+                        border: 0,
+                        color: "#8a958e",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        padding: 4,
+                      }}
+                    >
+                      Unread
+                    </button>
+                  ) : (
+                    <span
+                      title="Unread"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        minWidth: 8,
+                        borderRadius: "50%",
+                        background: "#b18a4c",
+                      }}
+                    />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>

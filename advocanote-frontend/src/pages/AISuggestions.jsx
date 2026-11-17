@@ -327,7 +327,7 @@ export default function AISuggestions() {
 
             <input
               type="search"
-              placeholder="Search case number or AI suggestions..."
+              placeholder="Search cases, hearings, tasks..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               aria-label="Search AI suggestions"

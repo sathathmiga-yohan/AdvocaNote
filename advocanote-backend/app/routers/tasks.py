@@ -1,25 +1,38 @@
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
 from app.database import get_db
 from app.models.user import User
-from app.models.diary import Case, Task, Reminder
+from app.models.diary import (
+    Case,
+    Task,
+    Reminder,
+)
 from app.routers.diary import lawyer_only
 from app.auth.subscription_guard import require_feature
+from app.services.subscription_usage import consume_daily_action
+
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"],
 )
 
+SL_TIMEZONE = timezone(
+    timedelta(hours=5, minutes=30)
+)
 
-# CASE TASKS API
 
 class CaseTaskCreate(BaseModel):
     title: str = Field(
@@ -103,52 +116,61 @@ def owned_task(
     return task
 
 
-# =====================================
-# CREATE / UPDATE TASK REMINDER
-# =====================================
-
 def sync_task_reminder(
     db: Session,
     task: Task,
+    reset_read: bool = False,
 ):
-    # Remove outdated task reminder.
-    db.execute(
-        delete(Reminder).where(
+    existing = db.scalars(
+        select(Reminder)
+        .where(
             Reminder.task_id == task.id,
             Reminder.user_id == task.lawyer_id,
             Reminder.reminder_type == "Task",
         )
-    )
+        .order_by(Reminder.id.asc())
+    ).all()
 
-    # Completed tasks do not need reminders.
-    if task.status != "Pending":
+    if task.status != "Pending" or task.deadline is None:
+        for reminder in existing:
+            db.delete(reminder)
         return
 
-    # Tasks without deadlines do not need reminders.
-    if task.deadline is None:
-        return
+    today = datetime.now(
+        SL_TIMEZONE
+    ).date()
 
-    # Do not schedule reminders for past deadlines.
-    if task.deadline < date.today():
-        return
-
-    # Remind one day before the deadline.
     reminder_date = max(
-        date.today(),
+        today,
         task.deadline - timedelta(days=1),
     )
 
-    db.add(
-        Reminder(
-            user_id=task.lawyer_id,
-            task_id=task.id,
-            reminder_type="Task",
-            title=f"Task Deadline: {task.title}",
-            reminder_date=reminder_date,
-        )
-    )
+    title = f"Task Deadline: {task.title}"
 
-# READ ALL LAWYER TASKS
+    if existing:
+        reminder = existing[0]
+        reminder.title = title
+
+        if reset_read:
+            reminder.reminder_date = reminder_date
+            reminder.is_read = False
+            reminder.read_at = None
+
+        for duplicate in existing[1:]:
+            db.delete(duplicate)
+
+    else:
+        db.add(
+            Reminder(
+                user_id=task.lawyer_id,
+                task_id=task.id,
+                reminder_type="Task",
+                title=title,
+                reminder_date=reminder_date,
+                is_read=False,
+            )
+        )
+
 
 @router.get("")
 def get_all_tasks(
@@ -166,8 +188,6 @@ def get_all_tasks(
         for task in tasks
     ]
 
-
-# READ CASE TASKS
 
 @router.get("/case/{case_id}")
 def case_tasks(
@@ -192,15 +212,13 @@ def case_tasks(
     ]
 
 
-# CREATE MANUAL TASK
-
-
 @router.post(
     "/case/{case_id}",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_feature("tasks"))],
+    dependencies=[
+        Depends(require_feature("tasks"))
+    ],
 )
-
 def create_case_task(
     case_id: int,
     data: CaseTaskCreate,
@@ -217,47 +235,65 @@ def create_case_task(
             detail="Task title is required",
         )
 
-    task = Task(
-        lawyer_id=user.id,
-        case_id=case_id,
-        diary_entry_id=None,
-        title=title,
-        deadline=data.deadline,
-        priority=data.priority,
-        status="Pending",
-    )
+    try:
+        consume_daily_action(
+            db=db,
+            user_id=user.id,
+        )
 
-    db.add(task)
-    db.flush()
+        task = Task(
+            lawyer_id=user.id,
+            case_id=case_id,
+            diary_entry_id=None,
+            title=title,
+            deadline=data.deadline,
+            priority=data.priority,
+            status="Pending",
+        )
 
-    sync_task_reminder(db, task)
+        db.add(task)
+        db.flush()
 
-    db.commit()
-    db.refresh(task)
+        sync_task_reminder(
+            db,
+            task,
+        )
 
-    return task_json(task)
+        db.commit()
+        db.refresh(task)
 
+        return task_json(task)
 
-# UPDATE TASK
+    except Exception:
+        db.rollback()
+        raise
 
 
 @router.patch(
     "/{task_id}",
-    dependencies=[Depends(require_feature("tasks"))],
+    dependencies=[
+        Depends(require_feature("tasks"))
+    ],
 )
-
 def update_case_task(
     task_id: int,
     data: CaseTaskPatch,
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
-    task = owned_task(task_id, db, user)
+    task = owned_task(
+        task_id,
+        db,
+        user,
+    )
 
     fields = data.model_fields_set
+    changes = {}
 
     if "title" in fields:
-        title = (data.title or "").strip()
+        title = (
+            data.title or ""
+        ).strip()
 
         if not title:
             raise HTTPException(
@@ -265,10 +301,12 @@ def update_case_task(
                 detail="Task title is required",
             )
 
-        task.title = title
+        if task.title != title:
+            changes["title"] = title
 
     if "deadline" in fields:
-        task.deadline = data.deadline
+        if task.deadline != data.deadline:
+            changes["deadline"] = data.deadline
 
     if "priority" in fields:
         if data.priority is None:
@@ -277,7 +315,8 @@ def update_case_task(
                 detail="Priority is required",
             )
 
-        task.priority = data.priority
+        if (task.priority or "Medium") != data.priority:
+            changes["priority"] = data.priority
 
     if "status" in fields:
         if data.status is None:
@@ -286,39 +325,80 @@ def update_case_task(
                 detail="Status is required",
             )
 
-        task.status = data.status
-    
-    if fields & {"title", "deadline", "status"}:
-        sync_task_reminder(db, task)
-     
-    db.commit()
-    db.refresh(task)
+        if (task.status or "Pending") != data.status:
+            changes["status"] = data.status
 
-    return task_json(task)
+    if not changes:
+        return task_json(task)
 
+    try:
+        consume_daily_action(
+            db=db,
+            user_id=user.id,
+        )
 
-# DELETE TASK
+        for field_name, value in changes.items():
+            setattr(
+                task,
+                field_name,
+                value,
+            )
+
+        if changes.keys() & {
+            "title",
+            "deadline",
+            "status",
+        }:
+            sync_task_reminder(
+                db,
+                task,
+                reset_read="deadline" in changes,
+            )
+
+        db.commit()
+        db.refresh(task)
+
+        return task_json(task)
+
+    except Exception:
+        db.rollback()
+        raise
 
 
 @router.delete(
     "/{task_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_feature("tasks"))],
+    dependencies=[
+        Depends(require_feature("tasks"))
+    ],
 )
-
 def delete_case_task(
     task_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
-    task = owned_task(task_id, db, user)
-
-    db.execute(
-        delete(Reminder).where(
-            Reminder.task_id == task.id,
-            Reminder.user_id == user.id,
-        )
+    task = owned_task(
+        task_id,
+        db,
+        user,
     )
 
-    db.delete(task)
-    db.commit()
+    try:
+        consume_daily_action(
+            db=db,
+            user_id=user.id,
+        )
+
+        db.execute(
+            delete(Reminder).where(
+                Reminder.task_id == task.id,
+                Reminder.user_id == user.id,
+            )
+        )
+
+        db.delete(task)
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise

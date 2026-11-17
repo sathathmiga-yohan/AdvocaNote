@@ -5,8 +5,18 @@ import {
   LawyerTopbarAvatar,
 } from "../components/LawyerLayout";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { createPortal } from "react-dom";
 
 import {
@@ -273,6 +283,7 @@ function Choice({
 
 export default function MyCases({ onLogout }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const searchRef = useRef(null);
 
   const { user, openSidebar } = useLawyerLayout();
@@ -585,32 +596,102 @@ export default function MyCases({ onLogout }) {
     }
   };
 
-  // Open selected Case Details and load diary history
 
-  const openCase = async (c) => {
-    setSelectedCase(c);
-    setHistory([]);
-    setHistoryLoading(true);
-    setHistoryError("");
+const openCase = useCallback(async (c) => {
+  if (!c?.id) {
+    setHistoryError("Case ID is missing.");
+    return;
+  }
 
-    try {
-      const raw = await authorizedRequest(
-        `/diary/case/${encodeURIComponent(c.id)}/history`
-      );
+  setSelectedCase(c);
+  setHistory([]);
+  setHistoryLoading(true);
+  setHistoryError("");
 
-      const items = Array.isArray(raw)
-        ? raw
-        : raw?.entries || raw?.history || [];
+  try {
+    const raw = await authorizedRequest(
+      `/diary/case/${encodeURIComponent(c.id)}/history`
+    );
 
-      setHistory(
-        Array.isArray(items) ? items : []
-      );
-    } catch (e) {
-      setHistoryError(e.message);
-    } finally {
-      setHistoryLoading(false);
+    const entries = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.entries)
+        ? raw.entries
+        : Array.isArray(raw?.history)
+          ? raw.history
+          : [];
+
+    setHistory(entries);
+  } catch (error) {
+    setHistoryError(
+      error.message || "Could not load diary history."
+    );
+  } finally {
+    setHistoryLoading(false);
+  }
+}, []);
+
+
+
+  useEffect(() => {
+    const target = location.state;
+
+    if (
+      !target ||
+      (target.calendarCaseId == null &&
+        !target.calendarCaseNo) ||
+      loading
+    ) {
+      return;
     }
-  };
+
+    const targetId = String(
+      target.calendarCaseId ?? ""
+    ).trim();
+
+    const targetNumber = String(
+      target.calendarCaseNo ?? ""
+    ).trim().toLowerCase();
+
+    const matchingCase = cases.find((item) => {
+      const sameId =
+        targetId !== "" &&
+        String(item.id) === targetId;
+
+      const sameNumber =
+        targetNumber !== "" &&
+        String(
+          item.case_number || item.caseNo || ""
+        ).trim().toLowerCase() === targetNumber;
+
+      return sameId || sameNumber;
+    });
+
+    if (matchingCase) {
+      openCase(
+        matchingCase,
+        target.calendarEventDate || ""
+      );
+    } else {
+      setLoadError(
+        "The selected calendar case was not found."
+      );
+    }
+
+    // Clear the navigation request after opening.
+    navigate(location.pathname, {
+      replace: true,
+      state: null,
+    });
+  }, [
+    cases,
+    loading,
+    location.state,
+    location.pathname,
+    navigate,
+    openCase,
+  ]);
+
 
   const handleCloseCase = async (caseData) => {
     const result = await authorizedRequest(

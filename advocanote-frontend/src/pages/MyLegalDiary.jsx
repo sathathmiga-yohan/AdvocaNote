@@ -3,7 +3,7 @@ import {
   useLawyerLayout,
   LawyerTopbarPortal,
   LawyerTopbarAvatar,
-} from "../components/LawyerLayout"; 
+} from "../components/LawyerLayout";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -167,7 +167,6 @@ export default function MyLegalDiary({ onLogout }) {
     closeSidebar,
   } = useLawyerLayout();
 
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -266,7 +265,6 @@ export default function MyLegalDiary({ onLogout }) {
       if (event.key === "Escape") {
         setSelectedEntry(null);
         closeSidebar();
-        setNotificationsOpen(false);
         setProfileOpen(false);
       }
     };
@@ -529,38 +527,11 @@ export default function MyLegalDiary({ onLogout }) {
           />
         </div>
 
-        <div className="ald-topbar-actions">
-          <div className="ald-dropdown-holder">
-            <button
-              type="button"
-              className="ald-notify"
-              onClick={() => {
-                setNotificationsOpen((value) => !value);
-                setProfileOpen(false);
-              }}
-              aria-label="Notifications"
-              aria-expanded={notificationsOpen}
-            >
-              <Bell size={27} strokeWidth={1.7} />
-            </button>
 
-            {notificationsOpen && (
-              <div className="ald-top-popover ald-notifications-popover">
-                <strong>Notifications</strong>
-                {reminders.length > 0 ? (
-                  reminders.map((reminder) => (
-                    <div key={reminder.id}>
-                      <strong>{reminder.title}</strong>
-                      <p>{readableDate(reminder.date)}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No reminders yet.</p>
-                )}
-              </div>
-            )}
-          </div>
-
+        <div
+          className="ald-topbar-actions"
+          style={{ order: 3 }}
+        >
           <div className="ald-topbar-divider" />
 
           <div className="ald-dropdown-holder">
@@ -569,15 +540,16 @@ export default function MyLegalDiary({ onLogout }) {
               className="ald-account"
               onClick={() => {
                 setProfileOpen((value) => !value);
-                setNotificationsOpen(false);
               }}
               aria-expanded={profileOpen}
             >
               <LawyerTopbarAvatar />
+
               <span className="ald-account-text">
                 <strong>{displayName}</strong>
                 <small>Attorney-at-Law</small>
               </span>
+
               <ChevronDown size={18} aria-hidden="true" />
             </button>
 
@@ -590,7 +562,11 @@ export default function MyLegalDiary({ onLogout }) {
                   <UserRound size={17} />
                   My Profile
                 </button>
-                <button type="button" onClick={logout}>
+
+                <button
+                  type="button"
+                  onClick={logout}
+                >
                   <LogOut size={17} />
                   Logout
                 </button>
@@ -598,6 +574,7 @@ export default function MyLegalDiary({ onLogout }) {
             )}
           </div>
         </div>
+
       </LawyerTopbarPortal>
 
       {/* MAIN DIARY CONTENT - LEFT AND RIGHT */}
