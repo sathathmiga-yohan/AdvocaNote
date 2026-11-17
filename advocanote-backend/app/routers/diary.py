@@ -198,9 +198,10 @@ def create_entry(
         )
 
     try:
-        # Basic: count one action.
-        # Trial / Premium / Annual: unlimited.
-        # If save fails, the count rolls back.
+        # Only new diary entries consume daily quota.
+        # Limit comes from the active database plan.
+        # Free Trial and unlimited plans have no cap.
+        # Failed saves roll back the usage count.
 
         consume_daily_action(
             db=db,
@@ -392,7 +393,6 @@ def create_entry(
 
                 hearing_added = True
 
-
         # =====================================
         # SAVE APPROVED MANUAL TASKS
         # =====================================
@@ -533,7 +533,6 @@ def create_entry(
 
         task_added = task_count > 0
 
-
         # =====================================
         # SAVE DIARY AND DAILY ACTION TOGETHER
         # =====================================
@@ -658,7 +657,7 @@ def get_diary_entry_details(
 
 # ==========================================
 # UPDATE DIARY ENTRY
-# One successful update = one action.
+# Editing an existing entry does not consume daily quota.
 # ==========================================
 
 class DiaryEntryUpdate(BaseModel):
@@ -705,13 +704,7 @@ def update_diary_entry(
         )
 
     try:
-        # Reserve one daily action.
-        # Roll back if update fails.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # Editing existing entries does not consume quota.
 
         original_next_date = entry.next_date
 
@@ -810,7 +803,7 @@ def update_diary_entry(
                         )
                     )
 
-        # Save update and usage together.
+        # Save the updated diary entry.
         db.commit()
 
         return {
@@ -825,7 +818,7 @@ def update_diary_entry(
 
 # ==========================================
 # DELETE DIARY ENTRY
-# One successful deletion = one action.
+# Deleting existing entries does not consume daily quota.
 # ==========================================
 
 @router.delete(
@@ -905,12 +898,7 @@ def delete_diary_entry(
                 )
 
         # All validations passed.
-        # Reserve the daily action before deleting.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # Deleting an existing entry does not consume quota.
 
         if hearing_ids:
             db.execute(
@@ -947,7 +935,7 @@ def delete_diary_entry(
 
         db.delete(entry)
 
-        # Save deletion and usage together.
+        # Save the deletion.
         db.commit()
 
         return {
@@ -958,9 +946,9 @@ def delete_diary_entry(
         db.rollback()
         raise
 
+
 # ==========================================
 # GET AI TASK SUGGESTIONS
-# ==========================================
 # Read only - no daily action consumed.
 # Only the logged-in lawyer's records.
 # ==========================================
@@ -970,7 +958,6 @@ def get_ai_suggestions(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
-
     rows = db.execute(
         select(
             AISuggestion,
@@ -1021,7 +1008,7 @@ def get_ai_suggestions(
 
 # ==========================================
 # AI SUGGESTION REVIEW
-# Approve / Reject = one action.
+# Approve / Reject does not consume diary entry quota.
 # ==========================================
 
 class AISuggestionReview(BaseModel):
@@ -1091,12 +1078,7 @@ def review_ai_suggestion(
             )
 
     try:
-        # Approve or reject = one daily action.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # Reviewing AI suggestions does not consume quota.
 
         if data.status == "Approved":
             task = Task(
@@ -1112,7 +1094,7 @@ def review_ai_suggestion(
 
         suggestion.status = data.status
 
-        # Save review and usage together.
+        # Save the suggestion review.
         db.commit()
 
     except Exception:

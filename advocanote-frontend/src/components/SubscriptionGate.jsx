@@ -34,25 +34,24 @@ const COLORS = {
 // SUBSCRIPTION PLAN DETAILS
 // ==========================================
 
-const PLAN_DETAILS = {
-  basic: {
-    icon: Zap,
-    description:
-      "All features, 3 actions per day",
-  },
 
-  premium: {
-    icon: Crown,
-    description:
-      "All features, unlimited every month",
-  },
+function getPlanDetails(plan) {
+  const isUnlimited =
+    plan.daily_action_limit == null;
 
-  annual: {
-    icon: CalendarDays,
-    description:
-      "All features, unlimited for 12 months",
-  },
-};
+  return {
+    icon:
+      plan.billing_interval === "year"
+        ? CalendarDays
+        : isUnlimited
+          ? Crown
+          : Zap,
+
+    description: isUnlimited
+      ? "Unlimited diary entries"
+      : `${plan.daily_action_limit} diary entries per day`,
+  };
+}
 
 // ==========================================
 // GET AUTH TOKEN
@@ -91,16 +90,16 @@ async function apiRequest(
 
         ...(body !== null
           ? {
-              "Content-Type":
-                "application/json",
-            }
+            "Content-Type":
+              "application/json",
+          }
           : {}),
       },
 
       ...(body !== null
         ? {
-            body: JSON.stringify(body),
-          }
+          body: JSON.stringify(body),
+        }
         : {}),
     }
   );
@@ -116,7 +115,7 @@ async function apiRequest(
       typeof detail === "string"
         ? detail
         : detail?.message ||
-          "Subscription request failed."
+        "Subscription request failed."
     );
   }
 
@@ -127,15 +126,17 @@ async function apiRequest(
 // CHECK ACTIVE BASIC DAILY LIMIT
 // ==========================================
 
-function basicDailyLimitReached(data) {
+
+function dailyLimitReached(data) {
   return (
     data?.status === "active" &&
     data?.has_access === true &&
-    data?.plan_key === "basic" &&
-    data?.daily_action_limit === 3 &&
+    Number.isInteger(data?.daily_action_limit) &&
+    data.daily_action_limit > 0 &&
     data?.remaining_today === 0
   );
 }
+
 
 // ==========================================
 // CHECK IF PAYMENT POPUP IS NEEDED
@@ -241,11 +242,12 @@ export default function SubscriptionGate() {
         // Retain daily-limit popup only
         // if Basic already exhausted 3 actions.
 
+
         if (data.has_access === true) {
           setModal((current) => {
             if (
               current === "daily_limit" &&
-              basicDailyLimitReached(data)
+              dailyLimitReached(data)
             ) {
               return "daily_limit";
             }
@@ -375,7 +377,7 @@ export default function SubscriptionGate() {
         // Show upgrade popup only for
         // active Basic with 0 actions left.
 
-        if (basicDailyLimitReached(data)) {
+        if (dailyLimitReached(data)) {
           setError("");
           setModal("daily_limit");
         } else if (
@@ -501,7 +503,7 @@ export default function SubscriptionGate() {
 
   if (
     modal === "daily_limit" &&
-    !basicDailyLimitReached(access)
+    !dailyLimitReached(access)
   ) {
     return null;
   }
@@ -512,12 +514,38 @@ export default function SubscriptionGate() {
 
   const isLimit = modal === "daily_limit";
 
+
+  const currentPlan = plans.find(
+    (plan) =>
+      Number(plan.plan_id) ===
+      Number(access?.plan_id)
+  );
+
   const visiblePlans = isLimit
-    ? plans.filter(
-        (plan) =>
-          plan.key === "premium" ||
-          plan.key === "annual"
-      )
+    ? plans.filter((plan) => {
+      if (!plan.stripe_ready || !currentPlan) {
+        return false;
+      }
+
+      if (
+        Number(plan.plan_id) ===
+        Number(access?.plan_id)
+      ) {
+        return false;
+      }
+
+      const monthlyUpgrade =
+        currentPlan.billing_interval === "month" &&
+        plan.billing_interval === "month" &&
+        Number(plan.price) >
+        Number(currentPlan.price);
+
+      const yearlyUpgrade =
+        currentPlan.billing_interval === "month" &&
+        plan.billing_interval === "year";
+
+      return monthlyUpgrade || yearlyUpgrade;
+    })
     : plans;
 
   // ======================================
@@ -604,26 +632,24 @@ export default function SubscriptionGate() {
                 marginTop: 10,
               }}
             >
+
               {isLimit
                 ? (
-                    "You have used your 3 " +
-                    "daily actions. Upgrade to " +
-                    "Premium or Annual for " +
-                    "unlimited access."
-                  )
-                : access.status ===
-                  "not_subscribed"
+                  `You have reached your daily limit of ${access.daily_action_limit} diary entries. Choose an available upgrade plan, or continue tomorrow.`
+                )
+                : access.status === "not_subscribed"
                   ? (
-                      "Choose a subscription " +
-                      "to continue using " +
-                      "AdvocaNote."
-                    )
+                    "Choose a subscription " +
+                    "to continue using " +
+                    "AdvocaNote."
+                  )
                   : (
-                      "Your subscription or " +
-                      "free trial has ended. " +
-                      "Select a plan to continue " +
-                      "using AdvocaNote."
-                    )}
+                    "Your subscription or " +
+                    "free trial has ended. " +
+                    "Select a plan to continue " +
+                    "using AdvocaNote."
+                  )}
+
             </p>
           </div>
 
@@ -653,19 +679,15 @@ export default function SubscriptionGate() {
             gap: 14,
             marginTop: 24,
           }}
+
         >
           {visiblePlans.map((plan) => {
-            const config =
-              PLAN_DETAILS[plan.key];
-
-            if (!config) {
-              return null;
-            }
+            const config = getPlanDetails(plan);
 
             const Icon = config.icon;
 
             const isPremium =
-              plan.key === "premium";
+              plan.daily_action_limit == null;
 
             return (
               <div
@@ -722,8 +744,7 @@ export default function SubscriptionGate() {
                       marginTop: 3,
                     }}
                   >
-                    {plan.billing_interval ===
-                    "year"
+                    {plan.billing_interval === "year"
                       ? "Per year"
                       : "Per month"}
                   </div>
@@ -775,7 +796,7 @@ export default function SubscriptionGate() {
                     cursor: "pointer",
                     opacity:
                       busyPlan !== null ||
-                      !plan.stripe_ready
+                        !plan.stripe_ready
                         ? 0.55
                         : 1,
                   }}
@@ -789,6 +810,25 @@ export default function SubscriptionGate() {
               </div>
             );
           })}
+
+          {/* NO AVAILABLE UPGRADE PLANS */}
+
+          {visiblePlans.length === 0 && (
+            <p
+              style={{
+                color: COLORS.muted,
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "20px 10px",
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}
+            >
+              {isLimit
+                ? "No immediate upgrade plans are available. Your daily allowance resets tomorrow."
+                : "No subscription plans are currently available. Please contact support."}
+            </p>
+          )}
         </div>
 
         {/* ERROR MESSAGE */}
@@ -823,11 +863,7 @@ export default function SubscriptionGate() {
           payment verification.
 
           {isLimit &&
-            (
-              " Your Basic daily allowance " +
-              "resets the next day, " +
-              "Sri Lanka time."
-            )}
+            " Your daily diary entry allowance resets the next day, Sri Lanka time."}
         </p>
       </div>
     </div>

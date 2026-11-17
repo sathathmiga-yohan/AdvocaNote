@@ -30,14 +30,6 @@ from app.routers.diary import lawyer_only
 from app.auth.subscription_guard import require_feature
 from app.auth.security import get_current_user
 
-# ==========================================
-# SUBSCRIPTION DAILY USAGE
-# ==========================================
-
-from app.services.subscription_usage import (
-    consume_daily_action,
-)
-
 
 # ==========================================
 # MY CASES ROUTER
@@ -69,8 +61,7 @@ def lawyer_read_only(
 # ==========================================
 # GET ALL CASES
 # ==========================================
-# Viewing cases does not count
-# as a daily subscription action.
+# Viewing cases does not consume diary quota.
 # ==========================================
 
 @router.get("")
@@ -116,7 +107,7 @@ def my_cases(
 # ==========================================
 # CHANGE CASE STATUS
 # ==========================================
-# Successful status change = 1 action
+# Changing case status does not consume quota.
 # ==========================================
 
 class CaseStatusUpdate(BaseModel):
@@ -154,7 +145,7 @@ def update_case_status(
             detail="Case not found",
         )
 
-    # No action if already closed.
+    # No update if already closed.
 
     if case.status == data.status:
         return {
@@ -164,24 +155,16 @@ def update_case_status(
         }
 
     # ======================================
-    # SUBSCRIPTION + UPDATE CASE
+    # UPDATE CASE STATUS
     # ======================================
 
     try:
 
-        # Basic: count one action.
-        # Premium/Annual/Trial: unlimited.
-        # Raises 429 if daily limit reached.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # Case status changes are free.
 
         case.status = data.status
 
-        # Save the case change and usage count
-        # in the same database transaction.
+        # Save case status change.
 
         db.commit()
         db.refresh(case)
@@ -200,7 +183,7 @@ def update_case_status(
 # ==========================================
 # CREATE CASE
 # ==========================================
-# Successfully creating a case = 1 action
+# Creating a case does not consume diary quota.
 # ==========================================
 
 @router.post(
@@ -255,23 +238,13 @@ def create_case(
         )
 
     # ======================================
-    # CREATE CASE WITH SUBSCRIPTION CHECK
+    # CREATE CASE
     # ======================================
 
     try:
 
-        # Basic lawyer:
-        # Maximum 3 successful actions/day.
-        #
-        # Valid trial, Premium, Annual:
-        # Unlimited actions.
-        #
-        # If limit reached, raises 429.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # Creating a case does not consume
+        # the daily diary entry quota.
 
         # ==================================
         # FIND EXISTING COURT
@@ -326,7 +299,7 @@ def create_case(
         db.add(new_case)
 
         # ==================================
-        # SAVE CASE + DAILY USAGE
+        # SAVE NEW CASE
         # ==================================
 
         db.commit()
@@ -343,8 +316,7 @@ def create_case(
 
     except Exception:
 
-        # If case creation fails before commit,
-        # the usage increment is rolled back too.
+        # Roll back if case creation fails.
 
         db.rollback()
         raise
@@ -353,7 +325,7 @@ def create_case(
 # ==========================================
 # DELETE CASE - ONLY EMPTY CASES
 # ==========================================
-# Successful deletion = 1 action
+# Deleting a case does not consume diary quota.
 # ==========================================
 
 @router.delete(
@@ -423,22 +395,16 @@ def delete_empty_case(
         )
 
     # ======================================
-    # DELETE CASE WITH SUBSCRIPTION CHECK
+    # DELETE EMPTY CASE
     # ======================================
 
     try:
 
-        # Count one action only when
-        # deletion is permitted.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
+        # No daily diary entry quota consumed.
 
         db.delete(case)
 
-        # Save deletion and usage together.
+        # Save case deletion.
 
         db.commit()
 

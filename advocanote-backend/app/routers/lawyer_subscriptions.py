@@ -44,15 +44,21 @@ def utc_now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+
 def require_lawyer(
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user),
 ):
-    if user.role != "lawyer":
+    if (
+        user.role != "lawyer"
+        or not user.is_active
+    ):
         raise HTTPException(
             status_code=403,
-            detail="Lawyer access required"
+            detail="Active lawyer account required",
         )
+
     return user
+
 
 
 class StartTrialRequest(BaseModel):
@@ -92,10 +98,9 @@ class SubscriptionStatusResponse(BaseModel):
     # True only for an eligible unlimited plan
     is_unlimited: bool = False
 
-
 def subscription_response(
     db: Session,
-    subscription: Subscription | None
+    subscription: Subscription | None,
 ):
 
     # =====================================
@@ -119,64 +124,54 @@ def subscription_response(
         }
 
     # =====================================
-    # GET SUBSCRIPTION PLAN
+    # GET CURRENT PLAN FROM DATABASE
     # =====================================
 
     plan = db.get(
         SubscriptionPlan,
-        subscription.plan_id
+        subscription.plan_id,
     )
 
+    # =====================================
+    # CHECK SUBSCRIPTION EXPIRY
+    # =====================================
+
     effective_status = subscription.status
-    # Free Trial expired
+    now = utc_now()
+
     if subscription.status == "trialing":
         if (
             subscription.trial_ends_at is None
-            or subscription.trial_ends_at <= utc_now()
+            or subscription.trial_ends_at <= now
         ):
             effective_status = "expired"
 
-    # Paid subscription expired
     elif subscription.status == "active":
         if (
             subscription.current_period_end is None
-            or subscription.current_period_end <= utc_now()
+            or subscription.current_period_end <= now
         ):
             effective_status = "expired"
 
     # =====================================
-    # CHECK FREE TRIAL EXPIRY
-    # =====================================
-
-    if subscription.status == "trialing":
-
-        if (
-            subscription.trial_ends_at is None
-            or subscription.trial_ends_at <= utc_now()
-        ):
-            effective_status = "expired"
-
-    # =====================================
-    # DETERMINE DAILY USAGE LIMIT
+    # DYNAMIC DAILY DIARY ENTRY LIMIT
     # =====================================
 
     daily_action_limit = None
     is_unlimited = False
 
     if effective_status == "trialing":
+        # Free Trial is always unlimited.
 
-        # Free trial:
-        # All features with unlimited usage
-
-        daily_action_limit = None
         is_unlimited = True
 
     elif effective_status == "active" and plan:
-
-        # Paid subscription:
-        # Basic = 3 actions per day
-        # Premium = Unlimited
-        # Annual = Unlimited
+        # Any admin-created paid plan:
+        #
+        # None = Unlimited
+        # 3    = 3 entries per day
+        # 5    = 5 entries per day
+        # 10   = 10 entries per day
 
         daily_action_limit = (
             plan.daily_action_limit
@@ -187,16 +182,24 @@ def subscription_response(
         )
 
     # =====================================
+    # DISPLAY CURRENT PLAN
+    # =====================================
+
+    if effective_status == "trialing":
+        display_plan_name = "Free Trial"
+    else:
+        display_plan_name = (
+            plan.name if plan else None
+        )
+
+    # =====================================
     # STRIPE CANCELLATION ACCESS
     # =====================================
 
     can_cancel = bool(
         subscription.stripe_subscription_id
         and subscription.stripe_customer_id
-        and effective_status in (
-            "active",
-            "trialing"
-        )
+        and effective_status == "active"
         and not subscription.cancel_at_period_end
     )
 
@@ -207,9 +210,7 @@ def subscription_response(
     return {
         "plan_id": subscription.plan_id,
 
-        "plan_name": (
-            plan.name if plan else None
-        ),
+        "plan_name": display_plan_name,
 
         "status": effective_status,
 
@@ -226,11 +227,13 @@ def subscription_response(
         ),
 
         "price": (
-            str(plan.price) if plan else None
+            str(plan.price)
+            if plan else None
         ),
 
         "currency": (
-            plan.currency if plan else None
+            plan.currency
+            if plan else None
         ),
 
         "billing_cycle": (
@@ -246,7 +249,6 @@ def subscription_response(
 
         "is_unlimited": is_unlimited,
     }
-
 
 # =====================================
 # AVAILABLE PLANS
@@ -266,11 +268,6 @@ def get_available_plans(
         .where(SubscriptionPlan.is_active.is_(True))
         .order_by(SubscriptionPlan.price.asc())
     ).all()
-
-
-# =====================================
-# START FREE TRIAL
-# =====================================
 
 # =====================================
 # START FREE TRIAL

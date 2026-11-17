@@ -77,10 +77,10 @@ def require_feature(feature_name: str):
         # VERIFY LAWYER
         # ==================================
 
-        if user.role != "lawyer":
+        if user.role != "lawyer" or not user.is_active:
             raise HTTPException(
                 status_code=403,
-                detail="Lawyer access required",
+                detail="Active lawyer account required",
             )
 
         # ==================================

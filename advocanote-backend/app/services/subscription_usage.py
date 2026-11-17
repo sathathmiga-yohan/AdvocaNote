@@ -32,7 +32,9 @@ def as_utc(value):
         return None
 
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
+        return value.replace(
+            tzinfo=timezone.utc
+        )
 
     return value.astimezone(timezone.utc)
 
@@ -41,7 +43,10 @@ def as_utc(value):
 # CHECK VALID SUBSCRIPTION
 # ==========================================
 
-def get_valid_subscription(db, user_id):
+def get_valid_subscription(
+    db: Session,
+    user_id: int,
+):
 
     subscription = db.scalar(
         select(Subscription).where(
@@ -82,7 +87,7 @@ def get_valid_subscription(db, user_id):
 
 
 # ==========================================
-# USE ONE DAILY ACTION
+# CONSUME ONE DAILY DIARY ENTRY
 # ==========================================
 
 def consume_daily_action(
@@ -90,8 +95,9 @@ def consume_daily_action(
     user_id: int,
 ):
 
-    # Lock lawyer row so simultaneous requests
-    # cannot exceed the daily action limit.
+    # Lock lawyer row to prevent
+    # simultaneous requests from exceeding
+    # the daily entry limit.
 
     user = db.scalar(
         select(User)
@@ -105,10 +111,27 @@ def consume_daily_action(
             detail="Lawyer not found",
         )
 
+    if (
+        user.role != "lawyer"
+        or not user.is_active
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Active lawyer account required",
+        )
+
+    # ======================================
+    # VERIFY SUBSCRIPTION
+    # ======================================
+
     subscription = get_valid_subscription(
-        db,
-        user_id,
+        db=db,
+        user_id=user_id,
     )
+
+    # ======================================
+    # GET CURRENT PLAN FROM DATABASE
+    # ======================================
 
     plan = db.get(
         SubscriptionPlan,
@@ -121,44 +144,78 @@ def consume_daily_action(
             detail="Subscription plan not found",
         )
 
-    # Free trial = Unlimited
+    # ======================================
+    # FREE TRIAL - UNLIMITED
+    # ======================================
+
     if subscription.status == "trialing":
         return {
             "unlimited": True,
+            "daily_limit": None,
             "remaining": None,
         }
 
+    # ======================================
+    # DYNAMIC DAILY ENTRY LIMIT
+    # ======================================
+
+    # Read the limit from the selected plan.
+    #
+    # 3    = 3 entries per day
+    # 5    = 5 entries per day
+    # 10   = 10 entries per day
+    # None = Unlimited
+    #
+    # Works for all admin-created plans.
+
     limit = plan.daily_action_limit
 
-    # Premium / Annual = Unlimited
+    # ======================================
+    # UNLIMITED PAID PLAN
+    # ======================================
+
     if limit is None:
         return {
             "unlimited": True,
+            "daily_limit": None,
             "remaining": None,
         }
 
     if limit < 1:
         raise HTTPException(
             status_code=403,
-            detail="Invalid daily action limit",
+            detail="Invalid daily entry limit",
         )
 
+    # ======================================
+    # GET TODAY'S USAGE
+    # ======================================
+
     today = get_usage_date()
+
     usage = db.scalar(
         select(SubscriptionDailyUsage)
         .where(
-            SubscriptionDailyUsage.user_id == user_id,
-            SubscriptionDailyUsage.usage_date == today,
+            SubscriptionDailyUsage.user_id
+            == user_id,
+
+            SubscriptionDailyUsage.usage_date
+            == today,
         )
         .with_for_update()
-        .execution_options(populate_existing=True)
+        .execution_options(
+            populate_existing=True
+        )
     )
 
-    used = usage.actions_used if usage else 0
+    used = (
+        usage.actions_used
+        if usage else 0
+    )
 
-    # =====================================
+    # ======================================
     # DAILY LIMIT REACHED
-    # =====================================
+    # ======================================
 
     if used >= limit:
         raise HTTPException(
@@ -166,19 +223,22 @@ def consume_daily_action(
             detail={
                 "code": "DAILY_ACTION_LIMIT_REACHED",
                 "message": (
-                    "You have reached your daily "
-                    "action limit. Upgrade to "
-                    "Premium or Annual for "
-                    "unlimited access."
+                    f"You have reached your daily "
+                    f"limit of {limit} diary entries. "
+                    "Choose an available upgrade "
+                    "plan or continue tomorrow."
                 ),
+                "plan_id": plan.id,
+                "plan_name": plan.name,
                 "daily_limit": limit,
+                "actions_used": used,
                 "remaining": 0,
             },
         )
 
-    # =====================================
-    # RECORD ONE ACTION
-    # =====================================
+    # ======================================
+    # RECORD ONE NEW DIARY ENTRY
+    # ======================================
 
     if usage is None:
         usage = SubscriptionDailyUsage(
@@ -192,16 +252,31 @@ def consume_daily_action(
     else:
         usage.actions_used += 1
 
+    # ======================================
+    # SAVE WITH DIARY TRANSACTION
+    # ======================================
+
     # Do not commit here.
-    # The calling endpoint must commit this
-    # with the successful app operation.
-    # Failed operations must roll back.
+    #
+    # The diary creation endpoint must
+    # commit the entry and usage together.
+    #
+    # If diary creation fails,
+    # both changes must roll back.
 
     db.flush()
 
+    # ======================================
+    # RETURN UPDATED USAGE
+    # ======================================
+
     return {
         "unlimited": False,
+        "plan_id": plan.id,
+        "plan_name": plan.name,
         "daily_limit": limit,
         "actions_used": used + 1,
-        "remaining": limit - (used + 1),
+        "remaining": (
+            limit - (used + 1)
+        ),
     }

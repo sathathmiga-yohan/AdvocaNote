@@ -54,38 +54,79 @@ const benefits = [
     sub: "Local legal workflows",
   },
 ];
-
-const features = [
+const bookFeatures = [
   {
     Icon: BookOpen,
     title: "Smart Legal Diary",
-    text: "Add and manage case details, court notes, and important next dates.",
+    short: "Manage case notes and daily legal work in one place.",
+    description:
+      "Keep your daily court notes, case details and important next dates organised in one structured legal diary.",
+    points: [
+      "Add and review daily diary entries",
+      "Maintain court notes clearly",
+      "Track case-related updates easily",
+    ],
   },
   {
     Icon: Mic,
     title: "Voice to Text",
-    text: "Speak your notes and turn them into written diary entries.",
+    short: "Turn spoken legal notes into written entries.",
+    description:
+      "Use voice input to quickly capture legal notes and convert them into diary entries without typing everything manually.",
+    points: [
+      "Record spoken legal notes",
+      "Convert speech into written text",
+      "Edit before saving your entry",
+    ],
   },
   {
     Icon: ScanLine,
     title: "AI Diary Scan",
-    text: "Convert photos of handwritten diary notes into suggested entries for review.",
+    short: "Convert handwritten notes into digital entries.",
+    description:
+      "A future AI-powered feature that helps convert handwritten diary notes into structured digital records for lawyer review.",
+    points: [
+      "Scan handwritten diary pages",
+      "Generate suggested digital entries",
+      "Review before saving to the diary",
+    ],
     soon: true,
   },
   {
     Icon: CalendarDays,
     title: "Hearings & Calendar",
-    text: "See upcoming hearing dates in one organised calendar.",
+    short: "Track upcoming hearings in one organised calendar.",
+    description:
+      "View hearings, dates and scheduling details in one place so nothing important gets missed.",
+    points: [
+      "See upcoming hearing dates",
+      "Organise events in calendar view",
+      "Stay aware of legal schedule",
+    ],
   },
   {
     Icon: ClipboardCheck,
     title: "Tasks & Deadlines",
-    text: "Create follow-up tasks and keep track of important deadlines.",
+    short: "Create follow-ups and stay on top of deadlines.",
+    description:
+      "Manage legal tasks, priorities and important deadlines so your daily workflow stays under control.",
+    points: [
+      "Add tasks and deadlines",
+      "Set follow-up reminders",
+      "Track progress clearly",
+    ],
   },
   {
     Icon: FolderOpen,
     title: "Case Management",
-    text: "Keep case information, diary entries and related notes together.",
+    short: "Keep case information and related notes together.",
+    description:
+      "Store case details, diary records and related legal information together in one organised workspace.",
+    points: [
+      "Manage case information centrally",
+      "Connect diary entries with cases",
+      "Keep related records together",
+    ],
   },
 ];
 
@@ -158,28 +199,39 @@ const plans = [
   },
 ];
 
+
 const faqs = [
   {
     q: "Is AdvocaNote designed for Sri Lankan lawyers?",
-    a: "Yes. AdvocaNote is designed around Sri Lankan lawyers' everyday diary, case, hearing and task workflows.",
+    a: "Yes. AdvocaNote is designed specifically for Sri Lankan lawyers to manage daily diary entries, court cases, hearings, tasks and deadlines in one organised workspace.",
   },
   {
     q: "Can I continue using my paper diary?",
-    a: "Yes. AdvocaNote is designed to support your existing paper-diary workflow, not force you to replace it.",
+    a: "Absolutely. AdvocaNote supports your traditional diary workflow. You can continue using your paper diary while keeping important legal records organised digitally.",
   },
   {
     q: "Can I use Voice to Text for diary notes?",
-    a: "AdvocaNote includes a Voice to Text workflow for turning spoken updates into written notes. Review the text before saving important case information.",
+    a: "Yes. You can record your spoken court notes and convert them into written diary entries using Voice to Text. You can review and edit the text before saving.",
+  },
+  {
+    q: "How can I track my upcoming hearings?",
+    a: "AdvocaNote helps you organise upcoming hearing dates through the Hearings and Calendar sections, making it easier to plan your legal activities.",
   },
   {
     q: "Will AI Diary Scan be available?",
-    a: "AI Diary Scan is a planned feature. It is marked Coming Soon and is not included as an available tool until released.",
+    a: "AI Diary Scan is a planned feature that will help convert handwritten diary notes into structured digital entries for your review. Coming Soon.",
   },
   {
     q: "What happens after the one-month free trial?",
-    a: "You can choose the monthly plan at LKR 1,490 or the annual plan at LKR 14,900. The final billing and cancellation terms will be presented before payment.",
+    a: "After your one-month free trial, you can select Basic at LKR 1,490/month, Premium at LKR 3,290/month, or Annual at LKR 14,900/year.",
   },
 ];
+
+const faqColumns = [
+  faqs.slice(0, 3),
+  faqs.slice(3, 6),
+];
+
 
 function Logo() {
   return (
@@ -233,12 +285,13 @@ function SectionTitle({
 }
 
 export default function Home() {
+  const [activeFeature, setActiveFeature] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
-
+  const [showAllFaq, setShowAllFaq] = useState(false);
   const registerLink = (plan) =>
     `${site.register}?plan=${encodeURIComponent(plan)}`;
-
+  const currentFeature = bookFeatures[activeFeature];
   // Scroll reveal animations
   useEffect(() => {
     const nodes = document.querySelectorAll(".an-reveal");
@@ -417,7 +470,7 @@ export default function Home() {
                 <ArrowRight size={19} />
               </a>
 
-              
+
 
             </div>
 
@@ -504,70 +557,197 @@ export default function Home() {
         </div>
       </div>
 
-      {/* =================================
-          FEATURES
-      ================================= */}
 
-      <section className="an-features" id="features">
+      {/* ============================================
+    ADVOCANOTE PREMIUM BOOK FEATURES
+============================================ */}
 
-        <img
-          className="an-features__court"
-          src="/images/landing-page/advocanote-courthouse-watermark.png"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-        />
-
+      <section
+        className="an-book-features"
+        id="features"
+      >
         <div className="an-shell">
 
+          {/* SECTION HEADING */}
+
           <SectionTitle
-            kicker="POWERFUL FEATURES FOR MODERN LEGAL PRACTICE"
-            title="All Your Legal Work, in One Place"
-            description="A simpler way to manage cases, hearings, notes and daily legal tasks."
+            kicker="OUR UNIQUE FEATURES"
+            title="Everything You Need in One Place"
+            description="From traditional diary workflows to smart legal tools — everything your legal practice needs."
           />
 
-          <div className="an-features__grid">
+          {/* MAIN THREE COLUMN LAYOUT */}
 
-            {features.map(
-              ({ Icon, title, text, soon }, index) => (
-                <article
-                  className="an-feature an-reveal"
+          <div className="an-bf__layout">
+
+            {/* ==================================
+          LEFT SIDE - THREE FEATURES
+      ================================== */}
+
+            <div className="an-bf__side an-bf__side--left">
+
+              {[
+                {
+                  Icon: BookOpen,
+                  title: "Smart Legal Diary",
+                  text: "Manage daily court notes, case information and next hearing dates.",
+                },
+                {
+                  Icon: CalendarDays,
+                  title: "Hearings & Calendar",
+                  text: "View upcoming hearings and organise important dates.",
+                },
+                {
+                  Icon: FolderOpen,
+                  title: "Case Management",
+                  text: "Keep cases, diary entries and related records together.",
+                },
+              ].map(({ Icon, title, text }, index) => (
+
+                <div
+                  className="an-bf__feature"
                   key={title}
                   style={{
-                    "--an-reveal-delay":
-                      `${(index % 3) * 85}ms`,
+                    "--feature-delay": `${index * 120}ms`,
                   }}
                 >
 
-                  <span className="an-feature__icon">
+                  <div className="an-bf__icon">
                     <Icon
-                      size={27}
-                      strokeWidth={1.85}
+                      size={30}
+                      strokeWidth={1.9}
                       aria-hidden="true"
                     />
-                  </span>
+                  </div>
 
-                  <div>
-                    <h3>
-                      {title}
-
-                      {soon && (
-                        <span className="an-soon">
-                          Coming Soon
-                        </span>
-                      )}
-                    </h3>
-
+                  <div className="an-bf__copy">
+                    <h3>{title}</h3>
                     <p>{text}</p>
                   </div>
 
-                </article>
-              )
-            )}
+                  <span
+                    className="an-bf__connector"
+                    aria-hidden="true"
+                  />
+
+                </div>
+
+              ))}
+
+            </div>
+
+            {/* ==================================
+          CENTRE - REAL ADVOCANOTE BOOK
+      ================================== */}
+
+            <div className="an-bf__centre">
+
+              {/* GOLD CIRCULAR BACKGROUND */}
+
+              <div
+                className="an-bf__halo"
+                aria-hidden="true"
+              />
+
+              <div
+                className="an-bf__halo-inner"
+                aria-hidden="true"
+              />
+
+              {/* ACTUAL BOOK PNG IMAGE */}
+
+              <img
+                src="/images/landing-page/advocanote-book-clean.png"
+                alt="AdvocaNote AI Smart Legal Diary"
+                className="an-bf__book"
+                loading="lazy"
+                decoding="async"
+              />
+
+              {/* BOOK SHADOW */}
+
+              <div
+                className="an-bf__shadow"
+                aria-hidden="true"
+              />
+
+            </div>
+
+            {/* ==================================
+          RIGHT SIDE - THREE FEATURES
+      ================================== */}
+
+            <div className="an-bf__side an-bf__side--right">
+
+              {[
+                {
+                  Icon: Mic,
+                  title: "Voice to Text",
+                  text: "Speak your legal notes and turn them into written diary entries.",
+                },
+                {
+                  Icon: ClipboardCheck,
+                  title: "Tasks & Deadlines",
+                  text: "Create follow-up tasks and manage important deadlines.",
+                },
+                {
+                  Icon: ScanLine,
+                  title: "AI Diary Scan",
+                  text: "Convert handwritten diary notes into digital entries for review.",
+                  soon: true,
+                },
+              ].map(
+                ({ Icon, title, text, soon }, index) => (
+
+                  <div
+                    className="an-bf__feature"
+                    key={title}
+                    style={{
+                      "--feature-delay": `${index * 120}ms`,
+                    }}
+                  >
+
+                    <div className="an-bf__icon">
+                      <Icon
+                        size={30}
+                        strokeWidth={1.9}
+                        aria-hidden="true"
+                      />
+                    </div>
+
+                    <div className="an-bf__copy">
+
+                      <h3>
+                        {title}
+
+                        {soon && (
+                          <span className="an-bf__soon">
+                            Coming Soon
+                          </span>
+                        )}
+                      </h3>
+
+                      <p>{text}</p>
+
+                    </div>
+
+                    <span
+                      className="an-bf__connector"
+                      aria-hidden="true"
+                    />
+
+                  </div>
+
+                )
+              )}
+
+            </div>
 
           </div>
+
         </div>
       </section>
+
 
       {/* =================================
           HOW IT WORKS
@@ -717,11 +897,13 @@ export default function Home() {
       </section>
 
       {/* =================================
-          FAQ
+          PREMIUM FAQ SECTION
       ================================= */}
 
-      <section className="an-faq" id="faq">
-
+      <section
+        className="an-faq an-faq--modern"
+        id="faq"
+      >
         <img
           className="an-faq__court"
           src="/images/landing-page/advocanote-courthouse-watermark.png"
@@ -730,66 +912,130 @@ export default function Home() {
           loading="lazy"
         />
 
-        <div className="an-shell an-faq__layout">
+        <div className="an-shell an-faq-modern">
 
-          <div className="an-faq__copy">
+          {/* HEADER */}
 
-            <div className="an-faq__eyebrow">
-              FREQUENTLY ASKED QUESTIONS
+          <div className="an-faq-modern__top">
+            <div className="an-faq-modern__intro">
+
+              <span className="an-faq-modern__eyebrow">
+                FAQs
+              </span>
+
+              <h2>
+                Frequently Asked Questions
+              </h2>
+
+              <p>
+                Everything you need to know about
+                AdvocaNote, from managing your legal
+                diary to subscriptions and features.
+              </p>
+
             </div>
 
-            <h2>Have Questions?</h2>
-
-            <p>
-              Find quick answers to common questions
-              about AdvocaNote.
-            </p>
-
+            <button
+              type="button"
+              className="an-faq-modern__view"
+              aria-expanded={showAllFaq}
+              onClick={() =>
+                setShowAllFaq((old) => !old)
+              }
+            >
+              {showAllFaq ? "Show less" : "View all"}
+              <span aria-hidden="true">
+                {showAllFaq ? "−" : "+"}
+              </span>
+            </button>
           </div>
 
-          <div className="an-faq__list">
+          {/* FAQ TWO COLUMN GRID */}
 
-            {faqs.map(({ q, a }, i) => (
+          <div className="an-faq-modern__grid">
+
+            {faqColumns.map((column, columnIndex) => (
               <div
-                className={`an-faq__item${openFaq === i
-                  ? " an-faq__item--open"
-                  : ""
-                  }`}
-                key={q}
+                className="an-faq-modern__column"
+                key={columnIndex}
               >
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenFaq((old) =>
-                      old === i ? -1 : i
-                    )
-                  }
-                  aria-expanded={openFaq === i}
-                  aria-controls={`an-faq-answer-${i}`}
-                >
-                  <span>{q}</span>
+                {column.map(({ q, a }, itemIndex) => {
+                  const index =
+                    columnIndex * 3 + itemIndex;
 
-                  <ChevronDown
-                    size={18}
-                    aria-hidden="true"
-                  />
-                </button>
+                  const expanded =
+                    showAllFaq || openFaq === index;
 
-                <div
-                  className="an-faq__answer"
-                  id={`an-faq-answer-${i}`}
-                  hidden={openFaq !== i}
-                >
-                  <p>{a}</p>
-                </div>
+                  return (
+                    <article
+                      key={q}
+                      className={`an-faq-v2__item${expanded
+                        ? " an-faq-v2__item--open"
+                        : ""
+                        }`}
+                    >
+
+                      <button
+                        type="button"
+                        className="an-faq-v2__question"
+                        aria-expanded={expanded}
+                        aria-controls={`an-faq-answer-${index}`}
+                        onClick={() => {
+                          setShowAllFaq(false);
+
+                          setOpenFaq((old) => {
+                            if (showAllFaq) {
+                              return index;
+                            }
+
+                            return old === index
+                              ? -1
+                              : index;
+                          });
+                        }}
+                      >
+                        <span>{q}</span>
+
+                        <span
+                          className="an-faq-v2__symbol"
+                          aria-hidden="true"
+                        >
+                          {expanded ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      <div
+                        className="an-faq-v2__answer"
+                        id={`an-faq-answer-${index}`}
+                        hidden={!expanded}
+                      >
+                        <p>{a}</p>
+                      </div>
+
+                    </article>
+                  );
+                })}
 
               </div>
             ))}
 
           </div>
+
+          {/* BOTTOM DECORATION */}
+
+          <div
+            className="an-faq-modern__bottom"
+            aria-hidden="true"
+          >
+            <span />
+            <Scale size={19} strokeWidth={1.6} />
+            <span />
+          </div>
+
         </div>
       </section>
+
 
       {/* =================================
           FINAL CTA

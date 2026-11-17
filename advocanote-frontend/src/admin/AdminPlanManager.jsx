@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+
 import {
   Plus,
   Pencil,
@@ -14,7 +15,11 @@ import "./AdminPlanManager.css";
 const API_URL = (
   import.meta.env.VITE_API_URL ||
   "http://127.0.0.1:8000"
-).replace(/\/$/, "");
+).replace(/\/+$/, "");
+
+// ==========================================
+// DEFAULT FORM
+// ==========================================
 
 function emptyForm() {
   return {
@@ -24,9 +29,17 @@ function emptyForm() {
     billing_interval: "month",
     featuresText: "diary\ncases",
     trial_days: "0",
+
+    // Empty = Unlimited diary entries.
+    daily_action_limit: "",
+
     is_active: false,
   };
 }
+
+// ==========================================
+// FORMAT HELPERS
+// ==========================================
 
 function money(value, currency = "LKR") {
   const amount = Number(value);
@@ -45,6 +58,14 @@ function billingLabel(interval) {
   return interval || "—";
 }
 
+function dailyLimitLabel(limit) {
+  if (limit == null) {
+    return "Unlimited";
+  }
+
+  return `${limit} entries/day`;
+}
+
 function parseFeatures(text) {
   return [
     ...new Set(
@@ -55,6 +76,10 @@ function parseFeatures(text) {
     ),
   ];
 }
+
+// ==========================================
+// API ERROR HANDLING
+// ==========================================
 
 function errorText(data, status) {
   const detail = data?.detail;
@@ -113,7 +138,9 @@ async function adminRequest(path, method, body) {
           ? { "Content-Type": "application/json" }
           : {}),
       },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      ...(body
+        ? { body: JSON.stringify(body) }
+        : {}),
     });
   } catch {
     throw new Error(
@@ -134,6 +161,10 @@ async function adminRequest(path, method, body) {
   return result;
 }
 
+// ==========================================
+// ADMIN PLAN MANAGER
+// ==========================================
+
 export default function AdminPlanManager({
   plans = [],
   lawyers = [],
@@ -145,9 +176,12 @@ export default function AdminPlanManager({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [confirmPlan, setConfirmPlan] = useState(null);
 
-  const [success, setSuccess] = useState("");
+  // ========================================
+  // UPDATE FORM FIELD
+  // ========================================
 
   function updateField(field, value) {
     setForm((current) => ({
@@ -155,6 +189,10 @@ export default function AdminPlanManager({
       [field]: value,
     }));
   }
+
+  // ========================================
+  // COUNT EXISTING SUBSCRIBERS
+  // ========================================
 
   function subscriberCount(planId) {
     return lawyers.filter((lawyer) => {
@@ -169,6 +207,10 @@ export default function AdminPlanManager({
     }).length;
   }
 
+  // ========================================
+  // START CREATE
+  // ========================================
+
   function startCreate() {
     setMode("create");
     setEditingPlan(null);
@@ -177,6 +219,10 @@ export default function AdminPlanManager({
     setSuccess("");
     setConfirmPlan(null);
   }
+
+  // ========================================
+  // START EDIT
+  // ========================================
 
   function startEdit(plan) {
     setMode("edit");
@@ -190,19 +236,37 @@ export default function AdminPlanManager({
       description: plan.description || "",
       price: String(plan.price ?? ""),
       billing_interval: plan.billing_interval,
+
       featuresText: Array.isArray(plan.features)
         ? plan.features.join("\n")
         : "",
-      trial_days: String(plan.trial_days ?? 0),
+
+      trial_days: String(
+        plan.trial_days ?? 0
+      ),
+
+      daily_action_limit:
+        plan.daily_action_limit == null
+          ? ""
+          : String(plan.daily_action_limit),
+
       is_active: Boolean(plan.is_active),
     });
   }
+
+  // ========================================
+  // CLOSE FORM
+  // ========================================
 
   function cancelEdit() {
     setMode(null);
     setEditingPlan(null);
     setError("");
   }
+
+  // ========================================
+  // CREATE / UPDATE PLAN
+  // ========================================
 
   async function submitForm(event) {
     event.preventDefault();
@@ -214,55 +278,146 @@ export default function AdminPlanManager({
     const features = parseFeatures(form.featuresText);
     const trialDays = Number(form.trial_days);
 
+    const limitInput = String(
+      form.daily_action_limit
+    ).trim();
+
+    const dailyLimit =
+      limitInput === ""
+        ? null
+        : Number(limitInput);
+
+    // --------------------------------------
+    // VALIDATE PLAN NAME
+    // --------------------------------------
+
     if (name.length < 2 || name.length > 100) {
-      setError("Plan name must contain 2–100 characters.");
+      setError(
+        "Plan name must contain 2–100 characters."
+      );
       return;
     }
+
+    // --------------------------------------
+    // VALIDATE DESCRIPTION
+    // --------------------------------------
 
     if (description.length > 500) {
-      setError("Description must not exceed 500 characters.");
+      setError(
+        "Description must not exceed 500 characters."
+      );
       return;
     }
 
+    // --------------------------------------
+    // VALIDATE FEATURES
+    // --------------------------------------
+
     if (features.length > 30) {
-      setError("Maximum 30 features are allowed.");
+      setError(
+        "Maximum 30 features are allowed."
+      );
       return;
     }
+
+    // --------------------------------------
+    // VALIDATE TRIAL DAYS
+    // --------------------------------------
 
     if (
       !Number.isInteger(trialDays) ||
       trialDays < 0 ||
       trialDays > 30
     ) {
-      setError("Trial days must be between 0 and 30.");
+      setError(
+        "Trial days must be between 0 and 30."
+      );
+      return;
+    }
+
+    // --------------------------------------
+    // VALIDATE DAILY DIARY ENTRY LIMIT
+    // --------------------------------------
+
+    if (
+      dailyLimit !== null &&
+      (
+        !Number.isSafeInteger(dailyLimit) ||
+        dailyLimit < 1
+      )
+    ) {
+      setError(
+        "Daily diary entry limit must be a positive whole number, or leave it empty for Unlimited."
+      );
       return;
     }
 
     const isCreate = mode === "create";
 
+    // --------------------------------------
+    // VALIDATE PRICE
+    // --------------------------------------
+
     if (
       isCreate &&
       (
-        !/^\d{1,8}(\.\d{1,2})?$/.test(form.price) ||
+        !/^\d{1,8}(\.\d{1,2})?$/.test(
+          form.price
+        ) ||
         Number(form.price) <= 0
       )
     ) {
-      setError("Enter a valid LKR price, up to 2 decimal places.");
+      setError(
+        "Enter a valid LKR price, up to 2 decimal places."
+      );
       return;
     }
+
+    // --------------------------------------
+    // EXISTING SUBSCRIBERS
+    // --------------------------------------
 
     const hasSubscribers =
       !isCreate &&
       subscriberCount(editingPlan.id) > 0;
 
+    const previousLimit =
+      editingPlan?.daily_action_limit ?? null;
+
+    // Confirm a limit change that affects
+    // lawyers already subscribed to the plan.
+
+    if (
+      hasSubscribers &&
+      previousLimit !== dailyLimit
+    ) {
+      const approved = window.confirm(
+        `Change the daily diary entry limit for ${editingPlan.name}?\n\n` +
+        `Current: ${dailyLimitLabel(previousLimit)}\n` +
+        `New: ${dailyLimitLabel(dailyLimit)}\n\n` +
+        "This change will also affect existing subscribers on this plan."
+      );
+
+      if (!approved) return;
+    }
+
+    // --------------------------------------
+    // API PAYLOAD
+    // --------------------------------------
+
     const payload = {
       name,
       description: description || null,
       trial_days: trialDays,
+
+      // Actual value saved in MySQL.
+      // null = Unlimited.
+      daily_action_limit: dailyLimit,
     };
 
     // Existing subscribers must not receive
-    // an unexpected feature change.
+    // unexpected feature changes.
+
     if (!hasSubscribers) {
       payload.features = features;
     }
@@ -307,10 +462,15 @@ export default function AdminPlanManager({
 
     } catch (err) {
       setError(err.message);
+
     } finally {
       setSaving(false);
     }
   }
+
+  // ========================================
+  // ACTIVATE / DEACTIVATE PLAN
+  // ========================================
 
   async function toggleActive(plan) {
     if (saving) return;
@@ -337,8 +497,10 @@ export default function AdminPlanManager({
       );
 
       onChanged?.();
+
     } catch (err) {
       setError(err.message);
+
     } finally {
       setSaving(false);
     }
@@ -348,8 +510,14 @@ export default function AdminPlanManager({
     editingPlan &&
     subscriberCount(editingPlan.id) > 0;
 
+  // ========================================
+  // PAGE UI
+  // ========================================
+
   return (
     <div className="apm-root">
+
+      {/* HEADER */}
 
       <div className="apm-heading">
         <div>
@@ -371,19 +539,31 @@ export default function AdminPlanManager({
         </button>
       </div>
 
+      {/* ERROR MESSAGE */}
+
       {error && (
-        <div className="apm-alert apm-error" role="alert">
+        <div
+          className="apm-alert apm-error"
+          role="alert"
+        >
           <AlertCircle size={17} />
           <span>{error}</span>
         </div>
       )}
 
+      {/* SUCCESS MESSAGE */}
+
       {success && (
-        <div className="apm-alert apm-success" role="status">
+        <div
+          className="apm-alert apm-success"
+          role="status"
+        >
           <CheckCircle2 size={17} />
           <span>{success}</span>
         </div>
       )}
+
+      {/* CREATE / EDIT FORM */}
 
       {mode && (
         <form
@@ -410,8 +590,11 @@ export default function AdminPlanManager({
 
           <div className="apm-fields">
 
+            {/* PLAN NAME */}
+
             <label>
               Plan Name
+
               <input
                 type="text"
                 required
@@ -419,14 +602,20 @@ export default function AdminPlanManager({
                 maxLength={100}
                 value={form.name}
                 onChange={(e) =>
-                  updateField("name", e.target.value)
+                  updateField(
+                    "name",
+                    e.target.value
+                  )
                 }
                 placeholder="e.g. Professional"
               />
             </label>
 
+            {/* DESCRIPTION */}
+
             <label>
               Description
+
               <input
                 type="text"
                 maxLength={500}
@@ -441,8 +630,11 @@ export default function AdminPlanManager({
               />
             </label>
 
+            {/* PRICE */}
+
             <label>
               Price (LKR)
+
               <input
                 type="number"
                 required
@@ -452,14 +644,20 @@ export default function AdminPlanManager({
                 value={form.price}
                 disabled={mode === "edit"}
                 onChange={(e) =>
-                  updateField("price", e.target.value)
+                  updateField(
+                    "price",
+                    e.target.value
+                  )
                 }
                 placeholder="1000.00"
               />
             </label>
 
+            {/* BILLING CYCLE */}
+
             <label>
               Billing Cycle
+
               <select
                 value={form.billing_interval}
                 disabled={mode === "edit"}
@@ -470,13 +668,46 @@ export default function AdminPlanManager({
                   )
                 }
               >
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
+                <option value="month">
+                  Monthly
+                </option>
+
+                <option value="year">
+                  Yearly
+                </option>
               </select>
             </label>
 
+            {/* DAILY DIARY ENTRY LIMIT */}
+
+            <label>
+              Daily Diary Entry Limit
+
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={form.daily_action_limit}
+                onChange={(e) =>
+                  updateField(
+                    "daily_action_limit",
+                    e.target.value
+                  )
+                }
+                placeholder="Empty = Unlimited"
+              />
+
+              <small>
+                Leave empty for Unlimited,
+                or enter 3, 5, 10, etc.
+              </small>
+            </label>
+
+            {/* TRIAL DAYS */}
+
             <label>
               Trial Days
+
               <input
                 type="number"
                 min="0"
@@ -492,8 +723,11 @@ export default function AdminPlanManager({
               />
             </label>
 
+            {/* ENABLED FEATURES */}
+
             <label className="apm-wide">
               Enabled Features
+
               <textarea
                 rows={4}
                 value={form.featuresText}
@@ -508,22 +742,28 @@ export default function AdminPlanManager({
                   "diary\ncases\nhearings\ntasks\ncalendar"
                 }
               />
+
               <small>
-                Enter one feature key per line, such
-                as diary, cases, hearings, tasks or
-                calendar.
+                Enter one feature key per line,
+                such as diary, cases, hearings,
+                tasks or calendar.
               </small>
             </label>
-
           </div>
+
+          {/* SUBSCRIBER WARNING */}
 
           {protectedFeatures && (
             <p className="apm-warning">
               This plan has active subscribers.
               Feature editing is locked to avoid
               unexpectedly changing their access.
+              Changing the daily diary entry limit
+              will affect existing subscribers.
             </p>
           )}
+
+          {/* BILLING TERMS WARNING */}
 
           {mode === "edit" && (
             <p className="apm-warning">
@@ -532,6 +772,8 @@ export default function AdminPlanManager({
               different price or billing cycle.
             </p>
           )}
+
+          {/* CREATE PLAN ACTIVE STATUS */}
 
           {mode === "create" && (
             <label className="apm-checkbox">
@@ -545,12 +787,16 @@ export default function AdminPlanManager({
                   )
                 }
               />
+
               Activate this plan after successful
               Stripe creation
             </label>
           )}
 
+          {/* FORM BUTTONS */}
+
           <div className="apm-form-actions">
+
             <button
               type="button"
               className="apm-button apm-outline"
@@ -568,20 +814,26 @@ export default function AdminPlanManager({
               {saving
                 ? "Saving..."
                 : mode === "create"
-                ? "Create Stripe Plan"
-                : "Save Changes"}
+                  ? "Create Stripe Plan"
+                  : "Save Changes"}
             </button>
           </div>
         </form>
       )}
 
+      {/* =====================================
+          PLANS TABLE
+      ===================================== */}
+
       <div className="asub-table-scroll">
         <table className="asub-table">
+
           <thead>
             <tr>
               <th>Plan</th>
               <th>Price</th>
               <th>Billing</th>
+              <th>Daily Entries</th>
               <th>Features</th>
               <th>Subscribers</th>
               <th>Status</th>
@@ -592,23 +844,35 @@ export default function AdminPlanManager({
           <tbody>
             {plans.length === 0 ? (
               <tr>
-                <td colSpan="7" className="asub-empty">
+                <td
+                  colSpan="8"
+                  className="asub-empty"
+                >
                   No subscription plans found.
                 </td>
               </tr>
             ) : (
               plans.map((plan) => {
-                const count = subscriberCount(plan.id);
+                const count = subscriberCount(
+                  plan.id
+                );
 
                 return (
                   <tr key={plan.id}>
 
+                    {/* PLAN */}
+
                     <td>
-                      <strong>{plan.name}</strong>
+                      <strong>
+                        {plan.name}
+                      </strong>
+
                       <small className="apm-subtext">
                         Plan #{plan.id}
                       </small>
                     </td>
+
+                    {/* PRICE */}
 
                     <td>
                       {money(
@@ -617,11 +881,23 @@ export default function AdminPlanManager({
                       )}
                     </td>
 
+                    {/* BILLING */}
+
                     <td>
                       {billingLabel(
                         plan.billing_interval
                       )}
                     </td>
+
+                    {/* DAILY ENTRY LIMIT */}
+
+                    <td>
+                      {dailyLimitLabel(
+                        plan.daily_action_limit
+                      )}
+                    </td>
+
+                    {/* FEATURES */}
 
                     <td>
                       {Array.isArray(plan.features)
@@ -629,7 +905,13 @@ export default function AdminPlanManager({
                         : "—"}
                     </td>
 
-                    <td>{count}</td>
+                    {/* SUBSCRIBERS */}
+
+                    <td>
+                      {count}
+                    </td>
+
+                    {/* STATUS */}
 
                     <td>
                       <span
@@ -647,13 +929,18 @@ export default function AdminPlanManager({
                       </span>
                     </td>
 
+                    {/* ACTIONS */}
+
                     <td>
                       <div className="apm-table-actions">
+
                         <button
                           type="button"
                           className="apm-action"
                           disabled={saving}
-                          onClick={() => startEdit(plan)}
+                          onClick={() =>
+                            startEdit(plan)
+                          }
                         >
                           <Pencil size={14} />
                           Edit
@@ -664,10 +951,14 @@ export default function AdminPlanManager({
                           className="apm-action"
                           disabled={
                             saving ||
-                            (plan.is_active && count > 0)
+                            (
+                              plan.is_active &&
+                              count > 0
+                            )
                           }
                           title={
-                            plan.is_active && count > 0
+                            plan.is_active &&
+                            count > 0
                               ? "Active subscribers use this plan."
                               : ""
                           }
@@ -676,13 +967,14 @@ export default function AdminPlanManager({
                           }
                         >
                           <Power size={14} />
+
                           {plan.is_active
                             ? "Deactivate"
                             : "Activate"}
                         </button>
+
                       </div>
                     </td>
-
                   </tr>
                 );
               })
@@ -691,8 +983,13 @@ export default function AdminPlanManager({
         </table>
       </div>
 
+      {/* =====================================
+          ACTIVATE / DEACTIVATE CONFIRMATION
+      ===================================== */}
+
       {confirmPlan && (
         <div className="apm-confirm">
+
           <strong>
             {confirmPlan.is_active
               ? "Deactivate"
@@ -706,10 +1003,13 @@ export default function AdminPlanManager({
           </p>
 
           <div className="apm-form-actions">
+
             <button
               type="button"
               className="apm-button apm-outline"
-              onClick={() => setConfirmPlan(null)}
+              onClick={() =>
+                setConfirmPlan(null)
+              }
               disabled={saving}
             >
               Cancel
@@ -727,6 +1027,7 @@ export default function AdminPlanManager({
                 ? "Updating..."
                 : "Confirm"}
             </button>
+
           </div>
         </div>
       )}

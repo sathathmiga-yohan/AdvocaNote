@@ -262,8 +262,8 @@ def update_plan(
 # 3 = Three actions per day
 # Applies across all app features
 
-class PlanDailyLimitUpdate(BaseModel):
 
+class PlanDailyLimitUpdate(BaseModel):
     model_config = ConfigDict(
         extra="forbid"
     )
@@ -272,10 +272,11 @@ class PlanDailyLimitUpdate(BaseModel):
         ...,
         ge=1,
         description=(
-            "Maximum daily actions, "
-            "or null for unlimited usage"
+            "Maximum new diary entries per day, "
+            "or null for unlimited diary entries"
         ),
     )
+
 
 
 @router.patch("/plans/{plan_id}/daily-limit")

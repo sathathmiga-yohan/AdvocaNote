@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-
+from app.models.subscription_plan import SubscriptionPlan
 from app.models.user import User
 from app.models.subscription import Subscription
 from app.models.subscription_daily_usage import (
@@ -101,36 +101,47 @@ def active_access(subscription):
     )
 
 
+
 def plan_options(db: Session):
+
+    plans = db.scalars(
+        select(SubscriptionPlan)
+        .where(
+            SubscriptionPlan.is_active.is_(True)
+        )
+        .order_by(
+            SubscriptionPlan.price.asc(),
+            SubscriptionPlan.id.asc(),
+        )
+    ).all()
 
     result = []
 
-    for key in (
-        "basic",
-        "premium",
-        "annual",
-    ):
-        config = PLAN_SETTINGS[key]
+    for plan in plans:
 
-        plan = get_official_plan(
-            db,
-            key,
+        # Keep old keys for existing frontend.
+        # New plans get their own unique key.
+
+        plan_key = PLAN_BY_ID.get(
+            plan.id,
+            f"plan_{plan.id}",
         )
 
         result.append({
-            "key": key,
+            "key": plan_key,
             "plan_id": plan.id,
-            "name": config["name"],
-            "price": str(config["price"]),
-            "currency": "LKR",
+            "name": plan.name,
+            "description": plan.description,
+            "price": str(plan.price),
+            "currency": plan.currency,
             "billing_interval": (
-                config["interval"]
+                plan.billing_interval
             ),
             "daily_action_limit": (
-                config["daily_limit"]
+                plan.daily_action_limit
             ),
             "is_unlimited": (
-                config["daily_limit"] is None
+                plan.daily_action_limit is None
             ),
             "all_features": True,
             "stripe_ready": bool(
@@ -195,86 +206,136 @@ def subscription_access(
     else:
         current_status = subscription.status
 
-    current_plan_key = None
+   
+    # ==========================================
+    # CURRENT SUBSCRIPTION PLAN
+    # ==========================================
+
+    current_plan = (
+        db.get(
+            SubscriptionPlan,
+            subscription.plan_id,
+        )
+        if subscription else None
+    )
+
+    current_plan_key = (
+        PLAN_BY_ID.get(
+            current_plan.id,
+            f"plan_{current_plan.id}",
+        )
+        if current_plan else None
+    )
+
+    # ==========================================
+    # DAILY USAGE DETAILS
+    # ==========================================
+
     daily_limit = None
     actions_used = 0
     remaining = None
     unlimited = False
 
-    if subscription is not None:
-        current_plan_key = PLAN_BY_ID.get(
-            subscription.plan_id
-        )
+    # ==========================================
+    # FREE TRIAL - ALWAYS UNLIMITED
+    # ==========================================
 
     if valid and subscription.status == "trialing":
         unlimited = True
 
-    elif valid and subscription.status == "active":
+    # ==========================================
+    # ANY ACTIVE PAID SUBSCRIPTION
+    # ==========================================
 
-        config = (
-            PLAN_SETTINGS.get(current_plan_key)
-        )
+    elif (
+        valid
+        and subscription.status == "active"
+        and current_plan is not None
+    ):
 
-        if config:
-            daily_limit = config["daily_limit"]
+        # Read the actual limit from database.
+        # None = Unlimited
+        # 3 = 3 entries per day
+        # 5 = 5 entries per day
+        # Works for all admin-created plans.
 
-            unlimited = (
-                daily_limit is None
+        daily_limit = current_plan.daily_action_limit
+
+        unlimited = daily_limit is None
+
+        if daily_limit is not None:
+
+            usage = db.scalar(
+                select(SubscriptionDailyUsage)
+                .where(
+                    SubscriptionDailyUsage.user_id
+                    == user.id,
+                    SubscriptionDailyUsage.usage_date
+                    == get_usage_date(),
+                )
             )
 
-            if daily_limit is not None:
+            actions_used = (
+                usage.actions_used
+                if usage else 0
+            )
 
-                usage = db.scalar(
-                    select(SubscriptionDailyUsage)
-                    .where(
-                        SubscriptionDailyUsage.user_id
-                        == user.id,
+            remaining = max(
+                0,
+                daily_limit - actions_used,
+            )
 
-                        SubscriptionDailyUsage.usage_date
-                        == get_usage_date(),
-                    )
-                )
+    # ==========================================
+    # DISPLAY PLAN NAME
+    # ==========================================
 
-                actions_used = (
-                    usage.actions_used
-                    if usage else 0
-                )
-
-                remaining = max(
-                    0,
-                    daily_limit - actions_used,
-                )
-
-    if valid and subscription.status == "trialing":
+    if (
+        valid
+        and subscription.status == "trialing"
+    ):
         display_plan = "Free Trial"
-    elif current_plan_key:
-        display_plan = (
-            PLAN_SETTINGS[current_plan_key]["name"]
-        )
+
     else:
-        display_plan = None
+        display_plan = (
+            current_plan.name
+            if current_plan else None
+        )
+
+    # ==========================================
+    # SUBSCRIPTION ACCESS RESPONSE
+    # ==========================================
 
     return {
         "status": current_status,
         "has_access": valid,
+
         "plan_id": (
             subscription.plan_id
             if subscription else None
         ),
+
         "plan_key": current_plan_key,
+
         "plan_name": display_plan,
+
         "is_unlimited": unlimited,
+
         "daily_action_limit": daily_limit,
+
         "actions_used_today": actions_used,
+
         "remaining_today": remaining,
+
         "trial_ends_at": (
             subscription.trial_ends_at
             if subscription else None
         ),
+
         "current_period_end": (
             subscription.current_period_end
             if subscription else None
         ),
+
         "can_change_plan": bool(
             valid
             and subscription
@@ -282,19 +343,28 @@ def subscription_access(
             and subscription.stripe_subscription_id
             and subscription.stripe_customer_id
         ),
+
         "plans": plan_options(db),
     }
-
 
 # ==========================================
 # SELECT PAID PLAN
 # ==========================================
 
+
 class SelectPlanRequest(BaseModel):
-    plan_key: str = Field(
+
+    plan_key: str | None = Field(
+        default=None,
         min_length=1,
-        max_length=20,
+        max_length=50,
     )
+
+    plan_id: int | None = Field(
+        default=None,
+        gt=0,
+    )
+
 
 
 # ==========================================
@@ -303,14 +373,21 @@ class SelectPlanRequest(BaseModel):
 # Uses Stripe's hosted confirmation.
 # Database plan is NOT changed here.
 # Verified Stripe payment/webhook updates it.
+
+# ==========================================
+# DYNAMIC PAID SUBSCRIPTION PLAN CHANGE
 # ==========================================
 
 def create_plan_change_portal(
     db: Session,
     user: User,
     subscription: Subscription,
-    target_plan,
+    target_plan: SubscriptionPlan,
 ):
+
+    # ======================================
+    # VERIFY EXISTING STRIPE SUBSCRIPTION
+    # ======================================
 
     if (
         not subscription.stripe_subscription_id
@@ -321,46 +398,82 @@ def create_plan_change_portal(
             detail="Stripe subscription not found",
         )
 
-    current_plan_key = PLAN_BY_ID.get(
-        subscription.plan_id
+    current_plan = db.get(
+        SubscriptionPlan,
+        subscription.plan_id,
     )
 
-    if current_plan_key is None:
+    if current_plan is None:
         raise HTTPException(
-            status_code=409,
-            detail="Current plan is not supported",
+            status_code=404,
+            detail="Current subscription plan not found",
         )
 
-    current_plan = get_official_plan(
-        db,
-        current_plan_key,
+    if current_plan.id == target_plan.id:
+        raise HTTPException(
+            status_code=409,
+            detail="You already have this plan",
+        )
+
+    if not target_plan.is_active:
+        raise HTTPException(
+            status_code=409,
+            detail="Selected plan is not active",
+        )
+
+    if not target_plan.stripe_price_id:
+        raise HTTPException(
+            status_code=409,
+            detail="Selected plan is not connected to Stripe",
+        )
+
+    if current_plan.currency != target_plan.currency:
+        raise HTTPException(
+            status_code=409,
+            detail="Plan currencies do not match",
+        )
+
+    # ======================================
+    # CHECK SUPPORTED IMMEDIATE UPGRADES
+    # ======================================
+    #
+    # Works with ANY database plan.
+    #
+    # Monthly -> Higher-priced monthly
+    # Monthly -> Yearly
+    #
+    # Downgrades / Yearly -> Monthly require
+    # a separate scheduled change workflow.
+    # ======================================
+
+    monthly_upgrade = (
+        current_plan.billing_interval == "month"
+        and target_plan.billing_interval == "month"
+        and target_plan.price > current_plan.price
     )
 
-    # This flow supports upgrades from
-    # Basic to Premium / Annual, and
-    # Premium to Annual.
-    #
-    # Annual downgrades are handled separately
-    # after the already-paid period.
+    monthly_to_yearly = (
+        current_plan.billing_interval == "month"
+        and target_plan.billing_interval == "year"
+    )
 
-    allowed_changes = {
-        "basic": {"premium", "annual"},
-        "premium": {"annual"},
-        "annual": set(),
-    }
-
-    target_key = PLAN_BY_ID[target_plan.id]
-
-    if target_key not in allowed_changes[
-        current_plan_key
-    ]:
+    if not (
+        monthly_upgrade
+        or monthly_to_yearly
+    ):
         raise HTTPException(
             status_code=409,
             detail=(
-                "This plan change is not available "
-                "as an immediate upgrade"
+                "This change cannot be applied "
+                "as an immediate upgrade. "
+                "Use a scheduled plan change "
+                "for downgrades or other changes."
             ),
         )
+
+    # ======================================
+    # VERIFY STRIPE STATE
+    # ======================================
 
     try:
         stripe_sub = (
@@ -380,10 +493,8 @@ def create_plan_change_portal(
 
         if (
             stripe_sub.get("status") != "active"
-            or customer
-            != subscription.stripe_customer_id
-            or metadata.get("user_id")
-            != str(user.id)
+            or customer != subscription.stripe_customer_id
+            or metadata.get("user_id") != str(user.id)
             or metadata.get("plan_id")
             != str(current_plan.id)
             or stripe_sub.get("pending_update")
@@ -397,6 +508,10 @@ def create_plan_change_portal(
                     "be changed right now"
                 ),
             )
+
+        # ==================================
+        # VERIFY CURRENT STRIPE PRICE
+        # ==================================
 
         items = (
             (stripe_sub.get("items") or {})
@@ -423,11 +538,16 @@ def create_plan_change_portal(
             not item.get("id")
             or current_price_id
             != current_plan.stripe_price_id
+            or item.get("quantity") != 1
         ):
             raise HTTPException(
                 status_code=409,
                 detail="Stripe plan mismatch",
             )
+
+        # ==================================
+        # OPEN STRIPE CONFIRMATION PORTAL
+        # ==================================
 
         base_url = settings.FRONTEND_URL.rstrip("/")
 
@@ -443,9 +563,7 @@ def create_plan_change_portal(
                     "items": [
                         {
                             "id": item["id"],
-                            "price": (
-                                target_plan.stripe_price_id
-                            ),
+                            "price": target_plan.stripe_price_id,
                             "quantity": 1,
                         }
                     ],
@@ -463,8 +581,8 @@ def create_plan_change_portal(
             "redirect_url": portal.url,
             "flow": "stripe_plan_change",
             "message": (
-                "Confirm the plan change and "
-                "payment in Stripe"
+                "Confirm the plan change "
+                "and payment in Stripe"
             ),
         }
 
@@ -473,11 +591,9 @@ def create_plan_change_portal(
             status_code=502,
             detail=(
                 "Unable to open Stripe plan change. "
-                "Check Billing Portal plan-switching "
-                "configuration."
+                "Check Billing Portal configuration."
             ),
         ) from exc
-
 
 # ==========================================
 # CHECKOUT / UPGRADE
@@ -490,18 +606,47 @@ def select_subscription_plan(
     user: User = Depends(require_lawyer),
 ):
 
-    plan_key = data.plan_key.strip().lower()
 
-    if plan_key not in PLAN_SETTINGS:
+    plan_key = (
+        data.plan_key or ""
+    ).strip().lower()
+
+    if data.plan_id is not None:
+        selected_plan_id = data.plan_id
+
+    elif plan_key in PLAN_SETTINGS:
+        selected_plan_id = (
+            PLAN_SETTINGS[plan_key]["id"]
+        )
+
+    elif (
+        plan_key.startswith("plan_")
+        and plan_key[5:].isdigit()
+    ):
+        selected_plan_id = int(
+            plan_key[5:]
+        )
+
+    else:
         raise HTTPException(
             status_code=422,
             detail="Invalid subscription plan",
         )
 
-    target_plan = get_official_plan(
-        db,
-        plan_key,
+    target_plan = db.get(
+        SubscriptionPlan,
+        selected_plan_id,
     )
+
+    if (
+        target_plan is None
+        or not target_plan.is_active
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Active subscription plan not found",
+        )
+
 
     if not target_plan.stripe_price_id:
         raise HTTPException(

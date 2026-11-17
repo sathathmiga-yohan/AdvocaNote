@@ -27,14 +27,6 @@ from app.auth.subscription_guard import (
     require_feature,
 )
 
-# ==========================================
-# SUBSCRIPTION DAILY USAGE
-# ==========================================
-
-from app.services.subscription_usage import (
-    consume_daily_action,
-)
-
 
 # ==========================================
 # HEARINGS ROUTER
@@ -106,7 +98,7 @@ def hearings(
 # ==========================================
 # POSTPONE / RESCHEDULE HEARING
 # ==========================================
-# Successful reschedule = 1 action
+# Rescheduling does not consume diary quota.
 # ==========================================
 
 class HearingReschedule(BaseModel):
@@ -216,31 +208,10 @@ def reschedule_hearing(
         )
 
     # ======================================
-    # SUBSCRIPTION + RESCHEDULE
+    # RESCHEDULE HEARING
     # ======================================
 
     try:
-
-        # ==================================
-        # CONSUME ONE DAILY ACTION
-        # ==================================
-        #
-        # Basic:
-        # Maximum 3 actions per day.
-        #
-        # Free Trial / Premium / Annual:
-        # Unlimited.
-        #
-        # If limit reached:
-        # HTTP 429 will be returned.
-        #
-        # No commit occurs here.
-        # Failed operations roll back.
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
 
         # ==================================
         # PRESERVE ORIGINAL HEARING
@@ -301,7 +272,7 @@ def reschedule_hearing(
         old_date = old.hearing_date
 
         # ==================================
-        # COMMIT HEARING + DAILY USAGE
+        # COMMIT HEARING CHANGES
         # ==================================
 
         db.commit()
@@ -328,9 +299,6 @@ def reschedule_hearing(
         # ==================================
         # ROLLBACK ON FAILURE
         # ==================================
-        #
-        # Hearing changes and usage
-        # increment are rolled back.
 
         db.rollback()
         raise
@@ -339,7 +307,7 @@ def reschedule_hearing(
 # ==========================================
 # MARK HEARING AS COMPLETED
 # ==========================================
-# Successful completion = 1 action
+# Completing a hearing does not consume quota.
 # ==========================================
 
 @router.patch(
@@ -405,19 +373,10 @@ def complete_hearing(
         )
 
     # ======================================
-    # SUBSCRIPTION + COMPLETE HEARING
+    # COMPLETE HEARING
     # ======================================
 
     try:
-
-        # ==================================
-        # CONSUME ONE DAILY ACTION
-        # ==================================
-
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
 
         # ==================================
         # UPDATE HEARING STATUS
@@ -437,7 +396,7 @@ def complete_hearing(
         )
 
         # ==================================
-        # COMMIT HEARING + DAILY USAGE
+        # COMMIT HEARING CHANGES
         # ==================================
 
         db.commit()
@@ -451,8 +410,6 @@ def complete_hearing(
         }
 
     except Exception:
-
-        # Do not count failed actions.
 
         db.rollback()
         raise

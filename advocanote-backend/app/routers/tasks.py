@@ -21,7 +21,6 @@ from app.models.diary import (
 )
 from app.routers.diary import lawyer_only
 from app.auth.subscription_guard import require_feature
-from app.services.subscription_usage import consume_daily_action
 
 
 router = APIRouter(
@@ -236,11 +235,6 @@ def create_case_task(
         )
 
     try:
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
-
         task = Task(
             lawyer_id=user.id,
             case_id=case_id,
@@ -332,11 +326,6 @@ def update_case_task(
         return task_json(task)
 
     try:
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
-
         for field_name, value in changes.items():
             setattr(
                 task,
@@ -384,11 +373,6 @@ def delete_case_task(
     )
 
     try:
-        consume_daily_action(
-            db=db,
-            user_id=user.id,
-        )
-
         db.execute(
             delete(Reminder).where(
                 Reminder.task_id == task.id,

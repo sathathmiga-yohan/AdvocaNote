@@ -162,9 +162,9 @@ function getPlanFeatures(plan) {
         typeof item === "string"
           ? item
           : item?.name ||
-            item?.label ||
-            item?.feature_name ||
-            ""
+          item?.label ||
+          item?.feature_name ||
+          ""
       )
       .filter(Boolean);
   }
@@ -288,7 +288,7 @@ export default function Subscription() {
       } catch (err) {
         setError(
           err.message ||
-            "Failed to load subscription details."
+          "Failed to load subscription details."
         );
       } finally {
         setLoading(false);
@@ -400,9 +400,15 @@ export default function Subscription() {
   const isActive =
     subscriptionStatus === "active";
 
+
   const canSubscribe =
     !hasSubscription ||
-    subscriptionStatus === "canceled";
+    subscriptionStatus === "canceled" ||
+    (
+      subscriptionStatus === "expired" &&
+      Boolean(subscription?.trial_ends_at)
+    );
+
 
   // =====================================
   // SEARCH PLANS AND PAYMENTS
@@ -411,12 +417,11 @@ export default function Subscription() {
   const searchTerm =
     search.trim().toLowerCase();
 
-  const visiblePlans = plans.filter(
-    (plan) =>
-      plan.name !== "Basic Sandbox Test" &&
-      `${plan.name} ${plan.description || ""}`
-        .toLowerCase()
-        .includes(searchTerm)
+
+  const visiblePlans = plans.filter((plan) =>
+    `${plan.name} ${plan.description || ""}`
+      .toLowerCase()
+      .includes(searchTerm)
   );
 
   const visiblePayments = payments.filter(
@@ -427,11 +432,9 @@ export default function Subscription() {
           Number(payment.plan_id)
       );
 
-      return `${
-        relatedPlan?.name || ""
-      } ${payment.status || ""} ${
-        payment.amount || ""
-      }`
+      return `${relatedPlan?.name || ""
+        } ${payment.status || ""} ${payment.amount || ""
+        }`
         .toLowerCase()
         .includes(searchTerm);
     }
@@ -542,10 +545,10 @@ export default function Subscription() {
 
       setNotice(
         `${result.current_plan} → ${result.new_plan}. Estimated charge: ` +
-          `${formatMoney(
-            result.estimated_invoice_total,
-            result.currency
-          )}. No payment has been made.`
+        `${formatMoney(
+          result.estimated_invoice_total,
+          result.currency
+        )}. No payment has been made.`
       );
 
       if (
@@ -564,7 +567,7 @@ export default function Subscription() {
     } catch (err) {
       setError(
         err.message ||
-          "Unable to preview plan change."
+        "Unable to preview plan change."
       );
     } finally {
       setActionLoading(null);
@@ -586,11 +589,11 @@ export default function Subscription() {
 
     const approved = window.confirm(
       `Upgrade to ${upgradePreview.planName}?\n\n` +
-        `Estimated payment: ${formatMoney(
-          upgradePreview.amount,
-          upgradePreview.currency
-        )}\n\n` +
-        "The final amount may differ."
+      `Estimated payment: ${formatMoney(
+        upgradePreview.amount,
+        upgradePreview.currency
+      )}\n\n` +
+      "The final amount may differ."
     );
 
     if (!approved) return;
@@ -622,7 +625,7 @@ export default function Subscription() {
     } catch (err) {
       setError(
         err.message ||
-          "Unable to upgrade subscription."
+        "Unable to upgrade subscription."
       );
     } finally {
       setActionLoading(null);
@@ -652,7 +655,7 @@ export default function Subscription() {
       oldInterval === "month" &&
       newInterval === "month" &&
       Number(plan.price) <
-        Number(currentPlan.price);
+      Number(currentPlan.price);
 
     const intervalChange =
       ["month", "year"].includes(oldInterval) &&
@@ -666,10 +669,10 @@ export default function Subscription() {
 
     const approved = window.confirm(
       `Schedule ${currentPlan.name} → ${plan.name}?\n\n` +
-        `Current plan ends: ${formatDate(
-          subscription.current_period_end
-        )}.\n` +
-        "The new plan starts at renewal, subject to payment."
+      `Current plan ends: ${formatDate(
+        subscription.current_period_end
+      )}.\n` +
+      "The new plan starts at renewal, subject to payment."
     );
 
     if (!approved) return;
@@ -692,14 +695,14 @@ export default function Subscription() {
 
       setNotice(
         `${result.current_plan} → ${result.next_plan} scheduled for ` +
-          `${formatDate(result.effective_at)}.`
+        `${formatDate(result.effective_at)}.`
       );
 
       await loadSubscriptionData();
     } catch (err) {
       setError(
         err.message ||
-          "Unable to schedule plan change."
+        "Unable to schedule plan change."
       );
     } finally {
       setActionLoading(null);
@@ -729,13 +732,13 @@ export default function Subscription() {
 
       setNotice(
         `Payment check completed. ${result.expired} expired, ` +
-          `${result.verification_pending} pending verification, ` +
-          `${result.still_open} still open.`
+        `${result.verification_pending} pending verification, ` +
+        `${result.still_open} still open.`
       );
     } catch (err) {
       setError(
         err.message ||
-          "Unable to check pending payments."
+        "Unable to check pending payments."
       );
     } finally {
       setActionLoading(null);
@@ -1004,11 +1007,10 @@ export default function Subscription() {
                       </h2>
 
                       <span
-                        className={`ans-status ${
-                          isActive
-                            ? "ans-status-active"
-                            : "ans-status-neutral"
-                        }`}
+                        className={`ans-status ${isActive
+                          ? "ans-status-active"
+                          : "ans-status-neutral"
+                          }`}
                       >
                         <span className="ans-status-dot" />
 
@@ -1128,15 +1130,26 @@ export default function Subscription() {
 
                       {visiblePlans.map((plan) => {
 
-                        const features =
-                          getPlanFeatures(plan);
+
+                        const entryLimitText =
+                          plan.daily_action_limit === null
+                            ? "Unlimited diary entries"
+                            : Number.isInteger(plan.daily_action_limit)
+                              ? `${plan.daily_action_limit} diary entries per day`
+                              : null;
+
+                        const features = [
+                          ...(entryLimitText ? [entryLimitText] : []),
+                          ...getPlanFeatures(plan),
+                        ];
+
 
                         const selected =
                           ["active", "trialing"].includes(
                             subscriptionStatus
                           ) &&
                           Number(subscription?.plan_id) ===
-                            Number(plan.id);
+                          Number(plan.id);
 
                         const busy =
                           actionLoading ===
@@ -1151,31 +1164,29 @@ export default function Subscription() {
                         const canChangePlan =
                           isActive &&
                           !selected &&
-                          currentPlan &&
+                          Boolean(currentPlan) &&
                           (
                             (
                               oldInterval === "month" &&
-                              nextInterval === "month"
+                              nextInterval === "month" &&
+                              Number(plan.price) !==
+                              Number(currentPlan.price)
                             ) ||
                             (
-                              ["month", "year"].includes(
-                                oldInterval
-                              ) &&
-                              ["month", "year"].includes(
-                                nextInterval
-                              ) &&
+                              ["month", "year"].includes(oldInterval) &&
+                              ["month", "year"].includes(nextInterval) &&
                               oldInterval !== nextInterval
                             )
                           );
 
+
                         return (
                           <article
                             key={plan.id}
-                            className={`ans-plan ${
-                              selected
-                                ? "ans-plan-selected"
-                                : ""
-                            }`}
+                            className={`ans-plan ${selected
+                              ? "ans-plan-selected"
+                              : ""
+                              }`}
                           >
 
                             {/* PLAN ICON */}
@@ -1263,7 +1274,7 @@ export default function Subscription() {
                                     if (
                                       oldInterval !== nextInterval ||
                                       Number(plan.price) <
-                                        Number(currentPlan.price)
+                                      Number(currentPlan.price)
                                     ) {
                                       handleScheduleDowngrade(
                                         plan
@@ -1279,13 +1290,13 @@ export default function Subscription() {
 
                                   {actionLoading ===
                                     `preview-${plan.id}` ||
-                                  actionLoading ===
+                                    actionLoading ===
                                     `downgrade-${plan.id}`
                                     ? "Processing..."
                                     : oldInterval !== nextInterval
                                       ? "Schedule Billing Change"
                                       : Number(plan.price) <
-                                          Number(currentPlan.price)
+                                        Number(currentPlan.price)
                                         ? "Schedule Downgrade"
                                         : "Preview Upgrade"}
 
@@ -1295,11 +1306,10 @@ export default function Subscription() {
                               ) : (
                                 <button
                                   type="button"
-                                  className={`ans-button ${
-                                    selected
-                                      ? "ans-button-current"
-                                      : "ans-button-primary"
-                                  }`}
+                                  className={`ans-button ${selected
+                                    ? "ans-button-current"
+                                    : "ans-button-primary"
+                                    }`}
                                   disabled={
                                     !canSubscribe ||
                                     actionLoading !== null
@@ -1316,7 +1326,7 @@ export default function Subscription() {
                                       : busy
                                         ? "Redirecting..."
                                         : subscriptionStatus ===
-                                            "canceled"
+                                          "canceled"
                                           ? "Subscribe Again"
                                           : "Choose Plan"}
 
@@ -1365,24 +1375,24 @@ export default function Subscription() {
                     (payment) =>
                       payment.status === "pending"
                   ) && (
-                    <button
-                      type="button"
-                      className="ans-button ans-button-outline"
-                      style={{
-                        marginBottom: 12,
-                      }}
-                      onClick={handleCleanupPayments}
-                      disabled={
-                        actionLoading !== null
-                      }
-                    >
-                      <RefreshCw size={16} />
+                      <button
+                        type="button"
+                        className="ans-button ans-button-outline"
+                        style={{
+                          marginBottom: 12,
+                        }}
+                        onClick={handleCleanupPayments}
+                        disabled={
+                          actionLoading !== null
+                        }
+                      >
+                        <RefreshCw size={16} />
 
-                      {actionLoading === "cleanup"
-                        ? "Checking..."
-                        : "Check Pending Payments"}
-                    </button>
-                  )}
+                        {actionLoading === "cleanup"
+                          ? "Checking..."
+                          : "Check Pending Payments"}
+                      </button>
+                    )}
 
                   {/* PAYMENT RECORDS */}
 
@@ -1443,7 +1453,7 @@ export default function Subscription() {
 
                                   {formatDate(
                                     payment.paid_at ||
-                                      payment.created_at
+                                    payment.created_at
                                   )}
                                 </td>
 
