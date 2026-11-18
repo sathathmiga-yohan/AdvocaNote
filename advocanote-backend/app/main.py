@@ -29,6 +29,9 @@ from app.routers.subscription_experience import (
     router as subscription_experience_router,
     trial_notification_scheduler,
 )
+
+from app.routers.admin_settings import router as admin_settings_router
+
 import asyncio
 
 def upgrade_reminders_table():
@@ -166,6 +169,8 @@ app.include_router(admin_lawyers_router)
 app.include_router(lawyer_subscriptions_router)
 
 app.include_router(stripe_webhooks_router)
+
+app.include_router(admin_settings_router)
 
 
 

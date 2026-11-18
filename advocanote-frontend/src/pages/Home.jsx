@@ -153,52 +153,70 @@ const steps = [
   },
 ];
 
+/* =====================================
+   ADVOCANOTE SUBSCRIPTION PLANS
+===================================== */
+
 const plans = [
   {
     id: "trial",
     name: "Free Trial",
     note: "Explore AdvocaNote for one month",
     price: "0",
-    unit: "for first month",
+    unit: "/ first month",
     points: [
-      "Try the core legal diary",
-      "Manage cases and hearings",
-      "Explore tasks and reminders",
-      "Try available Voice to Text tools",
+      "One-month free trial",
+      "Access to all available features",
+      "Unlimited actions during trial",
+      "No plan payment to start",
     ],
     action: "Get Started Free",
   },
   {
-    id: "monthly",
-    name: "Monthly Plan",
-    note: "Flexibility for your everyday practice",
-    price: site.monthly,
+    id: "basic",
+    name: "Basic",
+    note: "Essential tools for daily legal work",
+    price: "1,490",
     unit: "/ month",
     points: [
-      "Legal diary and case records",
-      "Hearings, calendar and reminders",
-      "Tasks and deadlines",
-      "Available Voice to Text features",
+      "Smart Legal Diary",
+      "Case and hearing management",
+      "Calendar, tasks and deadlines",
+      "3 actions per day",
     ],
-    action: "Choose Monthly",
+    action: "Choose Basic",
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    note: "More freedom for your legal practice",
+    price: "3,290",
+    unit: "/ month",
+    points: [
+      "All available features",
+      "Unlimited daily actions",
+      "Voice to Text support",
+      "Case, hearing and task management",
+    ],
+    action: "Choose Premium",
     featured: true,
+    badge: "Recommended",
   },
   {
     id: "annual",
-    name: "Annual Plan",
-    note: "Great value for long-term use",
-    price: site.yearly,
+    name: "Annual",
+    note: "Yearly access for legal professionals",
+    price: "14,900",
     unit: "/ year",
     points: [
-      "Monthly plan features included",
+      "All available features",
+      "Unlimited daily actions",
+      "Voice to Text support",
       "One yearly subscription",
-      `Save LKR ${site.saving} vs monthly`,
-      "Ongoing product improvements",
     ],
     action: "Choose Annual",
   },
 ];
-
 
 const faqs = [
   {
@@ -783,7 +801,7 @@ export default function Home() {
 
                 {plan.featured && (
                   <span className="an-plan__label">
-                    Most Popular
+                    {plan.badge || "Recommended"}
                   </span>
                 )}
 
@@ -859,10 +877,6 @@ export default function Home() {
 
           <div className="an-faq-modern__top">
             <div className="an-faq-modern__intro">
-
-              <span className="an-faq-modern__eyebrow">
-                FAQs
-              </span>
 
               <h2>
                 Frequently Asked Questions
@@ -965,7 +979,7 @@ export default function Home() {
 
           {/* BOTTOM DECORATION */}
 
-          
+
 
         </div>
       </section>

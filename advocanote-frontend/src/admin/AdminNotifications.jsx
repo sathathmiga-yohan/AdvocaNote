@@ -833,9 +833,6 @@ export default function AdminNotifications() {
           <section className="adn-detail-panel">
             <div className="adn-detail-top">
               <div>
-                <span className="adn-detail-overline">
-                  SELECTED NOTIFICATION
-                </span>
 
                 <h2>Notification Details</h2>
               </div>

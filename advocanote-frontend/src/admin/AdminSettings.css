@@ -403,3 +403,217 @@
     width: 100%;
   }
 }
+
+/* =====================================
+   MATCH SUBSCRIPTION MANAGEMENT DESIGN
+===================================== */
+
+.ads-page {
+  background: #f7faf8;
+  padding: 22px 30px 35px;
+  color: #003a2c;
+}
+
+/* PAGE HEADING */
+
+.ads-header {
+  margin-bottom: 19px;
+}
+
+.ads-heading {
+  gap: 0;
+}
+
+.ads-heading-icon {
+  display: none;
+}
+
+.ads-heading h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #004535;
+  letter-spacing: -0.4px;
+}
+
+.ads-heading p {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #738497;
+}
+
+.ads-header-line {
+  background: #dce5df;
+  margin-bottom: 25px;
+}
+
+/* WHITE CARDS */
+
+.ads-card {
+  background: #ffffff;
+  border: 1px solid #e2e7e1;
+  border-radius: 17px;
+  padding: 23px 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 12px rgba(0, 50, 35, 0.025);
+}
+
+/* SECTION HEADINGS */
+
+.ads-card-title h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  color: #004535;
+  font-weight: 700;
+}
+
+.ads-card-title p {
+  font-size: 12.5px;
+  color: #788898;
+}
+
+.ads-card-icon {
+  background: #e2f3e9;
+  color: #007451;
+  border-radius: 11px;
+}
+
+.ads-divider {
+  background: #e7ece8;
+}
+
+/* PROFILE */
+
+.ads-avatar {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #004535, #087459);
+}
+
+.ads-avatar span {
+  font-size: 35px;
+}
+
+/* FIELDS */
+
+.ads-field label {
+  font-size: 12.5px;
+  color: #003a2c;
+}
+
+.ads-input-wrap {
+  min-height: 43px;
+  border: 1px solid #dbe4dd;
+  border-radius: 9px;
+}
+
+.ads-input-wrap input {
+  font-size: 13px;
+}
+
+/* BUTTONS */
+
+.ads-primary-btn {
+  background: #004535;
+  border-color: #004535;
+  border-radius: 9px;
+}
+
+.ads-outline-btn {
+  background: #ffffff;
+  border: 1px solid #cbded1;
+  color: #004535;
+  border-radius: 9px;
+}
+
+.ads-outline-btn:hover {
+  background: #f0f7f2;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 760px) {
+  .ads-page {
+    padding: 20px 17px 30px;
+  }
+
+  .ads-heading h1 {
+    font-size: 25px;
+  }
+
+  .ads-card {
+    padding: 19px 17px;
+  }
+}
+
+/* =====================================
+   ADMIN SETTINGS - FINAL LAYOUT
+===================================== */
+
+.ads-page {
+  position: static;
+  top: auto;
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  height: auto;
+  min-height: 0;
+
+  margin: 0;
+  padding: 8px 35px 14px 20px;
+
+  background: #f7faf8;
+  box-shadow: none;
+
+  box-sizing: border-box;
+}
+
+/* FULL BACKGROUND COLOR */
+
+body:has(.ads-page),
+body:has(.ads-page) #root {
+  background-color: #f7faf8;
+}
+
+/* KEEP EXISTING ALIGNMENT */
+
+.ads-header {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.ads-header-line {
+  margin-bottom: 15px;
+}
+
+.ads-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 17px 25px;
+  margin-bottom: 13px;
+  box-sizing: border-box;
+}
+
+.ads-divider {
+  margin: 13px 0;
+}
+
+.ads-password-footer {
+  margin-top: 16px;
+}
+
+/* MOBILE - ALLOW SCROLL WHEN NEEDED */
+
+@media (max-width: 760px) {
+  .ads-page {
+    height: auto;
+    min-height: 0;
+    padding: 10px 17px 25px;
+  }
+
+  .ads-card {
+    padding: 17px;
+  }
+}

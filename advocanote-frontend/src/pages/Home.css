@@ -5343,3 +5343,974 @@ html {
     line-height: 1.6;
   }
 }
+
+/* =====================================
+   ADVOCANOTE FAQ - COLOUR REFINEMENT
+===================================== */
+
+/* FAQ section background */
+.an-faq.an-faq--modern {
+  background: #fff9f1;
+}
+
+/* Remove excessive white shading */
+.an-faq-v2__item {
+  background: #fffaf3;
+  border: 1px solid #eadac0;
+  box-shadow: 0 5px 14px rgba(35, 45, 30, 0.045);
+}
+
+/* Open FAQ */
+.an-faq-v2__item--open {
+  background: #fff5e5;
+  border-color: #d9b778;
+}
+
+/* PREMIUM DARK GREEN VIEW ALL BUTTON */
+.an-faq-modern__view {
+  background: linear-gradient(
+    135deg,
+    #005c45 0%,
+    #003c2e 100%
+  );
+
+  color: #ffffff;
+  border: 1px solid #bca06b;
+
+  border-radius: 30px;
+  min-height: 46px;
+  padding: 11px 25px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow: 0 6px 17px rgba(0, 59, 44, 0.15);
+
+  transition: all 0.25s ease;
+}
+
+/* Button hover */
+.an-faq-modern__view:hover {
+  background: #006b50;
+  color: #ffffff;
+  border-color: #e9c47d;
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 9px 20px rgba(0, 59, 44, 0.2);
+}
+
+/* Plus icon */
+.an-faq-modern__view span {
+  color: #f6c76b;
+  font-size: 19px;
+}
+
+/* ============================================
+   ADVOCANOTE - PREMIUM PRICING DESIGN
+   DARK GREEN + GOLD + CREAM
+============================================ */
+
+/* PRICING BACKGROUND */
+
+.an-pricing {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  padding: 78px 0 82px;
+
+  background: #00291f;
+}
+
+/* Keep existing legal background image */
+
+.an-pricing__photo {
+  opacity: 0.38;
+}
+
+/* Dark cinematic overlay */
+
+.an-pricing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(14, 112, 80, 0.16),
+      transparent 62%
+    ),
+    linear-gradient(
+      110deg,
+      rgba(0, 29, 22, 0.72),
+      rgba(0, 48, 35, 0.65),
+      rgba(0, 29, 22, 0.78)
+    );
+}
+
+.an-pricing__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   SECTION HEADING
+============================================ */
+
+.an-pricing .an-heading {
+  margin-bottom: 46px;
+}
+
+.an-pricing .an-heading h2 {
+  margin-bottom: 13px;
+
+  color: #fff9ed;
+
+  font-family: var(--an-serif);
+  font-size: clamp(32px, 3vw, 43px);
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.an-pricing .an-heading > p {
+  color: #d0e3d8;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ============================================
+   THREE COLUMN LAYOUT
+============================================ */
+
+.an-pricing .an-pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+
+  width: 100%;
+  max-width: 1110px;
+
+  margin: 0 auto;
+  gap: 18px;
+}
+
+/* ============================================
+   BASE PRICING CARD
+============================================ */
+
+.an-pricing .an-plan {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  min-height: 445px;
+  padding: 34px 27px 25px;
+
+  border: 1px solid rgba(189, 218, 197, 0.20);
+  border-radius: 17px;
+
+  background: linear-gradient(
+    150deg,
+    #073e30 0%,
+    #032f25 55%,
+    #02271f 100%
+  );
+
+  color: #fffaf0;
+
+  box-shadow:
+    0 12px 30px rgba(0, 16, 11, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* CARD HOVER */
+
+.an-pricing .an-plan:hover {
+  transform: translateY(-5px);
+
+  border-color: rgba(242, 194, 107, 0.65);
+
+  box-shadow:
+    0 18px 40px rgba(0, 17, 12, 0.28);
+}
+
+/* ============================================
+   FEATURED MONTHLY PLAN
+============================================ */
+
+.an-pricing .an-plan--featured {
+  border: 1.5px solid #e9bb61;
+
+  background: linear-gradient(
+    155deg,
+    #0a664b 0%,
+    #07513d 36%,
+    #024332 75%,
+    #02382b 100%
+  );
+
+  box-shadow:
+    0 0 0 1px rgba(244, 199, 107, 0.15),
+    0 15px 40px rgba(0, 15, 10, 0.32),
+    0 0 35px rgba(19, 138, 96, 0.12);
+
+  transform: translateY(-8px);
+
+  padding-top: 53px;
+}
+
+.an-pricing .an-plan--featured:hover {
+  transform: translateY(-13px);
+
+  box-shadow:
+    0 22px 46px rgba(0, 15, 10, 0.38),
+    0 0 40px rgba(21, 151, 103, 0.18);
+}
+
+/* ============================================
+   MOST POPULAR TOP RIBBON
+============================================ */
+
+.an-pricing .an-plan__label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+
+  transform: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 31px;
+  padding: 8px 14px;
+
+  border-radius: 15px 15px 0 0;
+
+  background: linear-gradient(
+    90deg,
+    #dba045,
+    #ffe2a1,
+    #eab758
+  );
+
+  color: #12372b;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   PLAN TITLE
+============================================ */
+
+.an-pricing .an-plan__header h3 {
+  margin: 0 0 9px;
+
+  color: #fff8e9;
+
+  font-family: var(--an-serif);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+}
+
+.an-pricing .an-plan__header p {
+  min-height: 35px;
+  margin: 0;
+
+  color: #bcd3c7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.an-pricing .an-plan--featured .an-plan__header p {
+  color: #ddede3;
+}
+
+/* ============================================
+   PRICE
+============================================ */
+
+.an-pricing .an-plan__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 6px;
+
+  margin: 21px 0 23px;
+  padding-bottom: 22px;
+
+  border-bottom: 1px solid rgba(
+    229, 241, 231, 0.15
+  );
+
+  white-space: nowrap;
+}
+
+.an-pricing .an-plan__price small {
+  color: #f5cf83;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.an-pricing .an-plan__price strong {
+  color: #fffaf0;
+
+  font-family: var(--an-sans);
+  font-size: clamp(29px, 2.7vw, 41px);
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.an-pricing .an-plan__price span {
+  color: #b8d1c2;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.an-pricing .an-plan--featured .an-plan__price strong {
+  color: #ffe0a0;
+}
+
+/* ============================================
+   FEATURES LIST
+============================================ */
+
+.an-pricing .an-plan ul {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+
+  margin: 0 0 30px;
+  padding: 0;
+
+  list-style: none;
+}
+
+.an-pricing .an-plan li {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  color: #d2e3d7;
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.an-pricing .an-plan li svg {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+
+  margin-top: 1px;
+
+  color: #efc875;
+}
+
+.an-pricing .an-plan--featured li {
+  color: #e5f0e8;
+}
+
+/* ============================================
+   PRICING BUTTONS
+============================================ */
+
+.an-pricing .an-plan__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  width: 100%;
+  min-height: 46px;
+
+  margin-top: auto;
+  padding: 12px 17px;
+
+  border: 1px solid #f1e7d2;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    180deg,
+    #fffdf7,
+    #e8e5dc
+  );
+
+  color: #103b2e !important;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  box-shadow:
+    0 6px 15px rgba(0, 0, 0, 0.12);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.an-pricing .an-plan__action:hover {
+  transform: translateY(-2px);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 9px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* FEATURED GOLD BUTTON */
+
+.an-pricing .an-plan--featured .an-plan__action {
+  border-color: #ffe0a0;
+
+  background: linear-gradient(
+    120deg,
+    #ffe1a2,
+    #f1ba50
+  );
+
+  color: #083629 !important;
+
+  box-shadow:
+    0 8px 20px rgba(0, 20, 14, 0.2);
+}
+
+.an-pricing .an-plan--featured .an-plan__action:hover {
+  background: linear-gradient(
+    120deg,
+    #ffeabc,
+    #ffd074
+  );
+}
+
+/* BUTTON ARROW */
+
+.an-pricing .an-plan__action svg {
+  width: 16px;
+  height: 16px;
+
+  transition: transform 0.25s ease;
+}
+
+.an-pricing .an-plan__action:hover svg {
+  transform: translateX(4px);
+}
+
+/* ============================================
+   PRICING DISCLAIMER
+============================================ */
+
+.an-pricing .an-pricing__disclaimer {
+  max-width: 900px;
+  margin: 27px auto 0;
+
+  color: #c4d7c8;
+
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ============================================
+   TABLET
+============================================ */
+
+@media (min-width: 701px) and (max-width: 1050px) {
+
+  .an-pricing .an-pricing__grid {
+    max-width: 780px;
+
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+    gap: 23px;
+  }
+
+  .an-pricing .an-plan {
+    min-height: 420px;
+  }
+
+  .an-pricing .an-plan:last-child {
+    grid-column: 1 / -1;
+
+    width: min(100%, 380px);
+    justify-self: center;
+  }
+}
+
+/* ============================================
+   MOBILE
+============================================ */
+
+@media (max-width: 700px) {
+
+  .an-pricing {
+    padding: 58px 0 65px;
+  }
+
+  .an-pricing .an-heading {
+    margin-bottom: 34px;
+  }
+
+  .an-pricing .an-heading h2 {
+    font-size: 29px;
+  }
+
+  .an-pricing .an-heading > p {
+    font-size: 12px;
+  }
+
+  .an-pricing .an-pricing__grid {
+    grid-template-columns: 1fr;
+
+    width: 100%;
+    max-width: 420px;
+
+    gap: 27px;
+  }
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan:last-child {
+    grid-column: auto;
+
+    width: 100%;
+    min-height: 395px;
+
+    padding: 29px 24px 23px;
+
+    transform: none;
+  }
+
+  .an-pricing .an-plan--featured {
+    padding-top: 49px;
+  }
+
+  .an-pricing .an-plan__header h3 {
+    font-size: 23px;
+  }
+
+  .an-pricing .an-plan__price strong {
+    font-size: 36px;
+  }
+
+  .an-pricing .an-plan__action {
+    min-height: 45px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan__action,
+  .an-pricing .an-plan__action svg {
+    transition: none;
+  }
+
+  .an-pricing .an-plan:hover,
+  .an-pricing .an-plan__action:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   ADVOCANOTE - FOUR PRICING PLANS
+========================================== */
+
+/* FOUR CARDS IN ONE ROW */
+
+.an-pricing .an-pricing__grid {
+  width: 100%;
+  max-width: 1320px;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+  align-items: stretch;
+
+  margin: 0 auto;
+}
+
+/* CARD SIZE */
+
+.an-pricing .an-plan {
+  width: 100%;
+  min-width: 0;
+  min-height: 450px;
+
+  padding: 30px 21px 23px;
+  border-radius: 16px;
+}
+
+/* TITLES */
+
+.an-pricing .an-plan__header h3 {
+  font-size: 23px;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.an-pricing .an-plan__header p {
+  min-height: 40px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* PRICE ALIGNMENT */
+
+.an-pricing .an-plan__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  margin: 18px 0 21px;
+  padding-bottom: 20px;
+}
+
+.an-pricing .an-plan__price strong {
+  font-size: clamp(29px, 2.1vw, 36px);
+  letter-spacing: -1.2px;
+}
+
+.an-pricing .an-plan__price small {
+  font-size: 11px;
+}
+
+.an-pricing .an-plan__price span {
+  font-size: 10px;
+}
+
+/* FEATURE LIST */
+
+.an-pricing .an-plan ul {
+  gap: 13px;
+  margin-bottom: 27px;
+}
+
+.an-pricing .an-plan li {
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* BUTTONS AT SAME BOTTOM LEVEL */
+
+.an-pricing .an-plan__action {
+  width: 100%;
+  min-height: 46px;
+  margin-top: auto;
+  font-size: 11px;
+}
+
+/* FREE TRIAL CARD */
+
+.an-pricing .an-plan:first-child {
+  border-color: rgba(239, 190, 99, 0.48);
+}
+
+/* PREMIUM CARD HIGHLIGHT */
+
+.an-pricing .an-plan--featured {
+  padding-top: 49px;
+
+  border: 1.5px solid #f1c56d;
+
+  background: linear-gradient(
+    155deg,
+    #0a684d 0%,
+    #05533f 45%,
+    #003c2e 100%
+  );
+}
+
+.an-pricing .an-plan--featured .an-plan__price strong {
+  color: #ffe2a1;
+}
+
+.an-pricing .an-plan--featured .an-plan__action {
+  background: linear-gradient(
+    120deg,
+    #ffe2a1,
+    #f4bd54
+  );
+  color: #07382c !important;
+}
+
+/* DESKTOP */
+
+@media (min-width: 1251px) {
+  .an-pricing .an-pricing__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* TABLET / SMALL LAPTOP */
+
+@media (min-width: 701px) and (max-width: 1250px) {
+  .an-pricing .an-pricing__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 850px;
+    gap: 25px;
+  }
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan:last-child {
+    grid-column: auto;
+    width: 100%;
+    min-height: 425px;
+  }
+
+  .an-pricing .an-plan--featured {
+    transform: none;
+  }
+
+  .an-pricing .an-plan--featured:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+  .an-pricing .an-pricing__grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    gap: 22px;
+  }
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan:last-child {
+    grid-column: auto;
+    width: 100%;
+    min-height: 385px;
+    padding: 26px 23px 22px;
+  }
+
+  .an-pricing .an-plan--featured {
+    padding-top: 49px;
+    transform: none;
+  }
+
+  .an-pricing .an-plan__price strong {
+    font-size: 36px;
+  }
+
+  .an-pricing .an-plan__action {
+    min-height: 46px;
+  }
+}
+
+/* ==========================================
+   ADVOCANOTE - COMPACT PREMIUM PRICING
+========================================== */
+
+/* Reduce overall section height */
+.an-pricing {
+  padding: 48px 0 47px;
+}
+
+/* Heading spacing */
+.an-pricing .an-heading {
+  margin-bottom: 27px;
+}
+
+.an-pricing .an-heading h2 {
+  font-size: clamp(30px, 2.7vw, 39px);
+  margin-bottom: 8px;
+}
+
+.an-pricing .an-heading > p {
+  font-size: 13px;
+}
+
+/* Four cards - centered and narrower */
+.an-pricing .an-pricing__grid {
+  width: 100%;
+  max-width: 1160px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Compact cards */
+.an-pricing .an-plan {
+  min-height: 370px;
+  height: auto;
+  padding: 23px 20px 19px;
+  border-radius: 15px;
+}
+
+/* Recommended card */
+.an-pricing .an-plan--featured {
+  padding-top: 43px;
+  transform: none;
+}
+
+.an-pricing .an-plan--featured:hover {
+  transform: translateY(-4px);
+}
+
+/* Ribbon */
+.an-pricing .an-plan__label {
+  min-height: 28px;
+  padding: 7px 12px;
+  font-size: 9px;
+}
+
+/* Plan heading */
+.an-pricing .an-plan__header h3 {
+  font-size: 21px;
+  margin-bottom: 5px;
+  line-height: 1.25;
+}
+
+.an-pricing .an-plan__header p {
+  min-height: 30px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Price */
+.an-pricing .an-plan__price {
+  margin: 13px 0 16px;
+  padding-bottom: 15px;
+  gap: 5px;
+}
+
+.an-pricing .an-plan__price strong {
+  font-size: 31px;
+  line-height: 1.1;
+}
+
+.an-pricing .an-plan__price small {
+  font-size: 11px;
+}
+
+.an-pricing .an-plan__price span {
+  font-size: 10px;
+}
+
+/* Features */
+.an-pricing .an-plan ul {
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.an-pricing .an-plan li {
+  gap: 9px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.an-pricing .an-plan li svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+}
+
+/* Buttons */
+.an-pricing .an-plan__action {
+  min-height: 42px;
+  padding: 10px 12px;
+  margin-top: auto;
+  font-size: 11px;
+  border-radius: 9px;
+}
+
+/* Bottom description */
+.an-pricing .an-pricing__disclaimer {
+  margin-top: 20px;
+  font-size: 10px;
+}
+
+/* ==========================================
+   TABLET / SMALL LAPTOP
+========================================== */
+
+@media (min-width: 701px) and (max-width: 1200px) {
+  .an-pricing .an-pricing__grid {
+    max-width: 760px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan:last-child {
+    grid-column: auto;
+    width: 100%;
+    min-height: 350px;
+  }
+
+  .an-pricing .an-plan--featured {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 700px) {
+  .an-pricing {
+    padding: 43px 0 45px;
+  }
+
+  .an-pricing .an-pricing__grid {
+    max-width: 390px;
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .an-pricing .an-plan,
+  .an-pricing .an-plan:last-child {
+    grid-column: auto;
+    width: 100%;
+    min-height: 340px;
+    padding: 23px 20px 19px;
+  }
+
+  .an-pricing .an-plan--featured {
+    padding-top: 43px;
+    transform: none;
+  }
+
+  .an-pricing .an-plan--featured:hover {
+    transform: none;
+  }
+
+  .an-pricing .an-plan__price strong {
+    font-size: 31px;
+  }
+}
