@@ -1,4 +1,6 @@
 
+import logging
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -9,10 +11,18 @@ from fastapi import (
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.models.account_deletion import AccountDeletion
 from app.database import get_db
 from app.models.user import User
 from app.auth.admin_guard import require_admin
+
+from admin_notifications_api import (
+    notify_lawyer_status_changed,
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 # =====================================
@@ -53,7 +63,9 @@ def update_lawyer_status(
     db: Session = Depends(get_db),
 ):
 
-    # Find the lawyer account
+    # =====================================
+    # FIND LAWYER ACCOUNT
+    # =====================================
 
     lawyer = db.scalar(
         select(User)
@@ -69,6 +81,7 @@ def update_lawyer_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lawyer account not found",
         )
+
     # =====================================
     # PREVENT CLOSED ACCOUNT REACTIVATION
     # =====================================
@@ -89,7 +102,10 @@ def update_lawyer_status(
                 "the account owner."
             ),
         )
-    # Suspension requires a reason
+
+    # =====================================
+    # SUSPENSION REQUIRES A REASON
+    # =====================================
 
     if not data.is_active and not data.reason.strip():
         raise HTTPException(
@@ -97,7 +113,9 @@ def update_lawyer_status(
             detail="Suspension reason is required",
         )
 
-    # Check existing status
+    # =====================================
+    # CHECK EXISTING STATUS
+    # =====================================
 
     if lawyer.is_active == data.is_active:
         return {
@@ -106,7 +124,17 @@ def update_lawyer_status(
             "message": "Account already has this status",
         }
 
-    # Update account status
+    # =====================================
+    # SAVE PREVIOUS STATUS
+    # =====================================
+
+    previous_is_active = bool(
+        lawyer.is_active
+    )
+
+    # =====================================
+    # UPDATE LAWYER ACCOUNT STATUS
+    # =====================================
 
     lawyer.is_active = data.is_active
 
@@ -116,10 +144,40 @@ def update_lawyer_status(
 
     except Exception:
         db.rollback()
+
         raise HTTPException(
             status_code=500,
             detail="Could not update lawyer account",
         )
+
+    # =====================================
+    # ADMIN NOTIFICATION
+    # SUSPENDED / REACTIVATED
+    # =====================================
+
+    try:
+        notify_lawyer_status_changed(
+            lawyer=lawyer,
+            previous_is_active=previous_is_active,
+        )
+
+        logger.info(
+            "Admin lawyer status notification "
+            "created: lawyer_id=%s active=%s",
+            lawyer.id,
+            lawyer.is_active,
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to create lawyer status "
+            "notification for lawyer_id=%s",
+            lawyer.id,
+        )
+
+    # =====================================
+    # RESPONSE
+    # =====================================
 
     return {
         "id": lawyer.id,

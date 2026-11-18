@@ -1,6 +1,6 @@
-
-from datetime import datetime, timezone
-
+import asyncio
+import logging
+from datetime import datetime, timezone, timedelta
 import stripe
 
 from fastapi import (
@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.database import get_db
+from app.database import get_db, SessionLocal
 from app.models.subscription_plan import SubscriptionPlan
 from app.models.user import User
 from app.models.subscription import Subscription
@@ -38,6 +38,11 @@ from app.routers.lawyer_subscriptions import (
     CheckoutRequest,
     create_checkout,
 )
+from admin_notifications_api import (
+    create_admin_notification_once,
+)
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
@@ -722,3 +727,256 @@ def select_subscription_plan(
         "session_id": checkout["session_id"],
         "flow": "stripe_checkout",
     }
+
+# ==========================================
+# ADMIN - AUTOMATIC TRIAL EXPIRY NOTIFICATIONS
+# ==========================================
+
+def check_trial_expiry_notifications():
+
+    now = utc_now()
+    warning_limit = now + timedelta(days=2)
+
+    with SessionLocal() as db:
+
+        records = db.execute(
+            select(Subscription, User)
+            .join(
+                User,
+                Subscription.user_id == User.id,
+            )
+            .where(
+                Subscription.trial_ends_at.is_not(None),
+                Subscription.status.in_(
+                    ["trialing", "expired"]
+                ),
+                Subscription.trial_ends_at <= warning_limit,
+                User.role == "lawyer",
+            )
+        ).all()
+
+        for subscription, lawyer in records:
+
+            try:
+                expiry = subscription.trial_ends_at
+
+                if expiry.tzinfo is not None:
+                    expiry = expiry.astimezone(
+                        timezone.utc
+                    ).replace(tzinfo=None)
+
+                lawyer_name = (
+                    lawyer.full_name
+                    or f"Lawyer #{lawyer.id}"
+                )
+
+                # ==================================
+                # TRIAL EXPIRED
+                # ==================================
+
+                if expiry <= now:
+
+                    notification_type = "expired"
+                    notification_title = "Free Trial Expired"
+
+                    message = (
+                        f"{lawyer_name}'s free trial "
+                        "has expired."
+                    )
+
+                    trial_status = "Expired"
+
+                # ==================================
+                # TRIAL EXPIRING WITHIN 2 DAYS
+                # ==================================
+
+                elif subscription.status == "trialing":
+
+                    notification_type = "trial"
+                    notification_title = "Trial Expiring Soon"
+
+                    message = (
+                        f"{lawyer_name}'s free trial "
+                        "will expire within 2 days."
+                    )
+
+                    trial_status = "Expiring Soon"
+
+                else:
+                    continue
+
+                # ==================================
+                # SAVE ADMIN NOTIFICATION ONCE
+                # ==================================
+
+                create_admin_notification_once(
+                    type=notification_type,
+                    title=notification_title,
+                    message=message,
+                    details={
+                        "lawyer_id": lawyer.id,
+                        "lawyer_name": lawyer_name,
+                        "email": lawyer.email,
+                        "plan": "Free Trial",
+                        "trial_status": trial_status,
+                        "trial_end_date": (
+                            expiry.isoformat() + "Z"
+                        ),
+                        "subscription_id": subscription.id,
+                        "activity": notification_title,
+                    },
+                    unique_detail_key="subscription_id",
+                )
+
+            except Exception:
+                logger.exception(
+                    "Trial notification failed "
+                    "for subscription_id=%s",
+                    subscription.id,
+                )
+
+
+# ==========================================
+# ADMIN - PAID SUBSCRIPTION EXPIRED
+# ==========================================
+
+def check_paid_subscription_expiry_notifications():
+
+    now = utc_now()
+
+    with SessionLocal() as db:
+
+        records = db.execute(
+            select(Subscription, User)
+            .join(
+                User,
+                Subscription.user_id == User.id
+            )
+            .where(
+                Subscription.current_period_end <= now,
+                Subscription.stripe_subscription_id.is_not(None),
+                Subscription.status.in_([
+                    "active",
+                    "past_due",
+                    "unpaid",
+                    "canceled",
+                    "paused",
+                    "incomplete_expired",
+                ]),
+                User.role == "lawyer",
+            )
+        ).all()
+
+        for subscription, lawyer in records:
+
+            try:
+                # Verify current status from Stripe
+                stripe_sub = stripe.Subscription.retrieve(
+                    subscription.stripe_subscription_id
+                ).to_dict()
+
+                stripe_status = stripe_sub.get("status")
+
+                # Do not report an active subscription
+                # as expired if renewal is still valid.
+                if stripe_status not in (
+                    "canceled",
+                    "unpaid",
+                    "past_due",
+                    "paused",
+                    "incomplete_expired",
+                ):
+                    continue
+
+                stripe_customer = stripe_sub.get("customer")
+
+                if isinstance(stripe_customer, dict):
+                    stripe_customer = stripe_customer.get("id")
+
+                if (
+                    stripe_customer != subscription.stripe_customer_id
+                    or (stripe_sub.get("metadata") or {}).get("user_id")
+                    != str(subscription.user_id)
+                ):
+                    continue
+
+                lawyer_name = (
+                    lawyer.full_name
+                    or f"Lawyer #{lawyer.id}"
+                )
+
+                plan = db.get(
+                    SubscriptionPlan,
+                    subscription.plan_id
+                )
+
+                plan_name = (
+                    plan.name if plan
+                    else "Paid Subscription"
+                )
+
+                period_end = subscription.current_period_end
+
+                # Unique per subscription billing period
+                period_key = (
+                    f"{subscription.id}:"
+                    f"{period_end.isoformat()}"
+                )
+
+                create_admin_notification_once(
+                    type="expired",
+                    title="Subscription Expired",
+                    message=(
+                        f"{lawyer_name}'s {plan_name} "
+                        "subscription has expired."
+                    ),
+                    details={
+                        "lawyer_id": lawyer.id,
+                        "lawyer_name": lawyer_name,
+                        "email": lawyer.email,
+                        "plan": plan_name,
+                        "subscription_status": "Expired",
+                        "period_end": period_end.isoformat(),
+                        "subscription_id": subscription.id,
+                        "period_key": period_key,
+                        "activity": "Subscription Expired",
+                    },
+                    unique_detail_key="period_key",
+                )
+
+            except Exception:
+                logger.exception(
+                    "Paid subscription expiry check failed "
+                    "for subscription_id=%s",
+                    subscription.id,
+                )
+
+# ==========================================
+# AUTOMATIC NOTIFICATION SCHEDULER
+# ==========================================
+
+async def trial_notification_scheduler():
+
+    while True:
+
+        try:
+            # Check free trial expiry
+            await asyncio.to_thread(
+                check_trial_expiry_notifications
+            )
+
+            # Check paid subscription expiry
+            await asyncio.to_thread(
+                check_paid_subscription_expiry_notifications
+            )
+
+        except asyncio.CancelledError:
+            raise
+
+        except Exception:
+            logger.exception(
+                "Subscription notification scheduler failed"
+            )
+
+        # Check every 1 hour
+        await asyncio.sleep(3600)

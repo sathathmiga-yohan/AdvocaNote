@@ -62,8 +62,7 @@ init_notifications_db()
 
 
 # ========================================
-# CREATE A REAL NOTIFICATION
-# Call from existing backend events
+# CREATE ADMIN NOTIFICATION
 # ========================================
 
 def create_admin_notification(
@@ -82,8 +81,14 @@ def create_admin_notification(
         cursor = conn.execute(
             """
             INSERT INTO admin_notifications
-                (type, title, message, details,
-                 is_read, created_at)
+            (
+                type,
+                title,
+                message,
+                details,
+                is_read,
+                created_at
+            )
             VALUES (?, ?, ?, ?, 0, ?)
             """,
             (
@@ -97,8 +102,118 @@ def create_admin_notification(
 
         conn.commit()
         return cursor.lastrowid
+
     finally:
         conn.close()
+
+def create_admin_notification_once(
+    type: str,
+    title: str,
+    message: str,
+    details: dict,
+    unique_detail_key: str,
+):
+    unique_value = details.get(unique_detail_key)
+
+    if unique_value is None or unique_value == "":
+        raise ValueError("Missing notification unique key")
+
+    conn = get_connection()
+
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        rows = conn.execute(
+            """
+            SELECT details
+            FROM admin_notifications
+            WHERE type = ? AND title = ?
+            """,
+            (type, title),
+        ).fetchall()
+
+        for row in rows:
+            try:
+                saved_details = json.loads(
+                    row["details"] or "{}"
+                )
+            except (ValueError, TypeError):
+                continue
+
+            if (
+                saved_details.get(unique_detail_key)
+                == unique_value
+            ):
+                conn.commit()
+                return None
+
+        cursor = conn.execute(
+            """
+            INSERT INTO admin_notifications
+            (
+                type, title, message, details,
+                is_read, created_at
+            )
+            VALUES (?, ?, ?, ?, 0, ?)
+            """,
+            (
+                type,
+                title,
+                message,
+                json.dumps(details),
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+
+        conn.commit()
+        return cursor.lastrowid
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+# ==========================================
+# ADMIN NOTIFICATION - FREE TRIAL STARTED
+# ==========================================
+
+def notify_free_trial_started(user, subscription):
+
+    if (
+        subscription.status != "trialing"
+        or subscription.trial_ends_at is None
+    ):
+        return
+
+    lawyer_name = (
+        getattr(user, "full_name", None)
+        or f"Lawyer #{user.id}"
+    )
+
+    create_admin_notification_once(
+        type="trial",
+        title="Free Trial Started",
+        message=(
+            f"{lawyer_name} has started "
+            "a 1-month free trial."
+        ),
+        details={
+            "lawyer_id": user.id,
+            "lawyer_name": lawyer_name,
+            "email": user.email,
+            "plan": "Free Trial",
+            "trial_status": "Active",
+            "trial_end_date": (
+                subscription.trial_ends_at.isoformat()
+            ),
+            "subscription_id": subscription.id,
+            "activity": "Free Trial Started",
+        },
+        unique_detail_key="subscription_id",
+    )
 
 
 def format_notification(row):
@@ -323,3 +438,48 @@ def create_notifications_router(get_current_user):
             conn.close()
 
     return router
+
+# ==========================================
+# ADMIN - LAWYER ACCOUNT STATUS NOTIFICATION
+# ==========================================
+
+def notify_lawyer_status_changed(
+    lawyer,
+    previous_is_active: bool,
+):
+    current_is_active = bool(lawyer.is_active)
+
+    # No notification if status has not changed
+    if previous_is_active == current_is_active:
+        return None
+
+    action = (
+        "Reactivated"
+        if current_is_active
+        else "Suspended"
+    )
+
+    lawyer_name = (
+        lawyer.full_name
+        or f"Lawyer #{lawyer.id}"
+    )
+
+    return create_admin_notification(
+        type="account",
+        title=f"Lawyer {action}",
+        message=(
+            f"{lawyer_name}'s account "
+            f"has been {action.lower()}."
+        ),
+        details={
+            "lawyer_id": lawyer.id,
+            "lawyer_name": lawyer_name,
+            "email": lawyer.email,
+            "account_status": (
+                "Active"
+                if current_is_active
+                else "Suspended"
+            ),
+            "activity": f"Lawyer {action}",
+        },
+    )

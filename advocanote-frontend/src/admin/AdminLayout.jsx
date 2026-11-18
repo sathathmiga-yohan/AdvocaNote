@@ -1,10 +1,12 @@
 
 import { useEffect, useState } from "react";
+
 import {
   Outlet,
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
 import {
   Bell,
   ChevronDown,
@@ -17,9 +19,11 @@ import AdminSidebar from "./AdminSidebar";
 import { getCurrentUser } from "../services/auth";
 import "./AdminLayout.css";
 
-const API_URL =
+const API_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:8000";
+  "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
 
 const ADMIN_PAGES = [
   { name: "Dashboard", path: "/admin" },
@@ -61,6 +65,12 @@ export default function AdminLayout() {
   const [searchError, setSearchError] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
 
+  // ==========================================
+  // ADMIN NOTIFICATION COUNT
+  // ==========================================
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     let mounted = true;
 
@@ -82,6 +92,97 @@ export default function AdminLayout() {
     setProfileOpen(false);
   }, [location.pathname]);
 
+  // ==========================================
+  // FETCH REAL ADMIN NOTIFICATION COUNT
+  // ==========================================
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchUnreadCount = async () => {
+      const token =
+        sessionStorage.getItem(
+          "advocanote_access_token"
+        ) ||
+        sessionStorage.getItem("access_token") ||
+        localStorage.getItem(
+          "advocanote_access_token"
+        ) ||
+        localStorage.getItem("access_token");
+
+      if (!token) {
+        if (active) setUnreadCount(0);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_URL}/admin/notifications`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 401 && active) {
+            setUnreadCount(0);
+          }
+          return;
+        }
+
+        const data = await response.json();
+
+        const items = Array.isArray(data.items)
+          ? data.items
+          : [];
+
+        const count = items.filter(
+          (item) => !item.is_read
+        ).length;
+
+        if (active) {
+          setUnreadCount(count);
+        }
+      } catch (error) {
+        console.error(
+          "Admin notification count error:",
+          error
+        );
+      }
+    };
+
+    // Load immediately
+    fetchUnreadCount();
+
+    // Refresh every 15 seconds
+    const interval = setInterval(
+      fetchUnreadCount,
+      15000
+    );
+
+    // Refresh when returning to browser
+    window.addEventListener(
+      "focus",
+      fetchUnreadCount
+    );
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+
+      window.removeEventListener(
+        "focus",
+        fetchUnreadCount
+      );
+    };
+  }, [location.pathname]);
+
+  // ==========================================
+  // SEARCH ADMIN PAGES
+  // ==========================================
+
   const handleSearch = (event) => {
     event.preventDefault();
 
@@ -94,7 +195,9 @@ export default function AdminLayout() {
     );
 
     if (!match) {
-      setSearchError("No matching admin page found.");
+      setSearchError(
+        "No matching admin page found."
+      );
       return;
     }
 
@@ -102,6 +205,10 @@ export default function AdminLayout() {
     setSearch("");
     navigate(match.path);
   };
+
+  // ==========================================
+  // ADMIN LOGOUT
+  // ==========================================
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -115,6 +222,7 @@ export default function AdminLayout() {
     try {
       if (refreshToken) {
         const controller = new AbortController();
+
         const timeout = setTimeout(
           () => controller.abort(),
           4000
@@ -136,7 +244,7 @@ export default function AdminLayout() {
         }
       }
     } catch {
-      // Clear browser session even if server is down.
+      // Clear session even if server is down.
     } finally {
       sessionStorage.removeItem(
         "advocanote_access_token"
@@ -148,13 +256,20 @@ export default function AdminLayout() {
         "advocanote_auth_toast"
       );
 
-      navigate("/login", { replace: true });
+      setUnreadCount(0);
+
+      navigate("/login", {
+        replace: true,
+      });
+
       setLoggingOut(false);
     }
   };
 
   const adminName =
-    admin?.full_name || admin?.name || "Administrator";
+    admin?.full_name ||
+    admin?.name ||
+    "Administrator";
 
   const initial =
     adminName.trim().charAt(0).toUpperCase() || "A";
@@ -210,18 +325,36 @@ export default function AdminLayout() {
 
           <div className="adm-header-actions">
 
+            {/* ==============================
+                ADMIN NOTIFICATION BELL
+            ============================== */}
+
             <button
               type="button"
-              className="adm-icon-button"
-              aria-label="View notifications"
+              className="adm-icon-button adm-notification-button"
+              aria-label={
+                unreadCount > 0
+                  ? `${unreadCount} unread notifications`
+                  : "View notifications"
+              }
               onClick={() =>
                 navigate("/admin/notifications")
               }
             >
               <Bell size={23} />
+
+              {unreadCount > 0 && (
+                <span className="adm-notification-badge">
+                  {unreadCount > 99
+                    ? "99+"
+                    : unreadCount}
+                </span>
+              )}
             </button>
 
             <div className="adm-header-divider" />
+
+            {/* ORIGINAL ADMIN PROFILE */}
 
             <div className="adm-profile-area">
               <button
@@ -255,6 +388,7 @@ export default function AdminLayout() {
                     disabled={loggingOut}
                   >
                     <LogOut size={17} />
+
                     {loggingOut
                       ? "Logging out..."
                       : "Logout"}
@@ -266,7 +400,10 @@ export default function AdminLayout() {
         </header>
 
         {searchError && (
-          <p className="adm-search-error" role="alert">
+          <p
+            className="adm-search-error"
+            role="alert"
+          >
             {searchError}
           </p>
         )}
@@ -281,3 +418,4 @@ export default function AdminLayout() {
     </div>
   );
 }
+

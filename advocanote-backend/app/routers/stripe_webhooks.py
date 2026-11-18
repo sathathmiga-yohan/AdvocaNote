@@ -13,7 +13,10 @@ from app.database import get_db
 from app.models.payment import Payment
 from app.models.subscription import Subscription
 from app.models.subscription_plan import SubscriptionPlan
-
+from admin_notifications_api import (
+    create_admin_notification,
+    create_admin_notification_once,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -266,12 +269,85 @@ def handle_checkout_completed(checkout, db: Session):
         stripe_subscription.get("latest_invoice")
     )
 
+
     db.commit()
 
     logger.info(
         "AdvocaNote subscription activated for user_id=%s",
         payment.user_id,
     )
+
+    # =========================================
+    # ADMIN NOTIFICATIONS - SUCCESSFUL CHECKOUT
+    # =========================================
+
+    try:
+        lawyer = db.get(User, payment.user_id)
+
+        lawyer_name = (
+            getattr(lawyer, "full_name", None)
+            or f"Lawyer #{payment.user_id}"
+        )
+
+        plan_name = (
+            getattr(plan, "name", None)
+            or f"Plan #{plan.id}"
+        )
+
+        details = {
+            "lawyer_id": payment.user_id,
+            "lawyer_name": lawyer_name,
+            "email": (
+                getattr(lawyer, "email", None) or "—"
+            ),
+            "plan": plan_name,
+            "amount": str(payment.amount),
+            "currency": (
+                payment.currency or "LKR"
+            ),
+            "payment_status": "Paid",
+            "activity": "New Subscription",
+        }
+
+        notifications = [
+            {
+                "type": "subscription",
+                "title": "New Subscription",
+                "message": (
+                    f"{lawyer_name} has subscribed "
+                    f"to the {plan_name} plan."
+                ),
+                "details": details,
+            },
+            {
+                "type": "payment",
+                "title": "Payment Successful",
+                "message": (
+                    f"Subscription payment received "
+                    f"from {lawyer_name}."
+                ),
+                "details": details,
+            },
+        ]
+
+        for notification in notifications:
+            try:
+                create_admin_notification(
+                    **notification
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to create admin notification: %s",
+                    notification["type"],
+                )
+
+    except Exception:
+        logger.exception(
+            "Admin notification preparation failed "
+            "for checkout %s",
+            session_id,
+        )
+
 
 
 # =====================================================
@@ -687,8 +763,67 @@ def handle_invoice_paid(invoice, db: Session):
         stripe_sub.get("cancel_at_period_end", False)
     )
 
+
     # Save payment and subscription together
     db.commit()
+
+    # ==========================================
+    # ADMIN NOTIFICATION - SUBSCRIPTION RENEWED
+    # ==========================================
+
+    try:
+        lawyer = db.get(
+            User,
+            subscription.user_id
+        )
+
+        lawyer_name = (
+            getattr(lawyer, "full_name", None)
+            or f"Lawyer #{subscription.user_id}"
+        )
+
+        plan_name = (
+            getattr(new_plan, "name", None)
+            or f"Plan #{new_plan.id}"
+        )
+
+        notification_title = (
+            "Subscription Renewed with Plan Change"
+            if is_plan_change
+            else "Subscription Renewed"
+        )
+
+        create_admin_notification(
+            type="subscription",
+            title=notification_title,
+            message=(
+                f"{lawyer_name}'s subscription "
+                f"has been successfully renewed "
+                f"on the {plan_name} plan."
+            ),
+            details={
+                "lawyer_id": subscription.user_id,
+                "lawyer_name": lawyer_name,
+                "email": (
+                    getattr(lawyer, "email", None)
+                    or "—"
+                ),
+                "plan": plan_name,
+                "amount": str(amount),
+                "currency": currency,
+                "payment_status": "Paid",
+                "billing": new_plan.billing_interval,
+                "invoice_id": invoice_id,
+                "activity": "Subscription Renewal",
+            },
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to create renewal notification "
+            "for invoice %s",
+            invoice_id,
+        )
 
     logger.info(
         "Renewal paid: user_id=%s plan_id=%s invoice=%s",
@@ -697,30 +832,30 @@ def handle_invoice_paid(invoice, db: Session):
         invoice_id,
     )
 
+
 def handle_subscription_deleted(event_sub, db: Session):
+    """Sync verified Stripe cancellation and notify the admin once."""
+    import json
+    from admin_notifications_api import get_connection
 
     sub_id = stripe_id(event_sub.get("id"))
 
     if not sub_id:
         raise ValueError("Missing subscription ID")
 
-    stripe_sub = stripe.Subscription.retrieve(
-        sub_id
-    ).to_dict()
+    stripe_sub = stripe.Subscription.retrieve(sub_id).to_dict()
 
     if stripe_sub.get("status") != "canceled":
         return
 
     subscription = db.scalar(
         select(Subscription)
-        .where(
-            Subscription.stripe_subscription_id == sub_id
-        )
+        .where(Subscription.stripe_subscription_id == sub_id)
         .with_for_update()
     )
 
     if subscription is None:
-        logger.info("Unknown canceled subscription")
+        logger.info("Unknown canceled subscription: %s", sub_id)
         return
 
     if (
@@ -737,21 +872,135 @@ def handle_subscription_deleted(event_sub, db: Session):
     ):
         raise ValueError("Subscription metadata mismatch")
 
+    # ==========================================
+    # UPDATE SUBSCRIPTION
+    # ==========================================
+
     subscription.status = "canceled"
     subscription.cancel_at_period_end = False
 
     db.commit()
 
+    # ==========================================
+    # ADMIN NOTIFICATION - SUBSCRIPTION CANCELLED
+    # ==========================================
+
+    try:
+        lawyer = db.get(User, subscription.user_id)
+        plan = db.get(
+            SubscriptionPlan,
+            subscription.plan_id
+        )
+
+        lawyer_name = (
+            getattr(lawyer, "full_name", None)
+            or f"Lawyer #{subscription.user_id}"
+        )
+
+        plan_name = (
+            getattr(plan, "name", None)
+            or f"Plan #{subscription.plan_id}"
+        )
+
+        details = {
+            "lawyer_id": subscription.user_id,
+            "lawyer_name": lawyer_name,
+            "email": getattr(lawyer, "email", None) or "—",
+            "plan": plan_name,
+            "subscription_status": "Cancelled",
+            "stripe_subscription_id": sub_id,
+            "activity": "Subscription Cancelled",
+        }
+
+        # ======================================
+        # PREVENT DUPLICATE NOTIFICATIONS
+        # ======================================
+
+        notification_db = get_connection()
+
+        try:
+            notification_db.execute("BEGIN IMMEDIATE")
+
+            rows = notification_db.execute(
+                """
+                SELECT details
+                FROM admin_notifications
+                WHERE type = ? AND title = ?
+                """,
+                (
+                    "subscription",
+                    "Subscription Cancelled",
+                ),
+            ).fetchall()
+
+            already_sent = False
+
+            for row in rows:
+                try:
+                    existing_details = json.loads(
+                        row["details"] or "{}"
+                    )
+                except (ValueError, TypeError):
+                    continue
+
+                if (
+                    existing_details.get(
+                        "stripe_subscription_id"
+                    ) == sub_id
+                ):
+                    already_sent = True
+                    break
+
+            # ==================================
+            # SAVE REAL ADMIN NOTIFICATION
+            # ==================================
+
+            if not already_sent:
+                notification_db.execute(
+                    """
+                    INSERT INTO admin_notifications
+                    (
+                        type,
+                        title,
+                        message,
+                        details,
+                        is_read,
+                        created_at
+                    )
+                    VALUES (?, ?, ?, ?, 0, ?)
+                    """,
+                    (
+                        "subscription",
+                        "Subscription Cancelled",
+                        (
+                            f"{lawyer_name}'s {plan_name} "
+                            "subscription has been cancelled."
+                        ),
+                        json.dumps(details),
+                        datetime.now(timezone.utc).isoformat(),
+                    ),
+                )
+
+            notification_db.commit()
+
+        except Exception:
+            notification_db.rollback()
+            raise
+
+        finally:
+            notification_db.close()
+
+    except Exception:
+        logger.exception(
+            "Admin cancellation notification failed "
+            "for subscription %s",
+            sub_id,
+        )
+
     logger.info(
         "Subscription canceled: user_id=%s",
         subscription.user_id,
-    )    
-    
-
-# =====================================================
-# STRIPE WEBHOOK API
-# =====================================================
-
+    )
 
 # ==========================================
 # RENEWAL / DOWNGRADE PAYMENT FAILED
@@ -894,6 +1143,11 @@ def handle_invoice_payment_failed(
         )
         .with_for_update()
     )
+    # Prevent duplicate notifications for same invoice
+    was_already_failed = (
+        payment is not None
+        and payment.status == "failed"
+    )
 
     if payment is None:
 
@@ -930,15 +1184,68 @@ def handle_invoice_payment_failed(
         payment.amount = amount
         payment.currency = currency
 
+
     # Do not activate the new plan.
     # Do not extend the paid billing period.
     db.commit()
+
+    # ==========================================
+    # ADMIN NOTIFICATION - PAYMENT FAILED
+    # ==========================================
+
+    if not was_already_failed:
+        try:
+            lawyer = db.get(
+                User,
+                subscription.user_id
+            )
+
+            lawyer_name = (
+                getattr(lawyer, "full_name", None)
+                or f"Lawyer #{subscription.user_id}"
+            )
+
+            plan_name = (
+                getattr(new_plan, "name", None)
+                or f"Plan #{new_plan.id}"
+            )
+
+            create_admin_notification(
+                type="failed",
+                title="Payment Failed",
+                message=(
+                    f"Subscription renewal payment "
+                    f"failed for {lawyer_name}."
+                ),
+                details={
+                    "lawyer_id": subscription.user_id,
+                    "lawyer_name": lawyer_name,
+                    "email": (
+                        getattr(lawyer, "email", None)
+                        or "—"
+                    ),
+                    "plan": plan_name,
+                    "amount": str(amount),
+                    "currency": currency,
+                    "payment_status": "Failed",
+                    "invoice_id": invoice_id,
+                    "activity": "Renewal Payment Failed",
+                },
+            )
+
+        except Exception:
+            logger.exception(
+                "Failed to create payment failure "
+                "notification for invoice %s",
+                invoice_id,
+            )
 
     logger.info(
         "Renewal payment failed: user_id=%s invoice=%s",
         subscription.user_id,
         invoice_id,
     )
+
 
 # =====================================================
 # STRIPE SUBSCRIPTION STATUS UPDATE
@@ -1063,6 +1370,145 @@ def handle_subscription_updated(event_sub, db: Session):
         subscription.user_id,
         stripe_status,
     )
+
+
+# ==========================================
+# ADMIN - FIRST CHECKOUT PAYMENT FAILED
+# ==========================================
+
+def handle_initial_checkout_payment_failed(
+    event_invoice,
+    db: Session,
+):
+    invoice_id = event_invoice.get("id")
+
+    if not invoice_id:
+        return
+
+    invoice = stripe.Invoice.retrieve(
+        invoice_id
+    ).to_dict()
+
+    # Initial subscription invoice only
+    if invoice.get("billing_reason") != "subscription_create":
+        return
+
+    if invoice.get("status") != "open":
+        return
+
+    sub_id = get_invoice_subscription_id(invoice)
+
+    if not sub_id:
+        return
+
+    stripe_sub = stripe.Subscription.retrieve(
+        sub_id
+    ).to_dict()
+
+    # Never report an already active subscription
+    if stripe_sub.get("status") not in (
+        "incomplete",
+        "incomplete_expired",
+    ):
+        return
+
+    metadata = stripe_sub.get("metadata") or {}
+
+    user_id = metadata.get("user_id")
+    plan_id = metadata.get("plan_id")
+
+    if not user_id or not plan_id:
+        return
+
+    if not user_id.isdigit() or not plan_id.isdigit():
+        return
+
+    customer_id = stripe_id(stripe_sub.get("customer"))
+
+    if customer_id != stripe_id(invoice.get("customer")):
+        return
+
+    # Verify this invoice belongs to an AdvocaNote checkout
+    sessions = stripe.checkout.Session.list(
+        subscription=sub_id,
+        limit=20,
+    )
+
+    payment = None
+
+    for session in sessions.data:
+        session_id = session.get("id")
+        session_metadata = session.get("metadata") or {}
+
+        if (
+            session.get("mode") != "subscription"
+            or session.get("client_reference_id") != user_id
+            or session_metadata.get("user_id") != user_id
+            or session_metadata.get("plan_id") != plan_id
+            or stripe_id(session.get("subscription")) != sub_id
+        ):
+            continue
+
+        candidate = db.scalar(
+            select(Payment).where(
+                Payment.stripe_checkout_session_id == session_id
+            )
+        )
+
+        if (
+            candidate is not None
+            and str(candidate.user_id) == user_id
+            and str(candidate.plan_id) == plan_id
+        ):
+            payment = candidate
+            break
+
+    if payment is None or payment.status == "paid":
+        return
+
+    lawyer = db.get(User, int(user_id))
+    plan = db.get(SubscriptionPlan, int(plan_id))
+
+    if lawyer is None or plan is None:
+        return
+
+    amount_due = invoice.get("amount_due")
+
+    amount = (
+        str(Decimal(amount_due) / Decimal("100"))
+        if isinstance(amount_due, int)
+        else "—"
+    )
+
+    try:
+        create_admin_notification_once(
+            type="failed",
+            title="Initial Payment Failed",
+            message=(
+                f"Initial subscription payment failed "
+                f"for {lawyer.full_name}."
+            ),
+            details={
+                "lawyer_id": lawyer.id,
+                "lawyer_name": lawyer.full_name,
+                "email": lawyer.email,
+                "plan": plan.name,
+                "amount": amount,
+                "currency": (
+                    invoice.get("currency") or "LKR"
+                ).upper(),
+                "payment_status": "Failed",
+                "invoice_id": invoice_id,
+                "activity": "Initial Payment Failed",
+            },
+            unique_detail_key="invoice_id",
+        )
+
+    except Exception:
+        logger.exception(
+            "Initial payment failure notification failed: %s",
+            invoice_id,
+        )
 
 
 @router.post("/stripe")
@@ -1406,8 +1852,80 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
         paid_at=datetime.utcnow(),
     )
 
+
     db.add(payment)
     db.commit()
+
+    # ==========================================
+    # ADMIN NOTIFICATION - PLAN UPGRADE / CHANGE
+    # ==========================================
+
+    try:
+        lawyer = db.get(
+            User,
+            subscription.user_id
+        )
+
+        lawyer_name = (
+            getattr(lawyer, "full_name", None)
+            or f"Lawyer #{subscription.user_id}"
+        )
+
+        old_plan_name = (
+            getattr(old_plan, "name", None)
+            or f"Plan #{old_plan.id}"
+        )
+
+        new_plan_name = (
+            getattr(new_plan, "name", None)
+            or f"Plan #{new_plan.id}"
+        )
+
+        is_upgrade = (
+            old_plan.billing_interval == "month"
+            and new_plan.billing_interval == "month"
+            and new_plan.price > old_plan.price
+        )
+
+        notification_title = (
+            "Plan Upgraded"
+            if is_upgrade
+            else "Plan Changed"
+        )
+
+        create_admin_notification_once(
+            type="subscription",
+            title=notification_title,
+            message=(
+                f"{lawyer_name} has changed "
+                f"their subscription from "
+                f"{old_plan_name} to {new_plan_name}."
+            ),
+            details={
+                "lawyer_id": subscription.user_id,
+                "lawyer_name": lawyer_name,
+                "email": (
+                    getattr(lawyer, "email", None)
+                    or "—"
+                ),
+                "old_plan": old_plan_name,
+                "new_plan": new_plan_name,
+                "amount": str(amount),
+                "currency": "LKR",
+                "billing": new_plan.billing_interval,
+                "payment_status": "Paid",
+                "invoice_id": invoice_id,
+                "activity": notification_title,
+            },
+            unique_detail_key="invoice_id",
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to create plan change notification "
+            "for invoice %s",
+            invoice_id,
+        )
 
     logger.info(
         "Paid plan upgrade completed: user_id=%s plan_id=%s",

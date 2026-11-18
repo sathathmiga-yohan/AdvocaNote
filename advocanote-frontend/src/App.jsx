@@ -53,8 +53,6 @@ import AdminDashboard from "./admin/AdminDashboard";
 import AdminLawyers from "./admin/AdminLawyers";
 import AdminSubscriptions from "./admin/AdminSubscriptions";
 import AdminNotifications from "./admin/AdminNotifications";
-import AdminSupport from "./admin/AdminSupport";
-import AdminSecurity from "./admin/AdminSecurity";
 import AdminSettings from "./admin/AdminSettings";
 
 // =====================================
@@ -218,17 +216,7 @@ function App() {
             path="notifications"
             element={<AdminNotifications />}
           />
-
-          <Route
-            path="support"
-            element={<AdminSupport />}
-          />
-
-          <Route
-            path="security"
-            element={<AdminSecurity />}
-          />
-
+          
           <Route
             path="settings"
             element={<AdminSettings />}

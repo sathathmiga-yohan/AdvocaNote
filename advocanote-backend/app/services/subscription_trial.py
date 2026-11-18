@@ -1,5 +1,6 @@
 
 import calendar
+import logging
 
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -12,6 +13,13 @@ from app.database import SessionLocal
 from app.models.user import User
 from app.models.subscription import Subscription
 from app.models.subscription_plan import SubscriptionPlan
+
+from admin_notifications_api import (
+    notify_free_trial_started,
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 # ==========================================
@@ -52,7 +60,6 @@ PLAN_BY_ID = {
 # VERIFY EXISTING DATABASE PLANS
 # ==========================================
 
-
 def get_official_plan(
     db: Session,
     plan_key: str,
@@ -84,7 +91,6 @@ def get_official_plan(
         )
 
     return plan
-
 
 
 # ==========================================
@@ -137,19 +143,14 @@ def start_free_trial_if_eligible(
             if user is None:
                 return False
 
-
             # Start the free trial for an
             # active lawyer on first login.
-            #
-            # Email verification is handled
-            # separately by authentication.
 
             if (
                 user.role != "lawyer"
                 or not user.is_active
             ):
                 return False
-
 
             # Never restart a used trial.
             # Never replace a paid subscription.
@@ -164,11 +165,8 @@ def start_free_trial_if_eligible(
             if existing is not None:
                 return False
 
-            # The Basic plan is used only as
-            # the trial's linked plan.
-            #
-            # status='trialing' overrides its
-            # 3-action limit to unlimited.
+            # Basic plan is linked to free trial.
+            # Trial has unlimited actions.
 
             basic_plan = get_official_plan(
                 db,
@@ -197,7 +195,37 @@ def start_free_trial_if_eligible(
             )
 
             db.add(subscription)
+
+            # Save trial to MySQL first.
             db.commit()
+
+            # ======================================
+            # ADMIN NOTIFICATION - FREE TRIAL STARTED
+            # ======================================
+
+            try:
+                db.refresh(subscription)
+
+                notify_free_trial_started(
+                    user=user,
+                    subscription=subscription,
+                )
+
+                logger.info(
+                    "Free trial notification created "
+                    "for lawyer_id=%s",
+                    user_id,
+                )
+
+            except Exception:
+                # Notification failure must not
+                # affect successful free trial.
+
+                logger.exception(
+                    "Failed to create free trial "
+                    "notification for lawyer_id=%s",
+                    user_id,
+                )
 
             return True
 

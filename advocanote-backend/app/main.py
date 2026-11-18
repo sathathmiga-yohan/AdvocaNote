@@ -27,8 +27,9 @@ from app.routers.voice_storage import router as voice_storage_router
 from app.routers import account
 from app.routers.subscription_experience import (
     router as subscription_experience_router,
+    trial_notification_scheduler,
 )
-
+import asyncio
 
 def upgrade_reminders_table():
     with engine.begin() as connection:
@@ -67,10 +68,27 @@ def upgrade_reminders_table():
 
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
     upgrade_reminders_table()
-    yield
+
+    # Start automatic trial notification checks
+    trial_task = asyncio.create_task(
+        trial_notification_scheduler()
+    )
+
+    try:
+        yield
+
+    finally:
+        trial_task.cancel()
+
+        try:
+            await trial_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(

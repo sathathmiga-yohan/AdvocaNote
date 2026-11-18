@@ -1,5 +1,11 @@
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   Bell,
   CheckCheck,
@@ -21,110 +27,17 @@ import {
 
 import "./AdminNotifications.css";
 
-const STORAGE_KEY = "advocanote_admin_notifications_demo";
 const PAGE_SIZE = 5;
 
-// ========================================
-// SAMPLE NOTIFICATIONS
-// Replace with backend data later
-// ========================================
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
 
-const sampleNotifications = [
-  {
-    id: 1,
-    type: "registration",
-    title: "New Lawyer Registration",
-    message: "Arul Prakash has registered as a lawyer.",
-    createdAt: "2026-11-15T10:24:00+05:30",
-    isRead: false,
-    details: [
-      ["Full Name", "Arul Prakash"],
-      ["Email", "arul@example.com"],
-      ["Account Type", "Individual Lawyer"],
-      ["Status", "Registered"],
-    ],
-  },
-  {
-    id: 2,
-    type: "subscription",
-    title: "New Subscription",
-    message: "Kavitha has subscribed to the Pro Plan.",
-    createdAt: "2026-11-15T09:47:00+05:30",
-    isRead: false,
-    details: [
-      ["Lawyer", "Kavitha"],
-      ["Plan", "Pro Plan"],
-      ["Billing", "Annual"],
-      ["Status", "Active"],
-    ],
-  },
-  {
-    id: 3,
-    type: "trial",
-    title: "Trial Expiring Soon",
-    message: "Dinesh's free trial will expire in 2 days.",
-    createdAt: "2026-11-15T08:30:00+05:30",
-    isRead: false,
-    details: [
-      ["Lawyer", "Dinesh"],
-      ["Plan", "Free Trial"],
-      ["Remaining", "2 Days"],
-      ["Status", "Expiring Soon"],
-    ],
-  },
-  {
-    id: 4,
-    type: "payment",
-    title: "Payment Successful",
-    message: "Subscription payment received from Senthil.",
-    createdAt: "2026-11-14T18:20:00+05:30",
-    isRead: true,
-    details: [
-      ["Lawyer", "Senthil"],
-      ["Payment Type", "Subscription"],
-      ["Status", "Successful"],
-    ],
-  },
-  {
-    id: 5,
-    type: "feedback",
-    title: "New Feedback",
-    message: "Priya has submitted new feedback.",
-    createdAt: "2026-11-14T15:10:00+05:30",
-    isRead: true,
-    details: [
-      ["Submitted By", "Priya"],
-      ["Category", "General Feedback"],
-      ["Status", "Received"],
-    ],
-  },
-  {
-    id: 6,
-    type: "failed",
-    title: "Payment Failed",
-    message: "Subscription payment failed for Ramesh.",
-    createdAt: "2026-11-14T12:15:00+05:30",
-    isRead: false,
-    details: [
-      ["Lawyer", "Ramesh"],
-      ["Payment Type", "Subscription"],
-      ["Status", "Failed"],
-    ],
-  },
-  {
-    id: 7,
-    type: "expired",
-    title: "Subscription Expired",
-    message: "Ramesh's subscription has expired.",
-    createdAt: "2026-11-13T17:15:00+05:30",
-    isRead: true,
-    details: [
-      ["Lawyer", "Ramesh"],
-      ["Plan", "Pro Plan"],
-      ["Status", "Expired"],
-    ],
-  },
-];
+// ========================================
+// NOTIFICATION ICONS
+// ========================================
 
 const notificationIcons = {
   registration: UserRoundPlus,
@@ -136,46 +49,218 @@ const notificationIcons = {
   expired: CalendarX2,
 };
 
+// ========================================
+// DETAIL LABELS
+// ========================================
+
+const detailLabels = {
+  lawyer_id: "Lawyer ID",
+  lawyer_name: "Lawyer Name",
+  full_name: "Full Name",
+  email: "Email",
+  role: "Role",
+  account_status: "Account Status",
+  activity: "Activity",
+  plan: "Plan",
+  plan_name: "Plan",
+  payment_status: "Payment Status",
+  amount: "Amount",
+  billing: "Billing",
+};
+
+function normalizeDetails(details) {
+  if (!details || typeof details !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(details)) {
+    return details;
+  }
+
+  return Object.entries(details).map(([key, value]) => {
+    const label =
+      detailLabels[key] ||
+      key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const displayValue =
+      value === null || value === undefined
+        ? "—"
+        : typeof value === "object"
+          ? JSON.stringify(value)
+          : String(value);
+
+    return [label, displayValue];
+  });
+}
+
+// ========================================
+// BACKEND DATA FORMAT
+// ========================================
+
+function normalizeNotification(item) {
+  return {
+    id: item.id,
+    type: item.type || "general",
+    title: item.title || "Notification",
+    message: item.message || "",
+    createdAt: item.created_at,
+    isRead: Boolean(item.is_read),
+    details: normalizeDetails(item.details),
+  };
+}
+
 function formatDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
   return new Intl.DateTimeFormat("en-LK", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Colombo",
-  }).format(new Date(value));
+  }).format(date);
 }
 
-function loadNotifications() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+// ========================================
+// ADMIN API CONNECTION
+// ========================================
 
-    if (stored !== null) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch (error) {
-    console.error("Notifications loading failed:", error);
+async function adminNotificationRequest(
+  path,
+  options = {}
+) {
+  const token =
+    sessionStorage.getItem(
+      "advocanote_access_token"
+    ) ||
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem(
+      "advocanote_access_token"
+    ) ||
+    localStorage.getItem("access_token");
+
+  if (!token) {
+    throw new Error(
+      "Admin session not found. Please log in again."
+    );
   }
 
-  return sampleNotifications;
+  const response = await fetch(
+    `${API_BASE_URL}${path}`,
+    {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(options.body
+          ? { "Content-Type": "application/json" }
+          : {}),
+        ...(options.headers || {}),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response
+      .json()
+      .catch(() => null);
+
+    throw new Error(
+      typeof data?.detail === "string"
+        ? data.detail
+        : `Request failed (${response.status})`
+    );
+  }
+
+  return response.json();
 }
+
+// ========================================
+// MAIN COMPONENT
+// ========================================
 
 export default function AdminNotifications() {
   const [notifications, setNotifications] =
-    useState(loadNotifications);
+    useState([]);
 
-  const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const [activeTab, setActiveTab] =
+    useState("all");
+
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState(1);
-  const [checkedIds, setCheckedIds] = useState([]);
+  const [selectedId, setSelectedId] =
+    useState(null);
+
+  const [checkedIds, setCheckedIds] =
+    useState([]);
+
   const [page, setPage] = useState(1);
 
-  // Save demo changes locally
+  // ======================================
+  // FETCH REAL NOTIFICATIONS
+  // ======================================
+
+  const loadNotifications = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+
+      try {
+        const result =
+          await adminNotificationRequest(
+            "/admin/notifications"
+          );
+
+        const rows = Array.isArray(result.items)
+          ? result.items
+          : [];
+
+        setNotifications(
+          rows.map(normalizeNotification)
+        );
+
+        setError("");
+      } catch (err) {
+        setError(
+          err.message ||
+          "Unable to load notifications."
+        );
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    []
+  );
+
+  // ======================================
+  // INITIAL LOAD + AUTO REFRESH
+  // ======================================
+
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(notifications)
+    // Remove old frontend demo data
+    localStorage.removeItem(
+      "advocanote_admin_notifications_demo"
     );
-  }, [notifications]);
+
+    loadNotifications();
+
+    const interval = setInterval(() => {
+      loadNotifications(true);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
+
+  // ======================================
+  // COUNTS
+  // ======================================
 
   const totalCount = notifications.length;
 
@@ -185,9 +270,9 @@ export default function AdminNotifications() {
 
   const readCount = totalCount - unreadCount;
 
-  // ========================================
+  // ======================================
   // FILTER + SEARCH
-  // ========================================
+  // ======================================
 
   const filteredNotifications = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -195,12 +280,16 @@ export default function AdminNotifications() {
     return notifications.filter((item) => {
       const matchesTab =
         activeTab === "all" ||
-        (activeTab === "unread" && !item.isRead) ||
-        (activeTab === "read" && item.isRead);
+        (activeTab === "unread" &&
+          !item.isRead) ||
+        (activeTab === "read" &&
+          item.isRead);
 
       const matchesSearch =
         !term ||
-        `${item.title} ${item.message}`
+        `${item.title} ${item.message} ${item.details
+          .flat()
+          .join(" ")}`
           .toLowerCase()
           .includes(term);
 
@@ -208,19 +297,28 @@ export default function AdminNotifications() {
     });
   }, [notifications, activeTab, search]);
 
+  // ======================================
+  // PAGINATION
+  // ======================================
+
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredNotifications.length / PAGE_SIZE)
+    Math.ceil(
+      filteredNotifications.length / PAGE_SIZE
+    )
   );
 
   useEffect(() => {
-    setPage((previous) => Math.min(previous, totalPages));
+    setPage((previous) =>
+      Math.min(previous, totalPages)
+    );
   }, [totalPages]);
 
-  const visibleNotifications = filteredNotifications.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
+  const visibleNotifications =
+    filteredNotifications.slice(
+      (page - 1) * PAGE_SIZE,
+      page * PAGE_SIZE
+    );
 
   const selectedNotification =
     filteredNotifications.find(
@@ -235,11 +333,13 @@ export default function AdminNotifications() {
 
   const allVisibleChecked =
     visibleIds.length > 0 &&
-    visibleIds.every((id) => checkedIds.includes(id));
+    visibleIds.every((id) =>
+      checkedIds.includes(id)
+    );
 
-  // ========================================
-  // ACTIONS
-  // ========================================
+  // ======================================
+  // CHANGE TAB
+  // ======================================
 
   const changeTab = (tab) => {
     setActiveTab(tab);
@@ -247,29 +347,77 @@ export default function AdminNotifications() {
     setCheckedIds([]);
   };
 
-  const markAsRead = (id) => {
-    setNotifications((previous) =>
-      previous.map((item) =>
-        item.id === id
-          ? { ...item, isRead: true }
-          : item
-      )
-    );
+  // ======================================
+  // MARK ONE AS READ
+  // ======================================
+
+  const markAsRead = async (id) => {
+    if (busy) return;
+
+    setBusy(true);
+
+    try {
+      await adminNotificationRequest(
+        `/admin/notifications/${id}/read`,
+        { method: "PATCH" }
+      );
+
+      setNotifications((previous) =>
+        previous.map((item) =>
+          item.id === id
+            ? { ...item, isRead: true }
+            : item
+        )
+      );
+
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((previous) =>
-      previous.map((item) => ({
-        ...item,
-        isRead: true,
-      }))
-    );
+  // ======================================
+  // MARK ALL AS READ
+  // ======================================
+
+  const markAllAsRead = async () => {
+    if (busy || unreadCount === 0) return;
+
+    setBusy(true);
+
+    try {
+      await adminNotificationRequest(
+        "/admin/notifications/read-all",
+        { method: "PATCH" }
+      );
+
+      setNotifications((previous) =>
+        previous.map((item) => ({
+          ...item,
+          isRead: true,
+        }))
+      );
+
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   };
+
+  // ======================================
+  // CHECKBOX SELECTION
+  // ======================================
 
   const toggleChecked = (id) => {
     setCheckedIds((previous) =>
       previous.includes(id)
-        ? previous.filter((value) => value !== id)
+        ? previous.filter(
+          (value) => value !== id
+        )
         : [...previous, id]
     );
   };
@@ -282,12 +430,21 @@ export default function AdminNotifications() {
         );
       }
 
-      return [...new Set([...previous, ...visibleIds])];
+      return [
+        ...new Set([
+          ...previous,
+          ...visibleIds,
+        ]),
+      ];
     });
   };
 
-  const deleteNotifications = (ids) => {
-    if (!ids.length) return;
+  // ======================================
+  // DELETE NOTIFICATIONS
+  // ======================================
+
+  const deleteNotifications = async (ids) => {
+    if (!ids.length || busy) return;
 
     const confirmed = window.confirm(
       `Delete ${ids.length} notification(s)?`
@@ -295,16 +452,38 @@ export default function AdminNotifications() {
 
     if (!confirmed) return;
 
-    setNotifications((previous) =>
-      previous.filter((item) => !ids.includes(item.id))
-    );
+    setBusy(true);
 
-    setCheckedIds((previous) =>
-      previous.filter((id) => !ids.includes(id))
-    );
+    try {
+      await adminNotificationRequest(
+        "/admin/notifications/delete-selected",
+        {
+          method: "POST",
+          body: JSON.stringify({ ids }),
+        }
+      );
 
-    if (ids.includes(selectedId)) {
-      setSelectedId(null);
+      setNotifications((previous) =>
+        previous.filter(
+          (item) => !ids.includes(item.id)
+        )
+      );
+
+      setCheckedIds((previous) =>
+        previous.filter(
+          (id) => !ids.includes(id)
+        )
+      );
+
+      if (ids.includes(selectedId)) {
+        setSelectedId(null);
+      }
+
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -323,31 +502,23 @@ export default function AdminNotifications() {
       <div className="adn-container">
 
         {/* PAGE HEADER */}
-        <div className="adn-header">
-          <div className="adn-header-left">
-            <div className="adn-header-icon">
-              <Bell size={25} strokeWidth={1.8} />
-            </div>
+        <div className="adn-header adn-dashboard-header">
 
-            <div>
-              <div className="adn-eyebrow">
-                ADMIN / ACTIVITY CENTER
-              </div>
+          <div className="adn-header-title">
+            <h1>Notifications</h1>
 
-              <h1>Notifications</h1>
-
-              <p>
-                Stay updated with important activities
-                across AdvocaNote.
-              </p>
-            </div>
+            <p>
+              Stay updated with important activities
+              across AdvocaNote.
+            </p>
           </div>
 
           <div className="adn-header-actions">
+
             <button
               className="adn-btn adn-btn-gold"
               onClick={markAllAsRead}
-              disabled={unreadCount === 0}
+              disabled={busy || unreadCount === 0}
             >
               <CheckCheck size={17} />
               Mark all as read
@@ -358,18 +529,26 @@ export default function AdminNotifications() {
               onClick={() =>
                 deleteNotifications(checkedIds)
               }
-              disabled={checkedIds.length === 0}
+              disabled={
+                busy || checkedIds.length === 0
+              }
             >
               <Trash2 size={16} />
+
               Delete selected
+
               {checkedIds.length > 0 &&
                 ` (${checkedIds.length})`}
             </button>
+
           </div>
         </div>
 
         {/* SUMMARY */}
+
+        {/* SUMMARY */}
         <div className="adn-summary">
+
           <div className="adn-summary-item">
             <span className="adn-summary-dot all" />
             <span>All Notifications</span>
@@ -391,6 +570,7 @@ export default function AdminNotifications() {
             <span>Read</span>
             <strong>{readCount}</strong>
           </div>
+
         </div>
 
         {/* FILTERS */}
@@ -405,7 +585,9 @@ export default function AdminNotifications() {
                 key={key}
                 className={
                   "adn-tab " +
-                  (activeTab === key ? "active" : "")
+                  (activeTab === key
+                    ? "active"
+                    : "")
                 }
                 onClick={() => changeTab(key)}
               >
@@ -430,6 +612,19 @@ export default function AdminNotifications() {
           </div>
         </div>
 
+        {/* API ERROR */}
+        {error && (
+          <div
+            role="alert"
+            style={{
+              color: "#9b2525",
+              margin: "10px 0",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         {/* MAIN CONTENT */}
         <div className="adn-content">
 
@@ -438,14 +633,19 @@ export default function AdminNotifications() {
             <div className="adn-list-heading">
               <div>
                 <h2>Recent Activity</h2>
-                <p>Manage your system notifications</p>
+                <p>
+                  Manage your system notifications
+                </p>
               </div>
 
               <label className="adn-select-all">
                 <input
                   type="checkbox"
                   checked={allVisibleChecked}
-                  disabled={visibleIds.length === 0}
+                  disabled={
+                    busy ||
+                    visibleIds.length === 0
+                  }
                   onChange={toggleAllVisible}
                 />
                 Select all
@@ -453,82 +653,121 @@ export default function AdminNotifications() {
             </div>
 
             <div className="adn-list-body">
-              {visibleNotifications.length === 0 ? (
+              {loading ? (
                 <div className="adn-empty">
-                  <Inbox size={35} strokeWidth={1.4} />
+                  <Inbox
+                    size={35}
+                    strokeWidth={1.4}
+                  />
+                  <h3>Loading notifications...</h3>
+                </div>
+              ) : visibleNotifications.length ===
+                0 ? (
+                <div className="adn-empty">
+                  <Inbox
+                    size={35}
+                    strokeWidth={1.4}
+                  />
+
                   <h3>No notifications found</h3>
+
                   <p>
-                    There are no notifications matching
-                    your current filter.
+                    {error
+                      ? "Unable to retrieve notifications from the backend."
+                      : "There are no notifications matching your current filter."}
                   </p>
                 </div>
               ) : (
-                visibleNotifications.map((item) => {
-                  const Icon =
-                    notificationIcons[item.type] || Bell;
+                visibleNotifications.map(
+                  (item) => {
+                    const Icon =
+                      notificationIcons[
+                      item.type
+                      ] || Bell;
 
-                  const isActive =
-                    selectedNotification?.id === item.id;
+                    const isActive =
+                      selectedNotification?.id ===
+                      item.id;
 
-                  return (
-                    <div
-                      key={item.id}
-                      className={[
-                        "adn-notification",
-                        !item.isRead ? "is-unread" : "",
-                        isActive ? "is-active" : "",
-                      ].join(" ")}
-                    >
-                      <input
-                        className="adn-item-checkbox"
-                        type="checkbox"
-                        aria-label={`Select ${item.title}`}
-                        checked={checkedIds.includes(
-                          item.id
-                        )}
-                        onChange={() =>
-                          toggleChecked(item.id)
-                        }
-                      />
-
-                      <button
-                        type="button"
-                        className="adn-notification-main"
-                        onClick={() =>
-                          setSelectedId(item.id)
-                        }
+                    return (
+                      <div
+                        key={item.id}
+                        className={[
+                          "adn-notification",
+                          !item.isRead
+                            ? "is-unread"
+                            : "",
+                          isActive
+                            ? "is-active"
+                            : "",
+                        ].join(" ")}
                       >
-                        <div
-                          className={
-                            "adn-type-icon " +
-                            item.type
+                        <input
+                          className="adn-item-checkbox"
+                          type="checkbox"
+                          aria-label={`Select ${item.title}`}
+                          checked={checkedIds.includes(
+                            item.id
+                          )}
+                          disabled={busy}
+                          onChange={() =>
+                            toggleChecked(
+                              item.id
+                            )
+                          }
+                        />
+
+                        <button
+                          type="button"
+                          className="adn-notification-main"
+                          onClick={() =>
+                            setSelectedId(
+                              item.id
+                            )
                           }
                         >
-                          <Icon size={19} strokeWidth={2} />
-                        </div>
-
-                        <div className="adn-item-content">
-                          <div className="adn-item-heading">
-                            <h3>{item.title}</h3>
-
-                            {!item.isRead && (
-                              <span className="adn-unread-dot" />
-                            )}
+                          <div
+                            className={
+                              "adn-type-icon " +
+                              item.type
+                            }
+                          >
+                            <Icon
+                              size={19}
+                              strokeWidth={2}
+                            />
                           </div>
 
-                          <p>{item.message}</p>
+                          <div className="adn-item-content">
+                            <div className="adn-item-heading">
+                              <h3>
+                                {item.title}
+                              </h3>
 
-                          <span className="adn-item-date">
-                            <Clock3 size={12} />
-                            {formatDate(item.createdAt)}
-                          </span>
-                        </div>
+                              {!item.isRead && (
+                                <span className="adn-unread-dot" />
+                              )}
+                            </div>
 
-                        <ChevronRight size={17} className="adn-item-chevron" />
-                      </button>
-                    </div>
-                  );
-                })
+                            <p>{item.message}</p>
+
+                            <span className="adn-item-date">
+                              <Clock3 size={12} />
+                              {formatDate(
+                                item.createdAt
+                              )}
+                            </span>
+                          </div>
+
+                          <ChevronRight
+                            size={17}
+                            className="adn-item-chevron"
+                          />
+                        </button>
+                      </div>
+                    );
+                  }
+                )
               )}
             </div>
 
@@ -543,7 +782,10 @@ export default function AdminNotifications() {
                 <button
                   disabled={page === 1}
                   onClick={() =>
-                    setPage((previous) => previous - 1)
+                    setPage(
+                      (previous) =>
+                        previous - 1
+                    )
                   }
                   aria-label="Previous page"
                 >
@@ -557,18 +799,27 @@ export default function AdminNotifications() {
                   <button
                     key={number}
                     className={
-                      page === number ? "active" : ""
+                      page === number
+                        ? "active"
+                        : ""
                     }
-                    onClick={() => setPage(number)}
+                    onClick={() =>
+                      setPage(number)
+                    }
                   >
                     {number}
                   </button>
                 ))}
 
                 <button
-                  disabled={page === totalPages}
+                  disabled={
+                    page === totalPages
+                  }
                   onClick={() =>
-                    setPage((previous) => previous + 1)
+                    setPage(
+                      (previous) =>
+                        previous + 1
+                    )
                   }
                   aria-label="Next page"
                 >
@@ -578,13 +829,14 @@ export default function AdminNotifications() {
             </div>
           </section>
 
-          {/* RIGHT: DETAILS PANEL */}
+          {/* RIGHT: NOTIFICATION DETAILS */}
           <section className="adn-detail-panel">
             <div className="adn-detail-top">
               <div>
                 <span className="adn-detail-overline">
                   SELECTED NOTIFICATION
                 </span>
+
                 <h2>Notification Details</h2>
               </div>
 
@@ -600,7 +852,7 @@ export default function AdminNotifications() {
                     {(() => {
                       const Icon =
                         notificationIcons[
-                          selectedNotification.type
+                        selectedNotification.type
                         ] || Bell;
 
                       return (
@@ -650,16 +902,30 @@ export default function AdminNotifications() {
                   </div>
 
                   <div className="adn-info-table">
-                    {selectedNotification.details.map(
-                      ([label, value], index) => (
-                        <div
-                          className="adn-info-row"
-                          key={index}
-                        >
-                          <span>{label}</span>
-                          <strong>{value}</strong>
-                        </div>
+                    {selectedNotification.details
+                      .length > 0 ? (
+                      selectedNotification.details.map(
+                        ([label, value], index) => (
+                          <div
+                            className="adn-info-row"
+                            key={index}
+                          >
+                            <span>
+                              {label}
+                            </span>
+
+                            <strong>
+                              {value}
+                            </strong>
+                          </div>
+                        )
                       )
+                    ) : (
+                      <div className="adn-info-row">
+                        <span>
+                          No additional details
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -668,11 +934,17 @@ export default function AdminNotifications() {
                   <button
                     className="adn-btn adn-btn-read"
                     onClick={() =>
-                      markAsRead(selectedNotification.id)
+                      markAsRead(
+                        selectedNotification.id
+                      )
                     }
-                    disabled={selectedNotification.isRead}
+                    disabled={
+                      busy ||
+                      selectedNotification.isRead
+                    }
                   >
                     <Check size={17} />
+
                     {selectedNotification.isRead
                       ? "Already Read"
                       : "Mark as Read"}
@@ -685,6 +957,7 @@ export default function AdminNotifications() {
                         selectedNotification.id,
                       ])
                     }
+                    disabled={busy}
                   >
                     <Trash2 size={16} />
                     Delete
@@ -693,10 +966,16 @@ export default function AdminNotifications() {
               </>
             ) : (
               <div className="adn-detail-empty">
-                <Bell size={36} strokeWidth={1.3} />
+                <Bell
+                  size={36}
+                  strokeWidth={1.3}
+                />
+
                 <h3>No notification selected</h3>
+
                 <p>
-                  Select a notification to view its details.
+                  Select a notification to view
+                  its details.
                 </p>
               </div>
             )}

@@ -1,110 +1,405 @@
+/* ========================================
+   ADMIN SETTINGS - ADVOCANOTE
+======================================== */
 
-.amset-page {
+.ads-page {
   width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 25px 30px 45px;
+  box-sizing: border-box;
+  background: #f8f5ed;
   color: #003a2c;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.amset-heading {
-  margin-bottom: 20px;
+/* ========================================
+   PAGE HEADER
+======================================== */
+
+.ads-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 19px;
 }
 
-.amset-heading h1 {
+.ads-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.ads-heading-icon {
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+  background: #e5eee6;
+  color: #004535;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ads-heading h1 {
   margin: 0;
-  font: 700 30px Georgia, serif;
   color: #003a2c;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.45px;
 }
 
-.amset-heading p {
-  margin: 8px 0 0;
-  color: #627589;
+.ads-heading p {
+  margin: 5px 0 0;
+  color: #738078;
   font-size: 13px;
 }
 
-.amset-card {
-  min-height: 430px;
-  padding: 40px 22px;
+.ads-header-line {
+  width: 100%;
+  height: 1px;
+  margin-bottom: 24px;
+  background: #e5e6dd;
+}
+
+/* ========================================
+   SECTION CARDS
+======================================== */
+
+.ads-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e6e8de;
+  border-radius: 15px;
+  padding: 24px 25px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 3px 14px rgba(0, 50, 35, 0.035);
+}
+
+.ads-card-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.ads-card-title {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.ads-card-icon {
+  width: 43px;
+  height: 43px;
+  background: #e8f1ec;
+  color: #00533e;
+  border-radius: 11px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  background: #fff;
-  border: 1px solid #e7e2d8;
-  border-radius: 17px;
-  box-shadow: 0 5px 20px rgba(0, 40, 22, .045);
+  flex-shrink: 0;
 }
 
-.amset-icon {
-  width: 85px;
-  height: 85px;
+.ads-card-title h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #003d2d;
+}
+
+.ads-card-title p {
+  margin: 5px 0 0;
+  color: #7a857e;
+  font-size: 12.5px;
+}
+
+.ads-divider {
+  width: 100%;
+  height: 1px;
+  background: #eceee8;
+  margin: 21px 0;
+}
+
+/* ========================================
+   ADMIN PROFILE
+======================================== */
+
+.ads-profile-content {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.ads-avatar {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(
+    135deg,
+    #003d2d,
+    #087459
+  );
+  color: #ffffff;
+  border: 4px solid #e6eee8;
+  box-shadow: 0 0 0 1px #d0e0d3;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ads-avatar span {
+  font-size: 43px;
+  font-weight: 600;
+  font-family: Georgia, serif;
+}
+
+.ads-profile-form {
+  width: 100%;
+  min-width: 0;
+}
+
+.ads-fields-grid {
   display: grid;
-  place-items: center;
-  border-radius: 22px;
-  background: #fff5df;
-  color: #b88620;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
 
-.amset-label {
-  color: #ba8c32;
-  letter-spacing: 2px;
-  font-size: 11px;
+/* ========================================
+   FORM INPUTS
+======================================== */
+
+.ads-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.ads-field label {
+  color: #304d40;
+  font-size: 12.5px;
   font-weight: 700;
 }
 
-.amset-card h2 {
-  margin: 14px 0;
-  font: 700 37px Georgia, serif;
-  color: #003a2c;
-}
-
-.amset-card > p {
-  max-width: 430px;
-  margin: 0;
-  color: #687c8c;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.amset-features {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 23px;
-}
-
-.amset-features span {
+.ads-input-wrap {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 13px;
-  background: #fffaf0;
-  border: 1px solid #f0e5cc;
-  border-radius: 9px;
-  color: #86641b;
-  font-size: 12px;
+  gap: 11px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid #dce4dc;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #8a9c91;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease,
+              box-shadow 0.2s ease;
 }
 
-.amset-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 28px;
-  padding: 12px 20px;
-  background: #004431;
-  color: #fff;
-  border-radius: 10px;
-  text-decoration: none;
+.ads-input-wrap:focus-within {
+  border-color: #b18a4c;
+  box-shadow: 0 0 0 3px rgba(177, 138, 76, 0.1);
+}
+
+.ads-input-wrap input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
   font-size: 13px;
+  color: #173e31;
 }
 
-.amset-back:hover {
-  background: #006046;
+.ads-input-wrap input::placeholder {
+  color: #9ba69e;
 }
 
-@media (max-width: 600px) {
-  .amset-heading h1 { font-size: 25px; }
-  .amset-card { min-height: 370px; padding: 30px 15px; }
-  .amset-card h2 { font-size: 30px; }
+.ads-input-wrap input:read-only {
+  cursor: default;
+  color: #52665a;
+}
+
+/* ========================================
+   PASSWORD SECTION
+======================================== */
+
+.ads-password-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.ads-password-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 25px;
+}
+
+.ads-show-password {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  color: #5c7164;
+  font-size: 12.5px;
+}
+
+.ads-show-password input {
+  width: 15px;
+  height: 15px;
+  accent-color: #00533e;
+  cursor: pointer;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.ads-outline-btn,
+.ads-primary-btn {
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ads-outline-btn {
+  background: #fffaf0;
+  color: #86662f;
+  border: 1px solid #dbc28c;
+}
+
+.ads-outline-btn:hover {
+  background: #f7ebd2;
+}
+
+.ads-primary-btn {
+  background: #004535;
+  color: #ffffff;
+  border: 1px solid #004535;
+}
+
+.ads-primary-btn:hover {
+  background: #006047;
+  border-color: #006047;
+  transform: translateY(-1px);
+}
+
+.ads-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ========================================
+   FEEDBACK MESSAGE
+======================================== */
+
+.ads-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid #e9d7ae;
+  border-radius: 9px;
+  background: #fff8e9;
+  color: #725b2e;
+  font-size: 12.5px;
+  margin-bottom: 20px;
+}
+
+.ads-message span {
+  flex: 1;
+}
+
+.ads-message button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-size: 20px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 1100px) {
+  .ads-password-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .ads-page {
+    padding: 20px 17px 35px;
+  }
+
+  .ads-card {
+    padding: 20px 17px;
+  }
+
+  .ads-profile-content {
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .ads-avatar {
+    width: 75px;
+    height: 75px;
+  }
+
+  .ads-avatar span {
+    font-size: 32px;
+  }
+
+  .ads-fields-grid,
+  .ads-password-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .ads-profile-content {
+    flex-direction: column;
+  }
+
+  .ads-card-header {
+    align-items: flex-start;
+  }
+
+  .ads-heading h1 {
+    font-size: 21px;
+  }
+
+  .ads-password-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ads-primary-btn {
+    width: 100%;
+  }
 }
