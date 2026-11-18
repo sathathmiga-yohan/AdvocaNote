@@ -56,7 +56,35 @@ class DiaryEntry(Base):
         onupdate=datetime.utcnow,
         nullable=False
     )
+class DiaryAIAnalysis(Base):
+    __tablename__ = "diary_ai_analyses"
 
+    diary_entry_id = Column(
+        Integer,
+        ForeignKey("diary_entries.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+    notes_json = Column(Text, nullable=False)
+    highlights_json = Column(Text, nullable=False)
+
+    output_language = Column(
+        String(2),
+        nullable=False,
+        default="ta",
+    )
+
+    analysis_incomplete = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
 
 # Existing imports continue to work.
 

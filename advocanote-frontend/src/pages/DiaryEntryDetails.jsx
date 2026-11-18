@@ -13,7 +13,7 @@ import {
 } from "../components/LawyerLayout";
 
 import { logoutUser } from "../services/auth";
-
+import DiarySavedAIAndVoice from "../components/DiarySavedAIAndVoice";
 import {
     getCaseDiaryHistory,
     getDiaryEntryDetails,
@@ -630,9 +630,8 @@ export default function DiaryEntryDetails() {
                             </section>
 
                             {/* SAVED VOICE + AI DETAILS */}
-                            <DiaryVoiceDetails
-                                entryId={entry.id}
-                            />
+                            {/* SAVED VOICE + AI DETAILS */}
+                            <DiarySavedAIAndVoice entry={entry} />
                         </div>
 
                         {/* RIGHT SIDE - REAL CASE HISTORY */}

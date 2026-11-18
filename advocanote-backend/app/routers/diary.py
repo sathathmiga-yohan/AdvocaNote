@@ -1,6 +1,7 @@
 
 from datetime import date, timedelta
 from typing import Literal
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select, delete
@@ -19,6 +20,7 @@ from app.models.diary import (
     Task,
     Reminder,
     AISuggestion,
+    DiaryAIAnalysis,
 )
 
 from app.schemas.diary import DiaryEntryCreate, CaseCreate
@@ -32,6 +34,10 @@ router = APIRouter(
 )
 
 
+# ==========================================
+# LAWYER ACCESS
+# ==========================================
+
 def lawyer_only(
     user: User = Depends(get_current_user),
 ):
@@ -40,12 +46,39 @@ def lawyer_only(
             status_code=403,
             detail="Lawyer access required",
         )
+
     return user
 
 
+# ==========================================
+# AI ANALYSIS SCHEMA
+# ==========================================
+
+class DiaryAIAnalysisInput(BaseModel):
+    notes: list[dict] = Field(default_factory=list)
+    critical_highlights: list[str] = Field(default_factory=list)
+    output_language: Literal["ta", "en"] = "ta"
+    analysis_incomplete: bool = False
+
+
+class DiaryEntryWithAI(DiaryEntryCreate):
+    ai_analysis: DiaryAIAnalysisInput | None = None
+
+
+# ==========================================
+# SERIALIZE DIARY ENTRY
+# ==========================================
+
 def serialize_entry(db: Session, entry: DiaryEntry):
+
     case = db.get(Case, entry.case_id)
     court = db.get(Court, entry.court_id)
+
+    saved_ai = db.scalar(
+        select(DiaryAIAnalysis).where(
+            DiaryAIAnalysis.diary_entry_id == entry.id
+        )
+    )
 
     return {
         "id": entry.id,
@@ -54,23 +87,43 @@ def serialize_entry(db: Session, entry: DiaryEntry):
         "caseTitle": case.case_title,
         "court": court.court_name,
         "location": court.location,
+
         "previousDate": (
             entry.previous_date.isoformat()
-            if entry.previous_date else None
+            if entry.previous_date
+            else None
         ),
+
         "nextDate": (
             entry.next_date.isoformat()
-            if entry.next_date else None
+            if entry.next_date
+            else None
         ),
+
         "stepType": entry.step_type,
         "note": entry.step_notes,
         "pointNotes": entry.point_notes,
+
+        "aiAnalysis": (
+            {
+                "notes": json.loads(
+                    saved_ai.notes_json or "[]"
+                ),
+                "criticalHighlights": json.loads(
+                    saved_ai.highlights_json or "[]"
+                ),
+                "outputLanguage": saved_ai.output_language,
+                "analysisIncomplete": saved_ai.analysis_incomplete,
+            }
+            if saved_ai is not None
+            else None
+        ),
     }
 
 
 # ==========================================
 # MY LEGAL DIARY OVERVIEW
-# Viewing does not count as an action.
+# Viewing does not consume daily quota.
 # ==========================================
 
 @router.get("/overview")
@@ -79,6 +132,7 @@ def overview(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     entries = db.scalars(
         select(DiaryEntry)
         .where(
@@ -140,12 +194,14 @@ def overview(
             serialize_entry(db, x)
             for x in entries
         ],
+
         "stats": {
             "entries_today": len(entries),
             "upcoming_hearings": upcoming_hearings,
             "pending_tasks": pending_tasks,
             "courts_attended": courts_attended,
         },
+
         "notifications": [
             {
                 "id": r.id,
@@ -168,10 +224,11 @@ def overview(
     dependencies=[Depends(require_feature("diary"))],
 )
 def create_entry(
-    data: DiaryEntryCreate,
+    data: DiaryEntryWithAI,
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     case_no = data.case_number.strip()
     court_name = data.court_name.strip()
     location = data.location.strip()
@@ -198,26 +255,32 @@ def create_entry(
         )
 
     try:
-        # Only new diary entries consume daily quota.
-        # Limit comes from the active database plan.
-        # Free Trial and unlimited plans have no cap.
-        # Failed saves roll back the usage count.
+
+        # =====================================
+        # SUBSCRIPTION DAILY ACTION
+        # =====================================
 
         consume_daily_action(
             db=db,
             user_id=user.id,
         )
 
+        # =====================================
+        # FIND OR CREATE COURT
+        # =====================================
+
         court = db.scalar(
             select(Court).where(
                 func.lower(Court.court_name)
                 == court_name.lower(),
+
                 func.lower(Court.location)
                 == location.lower(),
             )
         )
 
         if court is None:
+
             court = Court(
                 court_name=court_name,
                 location=location,
@@ -227,7 +290,9 @@ def create_entry(
             db.add(court)
             db.flush()
 
-        # Find the lawyer's existing case.
+        # =====================================
+        # FIND EXISTING CASE
+        # =====================================
 
         case = db.scalar(
             select(Case).where(
@@ -237,9 +302,12 @@ def create_entry(
             )
         )
 
-        # Create a new case only if necessary.
+        # =====================================
+        # CREATE CASE IF NOT EXISTS
+        # =====================================
 
         if case is None:
+
             if not case_type:
                 raise HTTPException(
                     status_code=422,
@@ -263,7 +331,7 @@ def create_entry(
             db.add(case)
             db.flush()
 
-        # Existing case must use its original court.
+        # Existing case must use original court.
 
         if case.court_id != court.id:
             raise HTTPException(
@@ -274,6 +342,10 @@ def create_entry(
                 ),
             )
 
+        # =====================================
+        # CREATE DIARY ENTRY
+        # =====================================
+
         entry = DiaryEntry(
             lawyer_id=user.id,
             case_id=case.id,
@@ -282,31 +354,63 @@ def create_entry(
             previous_date=data.previous_date,
             step_type=data.step_type,
             step_notes=data.step_notes.strip(),
+
             point_notes=(
                 data.point_notes.strip()
                 if data.point_notes
                 else None
             ),
+
             input_method=data.input_method,
             next_date=data.next_date,
         )
 
         db.add(entry)
+
+        # Important: Generate entry.id before
+        # saving any related AI records.
+
         db.flush()
+
+        # =====================================
+        # SAVE AI ANALYSIS
+        # FIXED: ONLY ONE AI SAVE BLOCK
+        # =====================================
+
+        if data.ai_analysis is not None:
+
+            ai = data.ai_analysis
+
+            db.add(
+                DiaryAIAnalysis(
+                    diary_entry_id=entry.id,
+
+                    notes_json=json.dumps(
+                        ai.notes,
+                        ensure_ascii=False,
+                    ),
+
+                    highlights_json=json.dumps(
+                        ai.critical_highlights,
+                        ensure_ascii=False,
+                    ),
+
+                    output_language=ai.output_language,
+
+                    analysis_incomplete=(
+                        ai.analysis_incomplete
+                    ),
+                )
+            )
 
         # =====================================
         # HEARING COMPLETED LOGIC
         # =====================================
-        # Next Date provided + proceedings recorded:
-        # Old Scheduled -> Completed.
-        #
-        # Do not auto-complete if no Next Date.
-        # Do not auto-complete a future hearing.
-        # Do not change Postponed hearings.
 
         hearing_added = False
 
         if data.next_date:
+
             if data.next_date <= data.entry_date:
                 raise HTTPException(
                     status_code=422,
@@ -317,6 +421,7 @@ def create_entry(
                 )
 
             if data.entry_date <= date.today():
+
                 held_hearings = db.scalars(
                     select(Hearing).where(
                         Hearing.case_id == case.id,
@@ -325,22 +430,26 @@ def create_entry(
                     )
                 ).all()
 
-                # Previous Date fallback.
+                # Previous date fallback.
 
                 if (
                     not held_hearings
                     and data.previous_date
                 ):
+
                     held_hearings = db.scalars(
                         select(Hearing).where(
                             Hearing.case_id == case.id,
+
                             Hearing.hearing_date
                             == data.previous_date,
+
                             Hearing.status == "Scheduled",
                         )
                     ).all()
 
                 for held in held_hearings:
+
                     held.status = "Completed"
 
                     db.execute(
@@ -350,7 +459,9 @@ def create_entry(
                         )
                     )
 
-            # Check existing next scheduled hearing.
+            # =================================
+            # CHECK EXISTING NEXT HEARING
+            # =================================
 
             existing_next = db.scalar(
                 select(Hearing).where(
@@ -361,12 +472,14 @@ def create_entry(
             )
 
             if existing_next is None:
+
                 hearing = Hearing(
                     case_id=case.id,
                     court_id=court.id,
                     diary_entry_id=entry.id,
                     hearing_date=data.next_date,
                     status="Scheduled",
+
                     purpose=(
                         data.next_hearing_purpose.strip()[:255]
                         if data.next_hearing_purpose
@@ -377,15 +490,17 @@ def create_entry(
                 db.add(hearing)
                 db.flush()
 
+                # Hearing reminder.
+
                 db.add(
                     Reminder(
                         user_id=user.id,
                         hearing_id=hearing.id,
                         reminder_type="Hearing",
                         title=f"Hearing: {case_no}",
+
                         reminder_date=max(
-                            data.next_date
-                            - timedelta(days=1),
+                            data.next_date - timedelta(days=1),
                             data.entry_date,
                         ),
                     )
@@ -411,6 +526,7 @@ def create_entry(
         seen_tasks = set()
 
         for approved in approved_items:
+
             title = approved.title.strip()
 
             unique_key = (
@@ -435,12 +551,14 @@ def create_entry(
             db.flush()
 
             if task.deadline:
+
                 db.add(
                     Reminder(
                         user_id=user.id,
                         task_id=task.id,
                         reminder_type="Task",
                         title=f"Task due: {task.title}",
+
                         reminder_date=max(
                             task.deadline - timedelta(days=1),
                             data.entry_date,
@@ -458,6 +576,7 @@ def create_entry(
         ai_suggestions_saved = 0
 
         for suggestion in data.ai_suggestions:
+
             title = suggestion.title.strip()
 
             if not title:
@@ -472,6 +591,8 @@ def create_entry(
 
             review_status = suggestion.status.capitalize()
 
+            # Store AI suggestion.
+
             db.add(
                 AISuggestion(
                     diary_entry_id=entry.id,
@@ -483,14 +604,15 @@ def create_entry(
 
             ai_suggestions_saved += 1
 
-            # Pending / Rejected:
-            # Save suggestion only, not a task.
+            # Pending and Rejected suggestions
+            # remain suggestions only.
 
             if review_status != "Approved":
                 continue
 
-            # Approved AI suggestion:
-            # Create a real task.
+            # =================================
+            # APPROVED AI SUGGESTION -> TASK
+            # =================================
 
             task_key = (
                 suggestion_key,
@@ -516,12 +638,14 @@ def create_entry(
             db.flush()
 
             if task.deadline:
+
                 db.add(
                     Reminder(
                         user_id=user.id,
                         task_id=task.id,
                         reminder_type="Task",
                         title=f"Task due: {task.title}",
+
                         reminder_date=max(
                             task.deadline - timedelta(days=1),
                             data.entry_date,
@@ -534,7 +658,7 @@ def create_entry(
         task_added = task_count > 0
 
         # =====================================
-        # SAVE DIARY AND DAILY ACTION TOGETHER
+        # SAVE EVERYTHING TOGETHER
         # =====================================
 
         db.commit()
@@ -557,7 +681,6 @@ def create_entry(
 
 # ==========================================
 # GET CASE DIARY HISTORY
-# Free read operation.
 # ==========================================
 
 @router.get("/case/{case_id}/history")
@@ -566,6 +689,7 @@ def case_history(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     case = db.scalar(
         select(Case).where(
             Case.id == case_id,
@@ -599,7 +723,6 @@ def case_history(
 
 # ==========================================
 # GET SINGLE DIARY ENTRY DETAILS
-# Free read operation.
 # ==========================================
 
 @router.get("/entries/{entry_id}")
@@ -608,6 +731,7 @@ def get_diary_entry_details(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     result = db.execute(
         select(DiaryEntry, Case)
         .join(
@@ -657,7 +781,7 @@ def get_diary_entry_details(
 
 # ==========================================
 # UPDATE DIARY ENTRY
-# Editing an existing entry does not consume daily quota.
+# Editing does not consume daily quota.
 # ==========================================
 
 class DiaryEntryUpdate(BaseModel):
@@ -678,6 +802,7 @@ def update_diary_entry(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     entry = db.scalar(
         select(DiaryEntry).where(
             DiaryEntry.id == entry_id,
@@ -704,7 +829,6 @@ def update_diary_entry(
         )
 
     try:
-        # Editing existing entries does not consume quota.
 
         original_next_date = entry.next_date
 
@@ -725,9 +849,10 @@ def update_diary_entry(
             )
         ).all()
 
-        # Protect completed and postponed hearing history.
+        # Protect completed / postponed hearings.
 
         if data.next_date != original_next_date:
+
             if any(
                 h.status != "Scheduled"
                 for h in linked_hearings
@@ -741,7 +866,9 @@ def update_diary_entry(
                 )
 
         if data.next_date is None:
+
             for hearing in linked_hearings:
+
                 db.execute(
                     delete(Reminder).where(
                         Reminder.hearing_id == hearing.id
@@ -751,7 +878,9 @@ def update_diary_entry(
                 db.delete(hearing)
 
         else:
+
             if not linked_hearings:
+
                 hearing = Hearing(
                     case_id=entry.case_id,
                     court_id=entry.court_id,
@@ -767,6 +896,7 @@ def update_diary_entry(
             case = db.get(Case, entry.case_id)
 
             for hearing in linked_hearings:
+
                 if hearing.status != "Scheduled":
                     continue
 
@@ -785,12 +915,17 @@ def update_diary_entry(
                 ).all()
 
                 if linked_reminders:
+
                     for reminder in linked_reminders:
+
                         reminder.reminder_date = reminder_date
+
                         if data.next_date != original_next_date:
                             reminder.is_read = False
                             reminder.read_at = None
+
                 else:
+
                     db.add(
                         Reminder(
                             user_id=user.id,
@@ -803,7 +938,6 @@ def update_diary_entry(
                         )
                     )
 
-        # Save the updated diary entry.
         db.commit()
 
         return {
@@ -818,7 +952,7 @@ def update_diary_entry(
 
 # ==========================================
 # DELETE DIARY ENTRY
-# Deleting existing entries does not consume daily quota.
+# Deleting does not consume daily quota.
 # ==========================================
 
 @router.delete(
@@ -830,6 +964,7 @@ def delete_diary_entry(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     entry = db.scalar(
         select(DiaryEntry).where(
             DiaryEntry.id == entry_id,
@@ -844,12 +979,17 @@ def delete_diary_entry(
         )
 
     try:
-        # Protect completed and postponed hearing history.
+
+        # =====================================
+        # PROTECT HEARING HISTORY
+        # =====================================
 
         protected_hearing = db.scalar(
             select(Hearing.id).where(
                 Hearing.diary_entry_id == entry.id,
-                Hearing.status.in_(["Completed", "Postponed"]),
+                Hearing.status.in_(
+                    ["Completed", "Postponed"]
+                ),
             ).limit(1)
         )
 
@@ -876,9 +1016,10 @@ def delete_diary_entry(
             )
         ).all()
 
-        # Protect hearing reschedule history.
+        # Protect rescheduled hearing history.
 
         if hearing_ids:
+
             chain = db.scalar(
                 select(Hearing.id).where(
                     Hearing.rescheduled_from_id.in_(
@@ -897,10 +1038,12 @@ def delete_diary_entry(
                     ),
                 )
 
-        # All validations passed.
-        # Deleting an existing entry does not consume quota.
+        # =====================================
+        # DELETE RELATED REMINDERS
+        # =====================================
 
         if hearing_ids:
+
             db.execute(
                 delete(Reminder).where(
                     Reminder.hearing_id.in_(hearing_ids)
@@ -908,11 +1051,16 @@ def delete_diary_entry(
             )
 
         if task_ids:
+
             db.execute(
                 delete(Reminder).where(
                     Reminder.task_id.in_(task_ids)
                 )
             )
+
+        # =====================================
+        # DELETE AI SUGGESTIONS
+        # =====================================
 
         db.execute(
             delete(AISuggestion).where(
@@ -920,11 +1068,19 @@ def delete_diary_entry(
             )
         )
 
+        # =====================================
+        # DELETE HEARINGS
+        # =====================================
+
         db.execute(
             delete(Hearing).where(
                 Hearing.diary_entry_id == entry.id
             )
         )
+
+        # =====================================
+        # DELETE TASKS
+        # =====================================
 
         db.execute(
             delete(Task).where(
@@ -933,9 +1089,21 @@ def delete_diary_entry(
             )
         )
 
-        db.delete(entry)
+        # =====================================
+        # DELETE SAVED AI ANALYSIS
+        # =====================================
 
-        # Save the deletion.
+        db.execute(
+            delete(DiaryAIAnalysis).where(
+                DiaryAIAnalysis.diary_entry_id == entry.id
+            )
+        )
+
+        # =====================================
+        # DELETE DIARY ENTRY
+        # =====================================
+
+        db.delete(entry)
         db.commit()
 
         return {
@@ -949,8 +1117,7 @@ def delete_diary_entry(
 
 # ==========================================
 # GET AI TASK SUGGESTIONS
-# Read only - no daily action consumed.
-# Only the logged-in lawyer's records.
+# Free read operation.
 # ==========================================
 
 @router.get("/ai-suggestions")
@@ -958,6 +1125,7 @@ def get_ai_suggestions(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     rows = db.execute(
         select(
             AISuggestion,
@@ -988,6 +1156,7 @@ def get_ai_suggestions(
             "entry_date": entry.entry_date.isoformat(),
             "title": suggestion.suggested_value,
             "type": suggestion.suggestion_type,
+
             "source": (
                 "voice"
                 if str(
@@ -1000,6 +1169,7 @@ def get_ai_suggestions(
                 }
                 else "manual"
             ),
+
             "status": suggestion.status,
         }
         for suggestion, entry, case_number in rows
@@ -1008,11 +1178,12 @@ def get_ai_suggestions(
 
 # ==========================================
 # AI SUGGESTION REVIEW
-# Approve / Reject does not consume diary entry quota.
+# Approve / Reject.
 # ==========================================
 
 class AISuggestionReview(BaseModel):
     status: Literal["Approved", "Rejected"]
+
     title: str | None = Field(
         default=None,
         max_length=500,
@@ -1029,6 +1200,7 @@ def review_ai_suggestion(
     db: Session = Depends(get_db),
     user: User = Depends(lawyer_only),
 ):
+
     suggestion = db.scalar(
         select(AISuggestion)
         .join(
@@ -1065,6 +1237,7 @@ def review_ai_suggestion(
     ).strip()
 
     if data.status == "Approved":
+
         if suggestion.suggestion_type != "Task":
             raise HTTPException(
                 status_code=422,
@@ -1078,9 +1251,13 @@ def review_ai_suggestion(
             )
 
     try:
-        # Reviewing AI suggestions does not consume quota.
+
+        # =====================================
+        # APPROVE AI SUGGESTION
+        # =====================================
 
         if data.status == "Approved":
+
             task = Task(
                 lawyer_id=user.id,
                 case_id=entry.case_id,
@@ -1090,11 +1267,15 @@ def review_ai_suggestion(
             )
 
             db.add(task)
+
             suggestion.suggested_value = title
+
+        # =====================================
+        # UPDATE SUGGESTION STATUS
+        # =====================================
 
         suggestion.status = data.status
 
-        # Save the suggestion review.
         db.commit()
 
     except Exception:

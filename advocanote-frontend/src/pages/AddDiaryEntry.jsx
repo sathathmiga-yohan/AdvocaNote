@@ -1615,6 +1615,8 @@ export default function AddDiaryEntry() {
       // Legal notes and highlights.
 
       setAiAnalysis({
+        outputLanguage: aiLanguage,
+
         notes: Array.isArray(
           result.notes
         )
@@ -1987,6 +1989,7 @@ export default function AddDiaryEntry() {
         diaryResult =
           await createDiaryEntry({
             ...draft,
+              input_method: recordedAudio ? "voice" : "manual",
 
             entry_date:
               entryDate,
@@ -2020,6 +2023,26 @@ export default function AddDiaryEntry() {
 
             point_notes:
               null,
+
+                        // Save AI analysis with the diary,
+            // whether audio was recorded or not.
+
+            ai_analysis: aiAnalysis
+              ? {
+                  notes: aiAnalysis.notes || [],
+
+                  critical_highlights:
+                    aiAnalysis.criticalHighlights || [],
+
+                  output_language: aiAnalysis.outputLanguage
+                    || aiLanguage,
+
+                  analysis_incomplete:
+                    Boolean(
+                      aiAnalysis.analysisIncomplete
+                    ),
+                }
+              : null,
 
 
 
@@ -2971,7 +2994,7 @@ export default function AddDiaryEntry() {
                         {analyzingVoice &&
                           voiceProcessingStep === "analyzing" && (
                             <small className="ade2-processing-note">
-                              Converting audio to text...
+                              Analysing court proceedings...
                             </small>
                           )}
 

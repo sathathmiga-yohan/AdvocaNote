@@ -31,7 +31,7 @@ from app.routers.subscription_experience import (
 )
 
 from app.routers.admin_settings import router as admin_settings_router
-
+from app.models.diary import DiaryAIAnalysis
 import asyncio
 
 def upgrade_reminders_table():
@@ -77,6 +77,12 @@ async def lifespan(app: FastAPI):
 
     upgrade_reminders_table()
 
+    # Create AI Analysis table if it does not exist.
+    DiaryAIAnalysis.__table__.create(
+        bind=engine,
+        checkfirst=True,
+    )
+
     # Start automatic trial notification checks
     trial_task = asyncio.create_task(
         trial_notification_scheduler()
@@ -92,7 +98,6 @@ async def lifespan(app: FastAPI):
             await trial_task
         except asyncio.CancelledError:
             pass
-
 
 app = FastAPI(
     title="AdvocaNote API",

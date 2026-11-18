@@ -512,13 +512,19 @@ def verified_roles(value):
     }
 
 
+
 TASK_CUE = re.compile(
-    r"\b(?:must|should|need\s+to|needs\s+to|have\s+to|has\s+to|"
-    r"required\s+to|ordered\s+to|instructed\s+to)\b|"
-    r"வேண்டும்|வேணும்|செய்யணும்|பண்ணணும்|செய்யவுள்ளேன்|"
-    r"சமர்ப்பிக்க\s*(?:சொன்ன|உத்தரவ)|தாக்கல்\s*செய்ய|தொடர்பு\s*கொள்ள",
+    r"\b(?:must|should|need\s+to|needs\s+to|"
+    r"have\s+to|has\s+to|required\s+to|"
+    r"ordered\s+to|instructed\s+to)\b|"
+    r"வேண்டும்|வேணும்|செய்யணும்|பண்ணணும்|"
+    r"செய்யவுள்ளேன்|"
+    r"சமர்ப்பிக்க\s*(?:சொன்ன|உத்தரவ)|"
+    r"தாக்கல்\s*செய்ய|தொடர்பு\s*கொள்ள|"
+    r"பெற்றுக்கொள்ளுமாறு",
     re.IGNORECASE,
 )
+
 
 TASK_ACTION = re.compile(
     r"சமர்ப்பிக்க|தாக்கல்|தயார்|தொடர்பு|அறிவிக்க|"
@@ -585,72 +591,31 @@ def normalize(value):
 
 
 def split_statements(transcript):
-    text = normalize(transcript)
+    """
+    Preserve complete Tamil and English sentences.
+    Never split at commas, names or topic keywords.
+    """
 
-    # Split natural Tamil speech even when
-    # the browser adds no full stops.
-    tamil_boundary = re.compile(
-        r"(?P<ending>[\u0B80-\u0BFF]{2,}(?:"
-        r"னேன்|த்தேன்|ட்டேன்|தேன்|"
-        r"னோம்|த்தோம்|"
-        r"னார்|த்தார்|ட்டார்|ப்பட்டார்|"
-        r"னார்கள்|த்தார்கள்|ட்டார்கள்|"
-        r"ப்பட்டனர்|ப்பட்டன|த்தனர்|"
-        r"ந்தது|த்தது|ட்டது|ப்பட்டது|"
-        r"கிறது|கின்றது|வில்லை|வேண்டும்|"
-        r"உள்ளேன்|உள்ளது|உள்ளனர்|"
-        r"கொண்டார்|கொண்டேன்|"
-        r"திட்டமிட்டுள்ளேன்"
-        r"))\s+(?=(?:"
-        r"இன்று|நேற்று|நாளை|மறுநாள்|"
-        r"நான்|நாங்கள்|அவர்|அவர்கள்|"
-        r"அந்த|இந்த|ஒரு|இரு|"
-        r"எதிர்த்தரப்பு|எதிர்தரப்பு|"
-        r"மனுதாரர்|நீதிபதி|நீதிமன்ற|"
-        r"வழக்கு|விசாரணை|அடுத்த|"
-        r"பின்னர்|அப்போது|மேலும்|"
-        r"வாடிக்கையாளர்|என்று|"
-        r"தீர்ப்பின்|சாட்சி|குற்ற|தண்டனை"
-        r")(?:\s|$))"
-    )
+    text = str(transcript or "").strip()
 
-    text = tamil_boundary.sub(
-        lambda match: match.group("ending") + ". ",
-        text,
-    )
+    if not text:
+        return []
 
-    # Keep existing English and court-related
-    # statement splitting.
-    text = TOPIC_START.sub(
-        ". ",
-        text,
-    )
+    text = re.sub(r"[ \t]+", " ", text)
 
     sentences = re.split(
-        r"(?<=[.!?।])\s+|\s*;\s*",
+        r"(?<=[.!?।॥])\s+|\n+|\s*;\s*",
         text,
     )
 
     result = []
 
     for sentence in sentences:
-        sentence = sentence.strip(" .;\t")
+        sentence = normalize(sentence).strip(" .;\t")
 
-        if not sentence:
-            continue
+        if sentence:
+            result.append(sentence)
 
-        pieces = (
-            BREAK_WORDS.split(sentence)
-            if len(sentence) > 150
-            else [sentence]
-        )
-
-        for piece in pieces:
-            piece = piece.strip(" .;")
-
-            if piece:
-                result.append(piece)
-    print("[ADVOCANOTE SPLIT RESULT]", result)
     return result
 
 
@@ -658,46 +623,37 @@ def split_statements(transcript):
 # LONG TRANSCRIPT CHUNKING
 # ==========================================
 
+
 def chunk_statements(
     statements,
     max_chars=1050,
     max_items=7,
 ):
+    """
+    Group complete sentences for AI processing.
+    Never split a sentence in the middle.
+    """
+
     chunks = []
     batch = []
     size = 0
 
     for statement in statements:
-        words = statement.split()
-        parts = []
-        part = ""
+        statement = normalize(statement)
 
-        for word in words:
-            if (
-                part
-                and len(part) + len(word) + 1 > max_chars
-            ):
-                parts.append(part)
-                part = ""
+        if not statement:
+            continue
 
-            part = (
-                part + " " + word
-            ).strip()
+        if batch and (
+            size + len(statement) > max_chars
+            or len(batch) >= max_items
+        ):
+            chunks.append(batch)
+            batch = []
+            size = 0
 
-        if part:
-            parts.append(part)
-
-        for piece in parts:
-            if batch and (
-                size + len(piece) > max_chars
-                or len(batch) >= max_items
-            ):
-                chunks.append(batch)
-                batch = []
-                size = 0
-
-            batch.append(piece)
-            size += len(piece)
+        batch.append(statement)
+        size += len(statement)
 
     if batch:
         chunks.append(batch)
@@ -956,10 +912,9 @@ def extract_source_tasks(statement):
     if TAMIL.search(source):
         # Separate multiple actions.
         clauses = re.split(
-            r"\s*[,;]\s*",
+            r"\s*;\s*",
             source,
         )
-
         results = []
 
         for clause in clauses:
@@ -1003,8 +958,22 @@ def extract_source_tasks(statement):
             elif not TASK_CUE.search(clause):
                 continue
 
-            if 5 <= len(clause) <= 120:
+
+            clause = re.sub(
+                r"^(?:மேலும்|அத்துடன்)\s+",
+                "",
+                clause,
+            )
+
+            clause = re.sub(
+                r"பெற்றுக்கொள்ளுமாறும்?\s+அறிவுறுத்தினார்$",
+                "பெற்றுக்கொள்ள வேண்டும்",
+                clause,
+            )
+
+            if 5 <= len(clause) <= 350:
                 results.append(clause)
+
 
         return list(dict.fromkeys(results))
 
@@ -1111,6 +1080,19 @@ def source_category(text, language=None):
 
     # Classify using the actual note text.
     # Specific activities come before general ones.
+
+    # Case filing belongs to Case Progress,
+    # even when the sentence mentions a client.
+
+    if re.search(
+        r"வழக்குத்\s*தாக்கல்|வழக்கு\s*தாக்கல்|"
+        r"\bfiled\s+(?:a|the)\s+(?:case|lawsuit)\b",
+        text,
+        re.IGNORECASE,
+    ):
+        return groups["progress"][
+            0 if is_tamil else 1
+        ]
 
     patterns = [
         (
@@ -1433,7 +1415,6 @@ def analyze_legal_transcript(
                 # Do not copy long paragraphs as legal notes.
                 if len(point) > 150:
                     analysis_incomplete = True
-                    continue
 
                 category = source_category(
                     point,
@@ -1574,28 +1555,35 @@ def analyze_legal_transcript(
         # COURT HIGHLIGHTS FALLBACK
         # =================================
 
-
         for statement in batch:
-            if (
-                IMPORTANT_CUE.search(statement)
-                and source_language(statement) == output_language
-                and re.search(
-                    r"உத்தரவ|வழங்கினார்|தீர்ப்ப|தண்டனை|சிறை|"
-                    r"அடுத்த\s+விசாரணை|"
-                    r"court\s+(?:ordered|granted)|"
-                    r"judgment|sentence|next\s+hearing",
-                    statement,
-                    re.IGNORECASE,
-                )
-            ):
-                highlight = source_point(statement)
 
-                if len(highlight) <= 110:
-                    add_unique(
-                        highlight,
-                        highlights,
-                        seen_highlights,
-                    )
+            if source_language(statement) != output_language:
+                continue
+
+            critical_event = re.search(
+                r"உத்தரவிட்டார்|உத்தரவிட்டது|"
+                r"தீர்ப்ப|தண்டனை|சிறை|"
+                r"அடுத்த\s+விசாரணை.{0,100}"
+                r"(?:நடைபெற|ஒத்திவை|நிர்ணயிக்கப்பட்ட)|"
+                r"court\s+(?:ordered|granted)|"
+                r"judgment|sentence|"
+                r"next\s+hearing.{0,90}"
+                r"(?:scheduled|fixed|adjourned|on)",
+                statement,
+                re.IGNORECASE,
+            )
+
+            if not critical_event:
+                continue
+
+            highlight = source_point(statement)
+
+            add_unique(
+                highlight,
+                highlights,
+                seen_highlights,
+            )
+
 
 
     # =====================================

@@ -27,7 +27,8 @@ import DiaryVoiceDetails from "../components/DiaryVoiceDetails";
 import "./DiaryEntryDetails.css";
 import CaseTasks from "./CaseTasks";
 import { getHearings } from "../services/diary";
-
+import DiarySavedAIAndVoice from "../components/DiarySavedAIAndVoice";
+import { getDiaryEntryDetails } from "../services/diary";
 
 const textOf = (value) => String(value ?? "").trim();
 
@@ -102,6 +103,65 @@ const entryNotes = (entry) =>
 
 const entryNextDate = (entry) =>
   entry.next_date || entry.nextDate;
+
+function CaseDiaryVoiceAI({ entryId }) {
+  const [fullEntry, setFullEntry] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!entryId) {
+      setFullEntry(null);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    setLoading(true);
+    setError("");
+    setFullEntry(null);
+
+    getDiaryEntryDetails(entryId)
+      .then((result) => {
+        if (!active) return;
+
+        setFullEntry(result?.entry || null);
+      })
+      .catch((err) => {
+        if (!active) return;
+
+        setError(
+          err.message || "Could not load saved AI details."
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [entryId]);
+
+  if (loading) {
+    return <p>Loading saved Voice & AI details...</p>;
+  }
+
+  if (error) {
+    return <p role="alert">{error}</p>;
+  }
+
+  if (!fullEntry) {
+    return <p>Diary entry not found.</p>;
+  }
+
+  return (
+    <div className="cd-voice-ai-content">
+      <DiarySavedAIAndVoice entry={fullEntry} />
+    </div>
+  );
+}
 
 export default function CaseDetails({
   caseData,
@@ -2004,25 +2064,20 @@ export default function CaseDetails({
 
               )}
 
+
               {/* VOICE AND AI TAB */}
               {entryViewTab === "voice" && (
-
                 <div
                   className="cd-record-content cd-record-voice"
                   role="tabpanel"
                 >
-
-                  <DiaryVoiceDetails
+                  <CaseDiaryVoiceAI
                     key={viewEntry.id}
                     entryId={viewEntry.id}
                   />
-
                 </div>
-
               )}
-
             </div>
-
           </section>
         </div>
       )}
