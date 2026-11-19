@@ -1739,3 +1739,58 @@ label[for="next-hearing-purpose"] {
 .ade2-app .ade2-right {
   gap: 13px;
 }
+
+/* =====================================
+   AI ANALYSIS - SMALLER FONT SIZES
+   ===================================== */
+
+.ade2-main .ade2-point-preview {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* AI Analysed Legal Notes title */
+.ade2-main .ade2-point-preview > button {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* All generated note content */
+.ade2-main .ade2-point-preview div,
+.ade2-main .ade2-point-preview p,
+.ade2-main .ade2-point-preview li,
+.ade2-main .ade2-point-preview span {
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+/* Category headings */
+.ade2-main .ade2-point-preview h1,
+.ade2-main .ade2-point-preview h2,
+.ade2-main .ade2-point-preview h3,
+.ade2-main .ade2-point-preview h4 {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+}
+
+/* Critical Highlights heading */
+.ade2-main .ade2-point-preview strong {
+  font-size: 13px !important;
+}
+
+/* Small warning text */
+.ade2-main .ade2-point-preview small {
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+}
+
+
+/* AI SUGGESTED TASKS - NORMAL FONT */
+
+.ade2-main .ade2-task-title {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.6;
+  color: #243a32;
+}

@@ -1989,7 +1989,7 @@ export default function AddDiaryEntry() {
         diaryResult =
           await createDiaryEntry({
             ...draft,
-              input_method: recordedAudio ? "voice" : "manual",
+            input_method: recordedAudio ? "voice" : "manual",
 
             entry_date:
               entryDate,
@@ -2024,24 +2024,24 @@ export default function AddDiaryEntry() {
             point_notes:
               null,
 
-                        // Save AI analysis with the diary,
+            // Save AI analysis with the diary,
             // whether audio was recorded or not.
 
             ai_analysis: aiAnalysis
               ? {
-                  notes: aiAnalysis.notes || [],
+                notes: aiAnalysis.notes || [],
 
-                  critical_highlights:
-                    aiAnalysis.criticalHighlights || [],
+                critical_highlights:
+                  aiAnalysis.criticalHighlights || [],
 
-                  output_language: aiAnalysis.outputLanguage
-                    || aiLanguage,
+                output_language: aiAnalysis.outputLanguage
+                  || aiLanguage,
 
-                  analysis_incomplete:
-                    Boolean(
-                      aiAnalysis.analysisIncomplete
-                    ),
-                }
+                analysis_incomplete:
+                  Boolean(
+                    aiAnalysis.analysisIncomplete
+                  ),
+              }
               : null,
 
 
@@ -3233,13 +3233,13 @@ export default function AddDiaryEntry() {
                                   )
                                 }
                               />
+
                             ) : (
-                              <strong>
-                                {
-                                  task.title
-                                }
-                              </strong>
+                              <span className="ade2-task-title">
+                                {task.title}
+                              </span>
                             )}
+
 
                             {task.status ===
                               "rejected" && (

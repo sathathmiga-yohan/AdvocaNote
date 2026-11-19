@@ -13,3 +13,7 @@ recordings/
 *.log
 advocanote_backup.sql
 stripe_webhooks_backup.py
+
+*.zip
+
+advocanote-backend/private_uploads/
