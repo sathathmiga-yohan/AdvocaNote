@@ -32,7 +32,7 @@ const API = (
 ).replace(/\/+$/, "");
 
 async function notificationRequest(path, method = "GET") {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

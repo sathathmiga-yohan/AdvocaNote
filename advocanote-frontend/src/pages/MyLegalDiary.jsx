@@ -47,11 +47,6 @@ function DiaryMiniCalendar({ selectedDate, onSelect }) {
     return new Date(day.getFullYear(), day.getMonth(), 1);
   });
 
-  useEffect(() => {
-    const day = parseDate(selectedDate);
-    setMonth(new Date(day.getFullYear(), day.getMonth(), 1));
-  }, [selectedDate]);
-
   const offset = (month.getDay() + 6) % 7;
   const totalDays = new Date(
     month.getFullYear(), month.getMonth() + 1, 0
@@ -140,6 +135,7 @@ export default function MyLegalDiary({ onLogout }) {
   const globalSearchRef = useRef(null);
 
   const [entries, setEntries] = useState([]);
+  const [loadedDiaryRequest, setLoadedDiaryRequest] = useState(null);
   const [stats, setStats] = useState({
     upcoming_hearings: 0,
     pending_tasks: 0,
@@ -158,7 +154,6 @@ export default function MyLegalDiary({ onLogout }) {
   const [actionError, setActionError] = useState("");
 
   const [diaryError, setDiaryError] = useState("");
-  const [loadingEntries, setLoadingEntries] = useState(false);
 
   // Logged-in lawyer comes from the shared layout
   const {
@@ -188,14 +183,17 @@ export default function MyLegalDiary({ onLogout }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const diaryRequestKey = currentUser
+    ? `${currentUser.id}:${selectedDate}:${refreshTick}`
+    : null;
+  const loadingEntries = Boolean(currentUser)
+    && loadedDiaryRequest !== diaryRequestKey;
 
   // Load diary entries from FastAPI
   useEffect(() => {
     if (!currentUser) return;
     let active = true;
-
-    setLoadingEntries(true);
-    setDiaryError("");
+    const requestKey = `${currentUser.id}:${selectedDate}:${refreshTick}`;
 
     getDiaryOverview(selectedDate)
       .then((data) => {
@@ -208,6 +206,7 @@ export default function MyLegalDiary({ onLogout }) {
         });
         setReminders(data.notifications || []);
         setDiaryError("");
+        setLoadedDiaryRequest(requestKey);
       })
       .catch((error) => {
         if (!active) return;
@@ -219,9 +218,7 @@ export default function MyLegalDiary({ onLogout }) {
           courts_attended: 0,
         });
         setDiaryError(error.message || "Could not load diary entries.");
-      })
-      .finally(() => {
-        if (active) setLoadingEntries(false);
+        setLoadedDiaryRequest(requestKey);
       });
 
     return () => { active = false; };
@@ -475,13 +472,6 @@ export default function MyLegalDiary({ onLogout }) {
   };
 
   const displayName = currentUser?.full_name || "Lawyer";
-  const initials = displayName
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 
   const logout = async () => {
     try {
@@ -493,8 +483,8 @@ export default function MyLegalDiary({ onLogout }) {
     } catch (error) {
       console.error("Server logout failed:", error.message);
     } finally {
-      sessionStorage.removeItem("advocanote_access_token");
-      sessionStorage.removeItem("advocanote_refresh_token");
+      localStorage.removeItem("advocanote_access_token");
+      localStorage.removeItem("advocanote_refresh_token");
       navigate("/login", { replace: true });
     }
   };
@@ -1010,7 +1000,14 @@ export default function MyLegalDiary({ onLogout }) {
             className="ald-diary-widgets"
             aria-label="Diary calendar and reminders"
           >
-
+            <DiaryMiniCalendar
+              key={selectedDate}
+              selectedDate={selectedDate}
+              onSelect={(date) => {
+                setSelectedDate(date);
+                setPage(1);
+              }}
+            />
 
             <section className="ald-diary-widget ald-hearings-card">
               <div className="ald-widget-heading ald-hearings-heading">

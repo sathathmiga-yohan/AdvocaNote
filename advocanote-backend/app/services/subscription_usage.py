@@ -49,9 +49,9 @@ def get_valid_subscription(
 ):
 
     subscription = db.scalar(
-        select(Subscription).where(
-            Subscription.user_id == user_id
-        )
+        select(Subscription)
+        .where(Subscription.user_id == user_id)
+        .with_for_update()
     )
 
     if subscription is None:

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -7,7 +7,11 @@ import "./Login.css";
 import "./LoginContentFix.css";
 
 
-import { loginUser, googleLogin } from "../services/auth";
+import {
+  loginUser,
+  googleLogin,
+  getCurrentUser
+} from "../services/auth";
 
 // =====================================
 // ICON COMPONENT
@@ -140,7 +144,37 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  useEffect(() => {
+    const token = localStorage.getItem(
+      "advocanote_access_token"
+    );
 
+    if (!token) return;
+
+    let active = true;
+
+    const checkExistingLogin = async () => {
+      try {
+        const user = await getCurrentUser();
+
+        if (!active) return;
+
+        if (user?.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else if (user?.role === "lawyer") {
+          navigate("/my-legal-diary", { replace: true });
+        }
+      } catch (error) {
+        console.error("Existing login check failed:", error);
+      }
+    };
+
+    checkExistingLogin();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
   // =====================================
   // COMMON ROLE-BASED LOGIN
   // =====================================
@@ -162,25 +196,25 @@ function Login() {
       throw new Error("Unsupported account role.");
     }
 
-    sessionStorage.setItem(
+    localStorage.setItem(
       "advocanote_access_token",
       data.access_token
     );
 
     if (data.refresh_token) {
-      sessionStorage.setItem(
+      localStorage.setItem(
         "advocanote_refresh_token",
         data.refresh_token
       );
     } else {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_refresh_token"
       );
     }
 
     // ADMIN LOGIN
     if (role === "admin") {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_auth_toast"
       );
 
@@ -192,7 +226,7 @@ function Login() {
     }
 
     // LAWYER LOGIN
-    sessionStorage.setItem(
+    localStorage.setItem(
       "advocanote_auth_toast",
       loginMethod
     );

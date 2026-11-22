@@ -8,7 +8,7 @@ export async function analyzeVoiceFile(file) {
     throw new Error("Please select a voice recording.");
   }
 
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

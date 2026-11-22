@@ -593,7 +593,7 @@ export default function AdminDashboard() {
       setError("");
       setData(null);
 
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 

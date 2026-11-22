@@ -32,7 +32,7 @@ async function adminSettingsRequest(
   path,
   { method = "GET", body, signal } = {}
 ) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

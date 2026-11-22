@@ -186,7 +186,7 @@ const statusLabel = (c) =>
   statusOf(c) === "Not set" ? "—" : statusOf(c);
 
 async function authorizedRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -584,11 +584,11 @@ export default function MyCases({ onLogout }) {
     } catch (e) {
       console.error("Logout error", e);
     } finally {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_access_token"
       );
 
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_refresh_token"
       );
 

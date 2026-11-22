@@ -11,7 +11,7 @@ function ProtectedRoute({ children }) {
     let active = true;
 
     async function checkLogin() {
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -55,11 +55,11 @@ function ProtectedRoute({ children }) {
           error?.status === 401 ||
           error?.status === 403
         ) {
-          sessionStorage.removeItem(
+          localStorage.removeItem(
             "advocanote_access_token"
           );
 
-          sessionStorage.removeItem(
+          localStorage.removeItem(
             "advocanote_refresh_token"
           );
 

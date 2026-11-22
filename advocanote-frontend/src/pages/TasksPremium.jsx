@@ -88,7 +88,7 @@ function taskState(task) {
 }
 
 async function apiRequest(path, options = {}) {
-    const token = sessionStorage.getItem("advocanote_access_token");
+    const token = localStorage.getItem("advocanote_access_token");
 
     if (!token) {
         throw new Error("Session expired. Please log in again.");
@@ -615,8 +615,8 @@ export default function TasksPremium() {
             // Continue clearing the local session.
         }
 
-        sessionStorage.removeItem("advocanote_access_token");
-        sessionStorage.removeItem("advocanote_refresh_token");
+        localStorage.removeItem("advocanote_access_token");
+        localStorage.removeItem("advocanote_refresh_token");
         navigate("/login", { replace: true });
     };
 

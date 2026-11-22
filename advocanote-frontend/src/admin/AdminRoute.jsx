@@ -10,7 +10,7 @@ function AdminRoute({ children }) {
     let active = true;
 
     async function checkAdmin() {
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -39,10 +39,10 @@ function AdminRoute({ children }) {
         if (!active) return;
 
         if (error?.status === 401) {
-          sessionStorage.removeItem(
+          localStorage.removeItem(
             "advocanote_access_token"
           );
-          sessionStorage.removeItem(
+          localStorage.removeItem(
             "advocanote_refresh_token"
           );
 

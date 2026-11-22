@@ -1373,7 +1373,7 @@ export default function AddDiaryEntry() {
     }
 
     const token =
-      sessionStorage.getItem(
+      localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -1536,7 +1536,7 @@ export default function AddDiaryEntry() {
     }
 
     const token =
-      sessionStorage.getItem(
+      localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -1955,7 +1955,7 @@ export default function AddDiaryEntry() {
     }
 
     const token =
-      sessionStorage.getItem(
+      localStorage.getItem(
         "advocanote_access_token"
       );
 

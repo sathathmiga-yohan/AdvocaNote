@@ -269,7 +269,7 @@ export default function CaseDetails({
         "http://127.0.0.1:8000"
       ).replace(/\/$/, "");
 
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 

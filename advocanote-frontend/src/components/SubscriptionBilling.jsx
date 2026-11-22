@@ -8,7 +8,7 @@ const API_URL = (
 ).replace(/\/$/, "");
 
 async function billingRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

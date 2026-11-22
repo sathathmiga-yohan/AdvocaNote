@@ -7,7 +7,8 @@ from app.routers import stripe_webhooks as wh
 
 
 @pytest.mark.parametrize("user_id", [22, 45])
-def test_scheduled_yearly_sync(monkeypatch, user_id):
+@pytest.mark.parametrize("invoice_price", ["price_annual", "price_basic"])
+def test_scheduled_yearly_sync(monkeypatch, user_id, invoice_price):
     invoice_id = f"in_test_{user_id}"
     sub_id = f"sub_test_{user_id}"
     customer_id = f"cus_test_{user_id}"
@@ -36,7 +37,7 @@ def test_scheduled_yearly_sync(monkeypatch, user_id):
     )
     new_plan = SimpleNamespace(
         id=3, billing_interval="year",
-        price=14900, currency="LKR"
+        price=14900, currency="LKR", stripe_price_id="price_annual"
     )
     item = {"id": item_id}
 
@@ -61,6 +62,8 @@ def test_scheduled_yearly_sync(monkeypatch, user_id):
                         "subscription_item": item_id,
                     },
                 },
+                "amount": 1490000,
+                "pricing": {"price_details": {"price": invoice_price}},
                 "period": {"start": start, "end": end},
             }]
         },
@@ -96,6 +99,13 @@ def test_scheduled_yearly_sync(monkeypatch, user_id):
         "get_plan_from_stripe_subscription",
         lambda *_: (new_plan, item),
     )
+
+    if invoice_price != new_plan.stripe_price_id:
+        with pytest.raises(ValueError, match="Expected one renewal invoice period"):
+            wh.handle_invoice_paid({"id": invoice_id}, db)
+        assert subscription.plan_id == 4
+        db.commit.assert_not_called()
+        return
 
     wh.handle_invoice_paid({"id": invoice_id}, db)
 

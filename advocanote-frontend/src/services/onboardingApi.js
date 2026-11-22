@@ -5,7 +5,7 @@ const API_BASE = (
 ).replace(/\/$/, "");
 
 async function onboardingRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

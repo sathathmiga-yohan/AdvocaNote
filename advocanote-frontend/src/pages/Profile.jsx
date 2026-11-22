@@ -1032,7 +1032,7 @@ export default function Profile() {
     setDeleteError("");
 
     try {
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -1073,7 +1073,9 @@ export default function Profile() {
       }
 
       // Server has revoked all sessions.
-      sessionStorage.clear();
+      localStorage.removeItem("advocanote_access_token");
+      localStorage.removeItem("advocanote_refresh_token");
+      sessionStorage.removeItem("advocanote_auth_toast");
 
       // Return to login page.
       window.location.replace("/login");

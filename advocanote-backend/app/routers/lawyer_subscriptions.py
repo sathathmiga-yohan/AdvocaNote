@@ -25,6 +25,7 @@ from app.schemas.subscription import PlanResponse
 
 from app.services.subscription_trial import (
     PLAN_SETTINGS,
+    get_display_plan_name,
     start_free_trial_if_eligible,
 )
 
@@ -189,7 +190,7 @@ def subscription_response(
         display_plan_name = "Free Trial"
     else:
         display_plan_name = (
-            plan.name if plan else None
+            get_display_plan_name(plan)
         )
 
     # =====================================
@@ -263,11 +264,18 @@ def get_available_plans(
     user: User = Depends(require_lawyer)
 ):
 
-    return db.scalars(
+    plans = db.scalars(
         select(SubscriptionPlan)
         .where(SubscriptionPlan.is_active.is_(True))
         .order_by(SubscriptionPlan.price.asc())
     ).all()
+
+    return [
+        PlanResponse.model_validate(plan).model_copy(
+            update={"name": get_display_plan_name(plan)}
+        )
+        for plan in plans
+    ]
 
 # =====================================
 # START FREE TRIAL
@@ -393,23 +401,25 @@ def create_checkout(
 
     if existing:
 
-        # Allow an expired local free trial
-        # to proceed to Stripe Checkout.
+        # Allow local Free Trial users to buy
+        # a paid plan before the trial expires.
+        # Do not create a second Stripe subscription
+        # if one already exists.
 
-        expired_local_trial = (
+        local_free_trial = (
             existing.status == "trialing"
             and existing.trial_ends_at is not None
-            and existing.trial_ends_at <= utc_now()
             and existing.stripe_subscription_id is None
             and existing.stripe_customer_id is None
         )
 
-        if not expired_local_trial:
-
-            # Active subscriptions and valid trials
-            # cannot create another Checkout.
-
-            if existing.status != "canceled":
+        if not local_free_trial:
+            expired_subscription = (
+                existing.status in ("active", "expired")
+                and existing.current_period_end is not None
+                and existing.current_period_end <= utc_now()
+            )
+            if existing.status != "canceled" and not expired_subscription:
                 raise HTTPException(
                     status_code=409,
                     detail=(
@@ -459,16 +469,30 @@ def create_checkout(
             metadata = (
                 old_stripe_sub.get("metadata") or {}
             )
+            previous_items = (
+                (old_stripe_sub.get("items") or {}).get("data") or []
+            )
+            previous_price_id = None
+            if len(previous_items) == 1:
+                previous_price = previous_items[0].get("price")
+                previous_price_id = (
+                    previous_price.get("id")
+                    if isinstance(previous_price, dict)
+                    else previous_price
+                )
+            previous_plan = db.scalar(
+                select(SubscriptionPlan).where(
+                    SubscriptionPlan.stripe_price_id == previous_price_id
+                )
+            ) if previous_price_id else None
 
             if (
                 old_stripe_sub.get("status")
                 != "canceled"
                 or old_customer
                 != existing.stripe_customer_id
-                or metadata.get("user_id")
-                != str(user.id)
-                or metadata.get("plan_id")
-                != str(existing.plan_id)
+                or metadata.get("user_id") not in (None, str(user.id))
+                or previous_plan is None
             ):
                 raise HTTPException(
                     status_code=409,
@@ -477,6 +501,11 @@ def create_checkout(
                         "is not fully canceled"
                     ),
                 )
+
+            if expired_subscription:
+                existing.status = "canceled"
+                existing.cancel_at_period_end = False
+                db.commit()
 
         # Payment must be verified before
         # activating the selected paid plan.
@@ -1145,94 +1174,100 @@ def check_plan_change(
 # PREVIEW SUBSCRIPTION PLAN CHANGE
 # ==========================================
 
+def synchronize_current_stripe_plan(stripe_sub, subscription, db):
+    from app.routers.stripe_webhooks import (
+        get_plan_from_stripe_subscription,
+        reconcile_paid_plan_upgrade,
+        stripe_id,
+    )
+
+    if (
+        stripe_id(stripe_sub.get("id")) != subscription.stripe_subscription_id
+        or stripe_id(stripe_sub.get("customer")) != subscription.stripe_customer_id
+        or (stripe_sub.get("metadata") or {}).get("user_id")
+        not in (None, str(subscription.user_id))
+        or stripe_sub.get("status") != "active"
+    ):
+        raise HTTPException(
+            status_code=409, detail="Stripe subscription is not synchronized"
+        )
+
+    try:
+        stripe_plan, item = get_plan_from_stripe_subscription(stripe_sub, db)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    if not item.get("id") or item.get("quantity") != 1:
+        raise HTTPException(
+            status_code=409, detail="Invalid Stripe subscription item"
+        )
+
+    if stripe_plan.id == subscription.plan_id:
+        return stripe_plan, item, False
+
+    reconcile_paid_plan_upgrade(stripe_sub, db)
+    db.refresh(subscription)
+    if subscription.plan_id != stripe_plan.id:
+        if stripe_sub.get("schedule"):
+            raise HTTPException(
+                status_code=409,
+                detail="A scheduled Stripe plan change is awaiting a matching paid invoice.",
+            )
+
+        raise HTTPException(
+            status_code=409,
+            detail="Stripe shows a different plan without a matching verified payment. Contact support to reconcile this subscription.",
+        )
+
+    return stripe_plan, item, True
+
+
 @router.post("/change-plan/preview")
 def preview_plan_change(
     data: CheckoutRequest,
     db: Session = Depends(get_db),
     user: User = Depends(require_lawyer),
 ):
-    # Reuse existing eligibility validation
-    check_plan_change(data, db, user)
-
     subscription = db.scalar(
-        select(Subscription).where(
-            Subscription.user_id == user.id
+        select(Subscription).where(Subscription.user_id == user.id)
+    )
+
+    if (
+        subscription is None
+        or not subscription.stripe_subscription_id
+        or not subscription.stripe_customer_id
+    ):
+        raise HTTPException(
+            status_code=409, detail="No eligible active paid subscription"
         )
-    )
-
-    current_plan = db.get(
-        SubscriptionPlan,
-        subscription.plan_id
-    )
-
-    new_plan = db.get(
-        SubscriptionPlan,
-        data.plan_id
-    )
 
     try:
-        # Verify actual Stripe subscription
         stripe_sub = stripe.Subscription.retrieve(
             subscription.stripe_subscription_id
         ).to_dict()
+        current_plan, item, plan_changed = synchronize_current_stripe_plan(
+            stripe_sub, subscription, db
+        )
 
-        customer_id = stripe_sub.get("customer")
-        if isinstance(customer_id, dict):
-            customer_id = customer_id.get("id")
+        if plan_changed and current_plan.id == data.plan_id:
+            return {
+                "can_change": False,
+                "already_current": True,
+                "message": "Your paid plan was verified and synchronized.",
+            }
 
-        metadata = stripe_sub.get("metadata") or {}
+        check_plan_change(data, db, user)
+        new_plan = db.get(SubscriptionPlan, data.plan_id)
 
-        if (
-            customer_id != subscription.stripe_customer_id
-            or metadata.get("user_id") != str(user.id)
-            or metadata.get("plan_id") != str(current_plan.id)
-            or stripe_sub.get("status") != "active"
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Stripe subscription is not synchronized",
-            )
-
-        # Do not preview conflicting scheduled changes
         if (
             stripe_sub.get("pending_update")
             or stripe_sub.get("schedule")
             or stripe_sub.get("cancel_at_period_end")
         ):
             raise HTTPException(
-                status_code=409,
-                detail="Subscription has a pending change",
+                status_code=409, detail="Subscription has a pending change"
             )
 
-        items = (
-            (stripe_sub.get("items") or {})
-            .get("data", [])
-        )
-
-        if len(items) != 1:
-            raise HTTPException(
-                status_code=409,
-                detail="Expected one subscription item",
-            )
-
-        item = items[0]
-        stripe_price = item.get("price") or {}
-
-        price_id = (
-            stripe_price.get("id")
-            if isinstance(stripe_price, dict)
-            else stripe_price
-        )
-
-        if (
-            not item.get("id")
-            or price_id != current_plan.stripe_price_id
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Current Stripe price mismatch",
-            )
-            
         preview = stripe.Invoice.create_preview(
             customer=subscription.stripe_customer_id,
             subscription=subscription.stripe_subscription_id,

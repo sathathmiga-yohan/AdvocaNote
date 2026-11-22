@@ -1,8 +1,7 @@
 
-import calendar
 import logging
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -56,6 +55,16 @@ PLAN_BY_ID = {
 }
 
 
+def get_display_plan_name(plan: SubscriptionPlan | None):
+    if plan is None:
+        return None
+
+    if plan.id == PLAN_SETTINGS["premium"]["id"]:
+        return "Pro"
+
+    return plan.name
+
+
 # ==========================================
 # VERIFY EXISTING DATABASE PLANS
 # ==========================================
@@ -91,33 +100,6 @@ def get_official_plan(
         )
 
     return plan
-
-
-# ==========================================
-# ADD EXACTLY ONE CALENDAR MONTH
-# ==========================================
-
-def add_one_calendar_month(
-    start: datetime,
-) -> datetime:
-
-    year = start.year
-    month = start.month + 1
-
-    if month > 12:
-        month = 1
-        year += 1
-
-    last_day = calendar.monthrange(
-        year,
-        month,
-    )[1]
-
-    return start.replace(
-        year=year,
-        month=month,
-        day=min(start.day, last_day),
-    )
 
 
 # ==========================================
@@ -177,9 +159,7 @@ def start_free_trial_if_eligible(
                 timezone.utc
             ).replace(tzinfo=None)
 
-            trial_end = add_one_calendar_month(
-                now
-            )
+            trial_end = now + timedelta(days=7)
 
             subscription = Subscription(
                 user_id=user.id,

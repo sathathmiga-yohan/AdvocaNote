@@ -133,7 +133,7 @@ export default function AdminLawyers() {
       setLoading(true);
       setError("");
 
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -421,7 +421,7 @@ export default function AdminLawyers() {
 
     if (!confirmed) return;
 
-    const token = sessionStorage.getItem(
+    const token = localStorage.getItem(
       "advocanote_access_token"
     );
 

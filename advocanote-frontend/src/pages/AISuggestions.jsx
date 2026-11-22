@@ -101,7 +101,7 @@ export default function AISuggestions() {
     setError("");
 
     try {
-      const token = sessionStorage.getItem(
+      const token = localStorage.getItem(
         "advocanote_access_token"
       );
 
@@ -294,7 +294,7 @@ export default function AISuggestions() {
       return;
     }
 
-    const token = sessionStorage.getItem(
+    const token = localStorage.getItem(
       "advocanote_access_token"
     );
 

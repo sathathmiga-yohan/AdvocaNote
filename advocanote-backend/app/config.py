@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str
     STRIPE_PUBLISHABLE_KEY: str
     STRIPE_WEBHOOK_SECRET: str
+    STRIPE_UPGRADE_PORTAL_CONFIGURATION_ID: str | None = None
 
 
     model_config = SettingsConfigDict(

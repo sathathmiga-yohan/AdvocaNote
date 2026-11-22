@@ -69,7 +69,7 @@ def handle_checkout_completed(checkout, db: Session):
     payment = db.scalar(
         select(Payment).where(
             Payment.stripe_checkout_session_id == session_id
-        )
+        ).with_for_update()
     )
 
     if payment is None:
@@ -366,7 +366,39 @@ def get_invoice_subscription_id(invoice):
         invoice.get("subscription")
         or details.get("subscription")
     )
-    
+
+
+def invoice_line_matches_subscription_price(
+    line,
+    subscription_id,
+    subscription_item_id,
+    price_id,
+):
+    parent = line.get("parent") or {}
+    details = parent.get("subscription_item_details") or {}
+    pricing = line.get("pricing") or {}
+    price_details = pricing.get("price_details") or {}
+
+    line_subscription_id = (
+        stripe_id(line.get("subscription"))
+        or stripe_id(details.get("subscription"))
+    )
+    line_item_id = (
+        stripe_id(line.get("subscription_item"))
+        or stripe_id(details.get("subscription_item"))
+    )
+    line_price_id = (
+        stripe_id(line.get("price"))
+        or stripe_id(price_details.get("price"))
+    )
+
+    return (
+        line_subscription_id == subscription_id
+        and line_item_id == subscription_item_id
+        and line_price_id == price_id
+        and isinstance(line.get("amount"), int)
+        and line["amount"] > 0
+    )
 
 # ==========================================
 # VERIFY SUCCESSFUL UPGRADE PAYMENT
@@ -392,6 +424,18 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
             "Upgrade invoice is not verified paid"
         )
 
+    amount_paid = invoice.get("amount_paid")
+    amount_due = invoice.get("amount_due")
+    if (
+        not isinstance(amount_paid, int)
+        or amount_paid <= 0
+        or not isinstance(amount_due, int)
+        or amount_due <= 0
+    ):
+        raise ValueError(
+            "Upgrade requires a positive Stripe payment"
+        )
+
     # 2. Get Stripe subscription ID
     stripe_sub_id = get_invoice_subscription_id(
         invoice
@@ -407,7 +451,7 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
         select(Subscription).where(
             Subscription.stripe_subscription_id
             == stripe_sub_id
-        )
+        ).with_for_update()
     )
 
     if subscription is None:
@@ -434,8 +478,9 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
     # 6. Verify lawyer
     metadata = stripe_sub.get("metadata") or {}
 
-    if metadata.get("user_id") != str(
-        subscription.user_id
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
     ):
         raise ValueError(
             "Lawyer mismatch"
@@ -460,21 +505,10 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
             "Current plan not found"
         )
 
-    # Verify metadata during plan transition
-    if metadata.get("plan_id") not in (
-        str(old_plan.id),
-        str(new_plan.id),
-    ):
-        raise ValueError(
-            "Plan metadata mismatch"
-        )
-
     # 9. Verify that Stripe applied the change
     if (
         stripe_sub.get("status") != "active"
         or stripe_sub.get("pending_update")
-        or stripe_id(stripe_sub.get("latest_invoice"))
-        != invoice_id
     ):
         raise ValueError(
             "Upgrade not fully applied in Stripe"
@@ -490,14 +524,20 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
         )
 
     # 11. Validate paid amount
-    amount_paid = invoice.get("amount_paid")
-
-    if (
-        not isinstance(amount_paid, int)
-        or amount_paid < 0
+    invoice_lines = (
+        (invoice.get("lines") or {}).get("data") or []
+    )
+    if not any(
+        invoice_line_matches_subscription_price(
+            line,
+            stripe_sub_id,
+            stripe_id(item.get("id")),
+            new_plan.stripe_price_id,
+        )
+        for line in invoice_lines
     ):
         raise ValueError(
-            "Invalid invoice amount"
+            "Paid invoice does not include the upgraded plan"
         )
 
     # Return verified information
@@ -570,7 +610,10 @@ def handle_invoice_paid(invoice, db: Session):
 
     metadata = stripe_sub.get("metadata") or {}
 
-    if metadata.get("user_id") != str(subscription.user_id):
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
+    ):
         raise ValueError("Subscription user mismatch")
 
     # Find current Stripe plan
@@ -586,9 +629,6 @@ def handle_invoice_paid(invoice, db: Session):
 
     if old_plan is None:
         raise ValueError("Current plan not found")
-
-    if metadata.get("plan_id") != str(new_plan.id):
-        raise ValueError("Stripe plan metadata mismatch")
 
     if stripe_sub.get("status") != "active":
         return
@@ -643,6 +683,10 @@ def handle_invoice_paid(invoice, db: Session):
         if stripe_id(details.get("subscription_item")) != item_id:
             continue
 
+        if new_plan.id != old_plan.id and not invoice_line_matches_subscription_price(
+            line, sub_id, item_id, new_plan.stripe_price_id
+        ):
+            continue
         period = line.get("period") or {}
 
         if period.get("start") and period.get("end"):
@@ -667,6 +711,9 @@ def handle_invoice_paid(invoice, db: Session):
     is_plan_change = new_plan.id != old_plan.id
 
     if is_plan_change:
+        if amount_minor <= 0 or stripe_sub.get("pending_update"):
+            raise ValueError("Plan change requires a verified renewal payment")
+
         monthly_downgrade = (
             old_plan.billing_interval == "month"
             and new_plan.billing_interval == "month"
@@ -866,9 +913,9 @@ def handle_subscription_deleted(event_sub, db: Session):
 
     metadata = stripe_sub.get("metadata") or {}
 
-    if (
-        metadata.get("user_id") != str(subscription.user_id)
-        or metadata.get("plan_id") != str(subscription.plan_id)
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
     ):
         raise ValueError("Subscription metadata mismatch")
 
@@ -1021,11 +1068,19 @@ def handle_invoice_payment_failed(
         invoice_id
     ).to_dict()
 
-    # Renewal invoice only
-    if invoice.get("billing_reason") != "subscription_cycle":
+    if invoice.get("status") != "open":
         return
 
-    if invoice.get("status") != "open":
+    billing_reason = invoice.get("billing_reason")
+    if billing_reason == "subscription_create":
+        handle_initial_checkout_payment_failed(invoice, db)
+        return
+
+    if billing_reason == "subscription_update":
+        handle_upgrade_payment_failed(invoice, db)
+        return
+
+    if billing_reason != "subscription_cycle":
         return
 
     sub_id = get_invoice_subscription_id(invoice)
@@ -1067,7 +1122,10 @@ def handle_invoice_payment_failed(
 
     metadata = stripe_sub.get("metadata") or {}
 
-    if metadata.get("user_id") != str(subscription.user_id):
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
+    ):
         raise ValueError("Subscription user mismatch")
 
     # Verify current invoice
@@ -1090,9 +1148,6 @@ def handle_invoice_payment_failed(
 
     if old_plan is None:
         raise ValueError("Previous plan not found")
-
-    if metadata.get("plan_id") != str(new_plan.id):
-        raise ValueError("Plan metadata mismatch")
 
     
     # Allow scheduled monthly downgrade or billing interval change
@@ -1247,6 +1302,140 @@ def handle_invoice_payment_failed(
     )
 
 
+def handle_upgrade_payment_failed(invoice, db: Session):
+    invoice_id = invoice.get("id")
+    sub_id = get_invoice_subscription_id(invoice)
+
+    if not invoice_id or not sub_id:
+        raise ValueError("Upgrade failure invoice is incomplete")
+
+    subscription = db.scalar(
+        select(Subscription)
+        .where(Subscription.stripe_subscription_id == sub_id)
+        .with_for_update()
+    )
+    if subscription is None:
+        logger.info("Unknown failed upgrade invoice: %s", invoice_id)
+        return
+
+    stripe_sub = stripe.Subscription.retrieve(sub_id).to_dict()
+    customer_id = stripe_id(stripe_sub.get("customer"))
+    if (
+        customer_id != subscription.stripe_customer_id
+        or customer_id != stripe_id(invoice.get("customer"))
+    ):
+        raise ValueError("Failed upgrade customer mismatch")
+
+    metadata = stripe_sub.get("metadata") or {}
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
+    ):
+        raise ValueError("Failed upgrade user mismatch")
+
+    stripe_items = (
+        (stripe_sub.get("items") or {}).get("data") or []
+    )
+    if len(stripe_items) != 1:
+        raise ValueError("Invalid Stripe subscription items")
+    item_id = stripe_id(stripe_items[0].get("id"))
+    if not item_id:
+        raise ValueError("Missing Stripe subscription item")
+
+    invoice_lines = (
+        (invoice.get("lines") or {}).get("data") or []
+    )
+    candidate_plans = {}
+    for line in invoice_lines:
+        parent = line.get("parent") or {}
+        details = parent.get("subscription_item_details") or {}
+        pricing = line.get("pricing") or {}
+        price_details = pricing.get("price_details") or {}
+        if (
+            stripe_id(line.get("subscription"))
+            or stripe_id(details.get("subscription"))
+        ) != sub_id:
+            continue
+        if (
+            stripe_id(line.get("subscription_item"))
+            or stripe_id(details.get("subscription_item"))
+        ) != item_id:
+            continue
+        if not isinstance(line.get("amount"), int) or line["amount"] <= 0:
+            continue
+
+        price_id = (
+            stripe_id(line.get("price"))
+            or stripe_id(price_details.get("price"))
+        )
+        if not price_id:
+            continue
+        plan = db.scalar(
+            select(SubscriptionPlan).where(
+                SubscriptionPlan.stripe_price_id == price_id
+            )
+        )
+        if plan is not None and plan.id != subscription.plan_id:
+            candidate_plans[plan.id] = plan
+
+    if len(candidate_plans) != 1:
+        raise ValueError("Unable to identify failed upgrade plan")
+
+    new_plan = next(iter(candidate_plans.values()))
+    currency = (invoice.get("currency") or "").upper()
+    amount_due = invoice.get("amount_due")
+    if (
+        currency != new_plan.currency.upper()
+        or not isinstance(amount_due, int)
+        or amount_due < 0
+    ):
+        raise ValueError("Invalid failed upgrade amount or currency")
+
+    payment = db.scalar(
+        select(Payment)
+        .where(Payment.stripe_invoice_id == invoice_id)
+        .with_for_update()
+    )
+    if payment is not None:
+        if (
+            payment.user_id != subscription.user_id
+            or payment.subscription_id not in (None, subscription.id)
+            or payment.plan_id != new_plan.id
+            or payment.provider != "stripe"
+        ):
+            raise ValueError("Failed upgrade payment ownership mismatch")
+        if payment.status == "paid":
+            return
+        if payment.status == "failed":
+            return
+    else:
+        payment = Payment(
+            user_id=subscription.user_id,
+            subscription_id=subscription.id,
+            plan_id=new_plan.id,
+            amount=Decimal(amount_due) / Decimal("100"),
+            currency=currency,
+            provider="stripe",
+            status="failed",
+            stripe_invoice_id=invoice_id,
+        )
+        db.add(payment)
+
+    payment.subscription_id = subscription.id
+    payment.plan_id = new_plan.id
+    payment.amount = Decimal(amount_due) / Decimal("100")
+    payment.currency = currency
+    payment.status = "failed"
+    db.commit()
+
+    logger.info(
+        "Upgrade payment failed; current plan retained: "
+        "user_id=%s invoice=%s",
+        subscription.user_id,
+        invoice_id,
+    )
+
+
 # =====================================================
 # STRIPE SUBSCRIPTION STATUS UPDATE
 # =====================================================
@@ -1294,7 +1483,10 @@ def handle_subscription_updated(event_sub, db: Session):
 
     metadata = stripe_sub.get("metadata") or {}
 
-    if metadata.get("user_id") != str(subscription.user_id):
+    if metadata.get("user_id") not in (
+        None,
+        str(subscription.user_id),
+    ):
         raise ValueError("Subscription user mismatch")
 
     # Find plan using actual Stripe Price ID
@@ -1405,13 +1597,6 @@ def handle_initial_checkout_payment_failed(
         sub_id
     ).to_dict()
 
-    # Never report an already active subscription
-    if stripe_sub.get("status") not in (
-        "incomplete",
-        "incomplete_expired",
-    ):
-        return
-
     metadata = stripe_sub.get("metadata") or {}
 
     user_id = metadata.get("user_id")
@@ -1452,7 +1637,7 @@ def handle_initial_checkout_payment_failed(
         candidate = db.scalar(
             select(Payment).where(
                 Payment.stripe_checkout_session_id == session_id
-            )
+            ).with_for_update()
         )
 
         if (
@@ -1472,6 +1657,14 @@ def handle_initial_checkout_payment_failed(
     if lawyer is None or plan is None:
         return
 
+    invoice_payment = db.scalar(
+        select(Payment)
+        .where(Payment.stripe_invoice_id == invoice_id)
+        .with_for_update()
+    )
+    if invoice_payment is not None and invoice_payment.id != payment.id:
+        raise ValueError("Initial invoice payment ownership mismatch")
+
     amount_due = invoice.get("amount_due")
 
     amount = (
@@ -1479,6 +1672,15 @@ def handle_initial_checkout_payment_failed(
         if isinstance(amount_due, int)
         else "—"
     )
+
+    payment.stripe_invoice_id = invoice_id
+    payment.status = "failed"
+    if isinstance(amount_due, int) and amount_due >= 0:
+        payment.amount = Decimal(amount_due) / Decimal("100")
+    payment.currency = (
+        invoice.get("currency") or plan.currency
+    ).upper()
+    db.commit()
 
     try:
         create_admin_notification_once(
@@ -1509,6 +1711,74 @@ def handle_initial_checkout_payment_failed(
             "Initial payment failure notification failed: %s",
             invoice_id,
         )
+
+
+def handle_initial_checkout_invoice_paid(invoice, db: Session):
+    invoice_id = invoice.get("id")
+    if not invoice_id:
+        raise ValueError("Missing initial invoice ID")
+
+    paid_invoice = stripe.Invoice.retrieve(invoice_id).to_dict()
+    if (
+        paid_invoice.get("billing_reason") != "subscription_create"
+        or paid_invoice.get("status") != "paid"
+        or paid_invoice.get("paid_out_of_band")
+    ):
+        return
+
+    sub_id = get_invoice_subscription_id(paid_invoice)
+    if not sub_id:
+        raise ValueError("Initial paid invoice has no subscription")
+
+    stripe_sub = stripe.Subscription.retrieve(sub_id).to_dict()
+    metadata = stripe_sub.get("metadata") or {}
+    user_id = metadata.get("user_id")
+    plan_id = metadata.get("plan_id")
+    if (
+        stripe_sub.get("status") != "active"
+        or not user_id
+        or not plan_id
+        or stripe_id(stripe_sub.get("customer"))
+        != stripe_id(paid_invoice.get("customer"))
+    ):
+        return
+
+    sessions = stripe.checkout.Session.list(
+        subscription=sub_id,
+        limit=20,
+    )
+    for session in sessions.data:
+        session_id = stripe_id(session.get("id"))
+        session_metadata = session.get("metadata") or {}
+        if (
+            session.get("mode") != "subscription"
+            or session.get("client_reference_id") != user_id
+            or session_metadata.get("user_id") != user_id
+            or session_metadata.get("plan_id") != plan_id
+            or stripe_id(session.get("subscription")) != sub_id
+        ):
+            continue
+
+        payment = db.scalar(
+            select(Payment).where(
+                Payment.stripe_checkout_session_id == session_id,
+                Payment.user_id == int(user_id),
+                Payment.plan_id == int(plan_id),
+            )
+        )
+        if payment is None:
+            continue
+
+        completed_session = stripe.checkout.Session.retrieve(
+            session_id
+        ).to_dict()
+        handle_checkout_completed(completed_session, db)
+        return
+
+    logger.info(
+        "No AdvocaNote checkout found for initial invoice %s",
+        invoice_id,
+    )
 
 
 @router.post("/stripe")
@@ -1566,7 +1836,10 @@ async def stripe_webhook(
     # FIRST CHECKOUT PAYMENT
     # =================================================
 
-    if event_type == "checkout.session.completed":
+    if event_type in (
+        "checkout.session.completed",
+        "checkout.session.async_payment_succeeded",
+    ):
 
         try:
 
@@ -1611,6 +1884,12 @@ async def stripe_webhook(
             elif billing_reason == "subscription_update":
                 handle_paid_plan_upgrade(
                     invoice["id"],
+                    db,
+                )
+
+            elif billing_reason == "subscription_create":
+                handle_initial_checkout_invoice_paid(
+                    invoice,
                     db,
                 )
 
@@ -1748,6 +2027,17 @@ def get_plan_from_stripe_subscription(
 
 def handle_paid_plan_upgrade(invoice_id, db: Session):
 
+    existing_payment = db.scalar(
+        select(Payment)
+        .where(Payment.stripe_invoice_id == invoice_id)
+    )
+
+    # A paid invoice is the idempotency key. The subscription and payment
+    # are committed together, so an existing paid row means this event has
+    # already been applied.
+    if existing_payment is not None and existing_payment.status == "paid":
+        return
+
     # Verify the actual paid Stripe invoice
     info = verify_paid_upgrade_invoice(
         invoice_id, db
@@ -1760,23 +2050,16 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
     stripe_sub = info["stripe_subscription"]
     item = info["stripe_item"]
 
-    # Check whether invoice was already processed
     existing_payment = db.scalar(
-        select(Payment).where(
-            Payment.stripe_invoice_id == invoice_id
-        )
+        select(Payment)
+        .where(Payment.stripe_invoice_id == invoice_id)
+        .with_for_update()
     )
+    if existing_payment is not None and existing_payment.status == "paid":
+        return
 
     if old_plan.id == new_plan.id:
-        if (
-            existing_payment
-            and existing_payment.status == "paid"
-        ):
-            return
-
-        raise ValueError(
-            "No new plan change to activate"
-        )
+        raise ValueError("No new plan change to activate")
 
     # Support monthly upgrades and Monthly to Yearly
     if not (
@@ -1794,9 +2077,17 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
             "Unsupported immediate plan change"
         )
 
-    if existing_payment is not None:
+    if existing_payment is not None and (
+        existing_payment.user_id != subscription.user_id
+        or existing_payment.subscription_id not in (
+            None,
+            subscription.id,
+        )
+        or existing_payment.plan_id != new_plan.id
+        or existing_payment.provider != "stripe"
+    ):
         raise ValueError(
-            "Invoice payment already exists; reconciliation needed"
+            "Invoice payment ownership mismatch"
         )
 
     # Verify billing period
@@ -1811,20 +2102,7 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
     ):
         raise ValueError("Invalid Stripe billing period")
 
-    # Amount actually paid, in LKR
-    amount = (
-        Decimal(invoice["amount_paid"])
-        / Decimal("100")
-    )
-
-    # Keep Stripe metadata synchronized
-    stripe.Subscription.modify(
-        stripe_sub["id"],
-        metadata={
-            "user_id": str(subscription.user_id),
-            "plan_id": str(new_plan.id),
-        },
-    )
+    amount = Decimal(invoice["amount_paid"]) / Decimal("100")
 
     # Update MySQL subscription
     subscription.plan_id = new_plan.id
@@ -1840,21 +2118,44 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
     )
 
     # Save upgrade payment history
-    payment = Payment(
-        user_id=subscription.user_id,
-        subscription_id=subscription.id,
-        plan_id=new_plan.id,
-        amount=amount,
-        currency="LKR",
-        provider="stripe",
-        status="paid",
-        stripe_invoice_id=invoice_id,
-        paid_at=datetime.utcnow(),
-    )
+    if existing_payment is None:
+        payment = Payment(
+            user_id=subscription.user_id,
+            subscription_id=subscription.id,
+            plan_id=new_plan.id,
+            amount=amount,
+            currency=new_plan.currency.upper(),
+            provider="stripe",
+            status="paid",
+            stripe_invoice_id=invoice_id,
+            paid_at=datetime.utcnow(),
+        )
+        db.add(payment)
+    else:
+        existing_payment.subscription_id = subscription.id
+        existing_payment.plan_id = new_plan.id
+        existing_payment.amount = amount
+        existing_payment.currency = new_plan.currency.upper()
+        existing_payment.status = "paid"
+        existing_payment.paid_at = (
+            existing_payment.paid_at or datetime.utcnow()
+        )
 
-
-    db.add(payment)
     db.commit()
+
+    try:
+        stripe.Subscription.modify(
+            stripe_sub["id"],
+            metadata={
+                "user_id": str(subscription.user_id),
+                "plan_id": str(new_plan.id),
+            },
+        )
+    except stripe.error.StripeError:
+        logger.exception(
+            "Failed to synchronize Stripe plan metadata for invoice %s",
+            invoice_id,
+        )
 
     # ==========================================
     # ADMIN NOTIFICATION - PLAN UPGRADE / CHANGE
@@ -1911,7 +2212,7 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
                 "old_plan": old_plan_name,
                 "new_plan": new_plan_name,
                 "amount": str(amount),
-                "currency": "LKR",
+                "currency": new_plan.currency.upper(),
                 "billing": new_plan.billing_interval,
                 "payment_status": "Paid",
                 "invoice_id": invoice_id,
@@ -1932,3 +2233,75 @@ def handle_paid_plan_upgrade(invoice_id, db: Session):
         subscription.user_id,
         new_plan.id,
     )
+
+
+def reconcile_paid_plan_upgrade(stripe_sub, db: Session):
+    sub_id = stripe_id(stripe_sub.get("id"))
+    if not sub_id:
+        raise ValueError("Missing Stripe subscription ID")
+
+    subscription = db.scalar(
+        select(Subscription)
+        .where(Subscription.stripe_subscription_id == sub_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if subscription is None:
+        raise ValueError("AdvocaNote subscription not found")
+
+    customer_id = stripe_id(stripe_sub.get("customer"))
+    metadata = stripe_sub.get("metadata") or {}
+    if (
+        customer_id != subscription.stripe_customer_id
+        or metadata.get("user_id") not in (
+            None,
+            str(subscription.user_id),
+        )
+    ):
+        raise ValueError("Stripe subscription ownership mismatch")
+
+    stripe_plan, _ = get_plan_from_stripe_subscription(
+        stripe_sub,
+        db,
+    )
+    if stripe_plan.id == subscription.plan_id:
+        return False
+
+    invoices = stripe.Invoice.list(
+        subscription=sub_id,
+        limit=100,
+    )
+    latest_invoice_id = stripe_id(stripe_sub.get("latest_invoice"))
+    for candidate in invoices.data:
+        invoice = candidate.to_dict()
+        invoice_id = invoice.get("id")
+        reason = invoice.get("billing_reason")
+        if (
+            not invoice_id
+            or invoice.get("status") != "paid"
+            or invoice.get("paid_out_of_band")
+            or (invoice.get("amount_paid") or 0) <= 0
+        ):
+            continue
+
+        try:
+            if reason == "subscription_update":
+                handle_paid_plan_upgrade(invoice_id, db)
+            elif reason == "subscription_cycle" and invoice_id == latest_invoice_id:
+                handle_invoice_paid(invoice, db)
+            else:
+                continue
+        except ValueError:
+            db.rollback()
+            subscription = db.scalar(
+                select(Subscription)
+                .where(Subscription.stripe_subscription_id == sub_id)
+                .with_for_update()
+            )
+            continue
+
+        db.refresh(subscription)
+        if subscription.plan_id == stripe_plan.id:
+            return True
+
+    return False

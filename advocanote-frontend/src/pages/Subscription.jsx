@@ -44,6 +44,7 @@ import "./MyLegalDiary.css";
 import "./AccountPages.css";
 import "./Subscription.css";
 
+
 // =====================================
 // API CONFIGURATION
 // =====================================
@@ -55,7 +56,7 @@ const API_BASE = (
 
 function getAccessToken() {
   return (
-    sessionStorage
+    localStorage
       .getItem("advocanote_access_token")
       ?.replace(/^Bearer\s+/i, "") || null
   );
@@ -303,6 +304,88 @@ export default function Subscription() {
     loadSubscriptionData();
   }, [loadSubscriptionData]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    if (params.get("upgrade_return") !== "1") {
+      return;
+    }
+
+    const targetPlanId = Number(
+      params.get("target_plan_id")
+    );
+
+    if (!Number.isInteger(targetPlanId) || targetPlanId <= 0) {
+      return;
+    }
+
+    let cancelled = false;
+    let timer = null;
+    let attempts = 0;
+
+    setNotice("Verifying your Stripe plan upgrade...");
+
+    async function checkUpgrade() {
+      attempts += 1;
+
+      try {
+        await apiRequest(
+          "/subscriptions/sync-paid-upgrade",
+          {
+            method: "POST",
+          }
+        );
+
+        const latest = await apiRequest(
+          "/subscriptions/me"
+        );
+
+        if (cancelled) return;
+
+        setSubscription(latest);
+
+        if (
+          latest?.status === "active" &&
+          Number(latest?.plan_id) === targetPlanId
+        ) {
+          setNotice(
+            "Plan upgrade verified successfully!"
+          );
+
+          await loadSubscriptionData();
+          window.dispatchEvent(
+            new Event("advocanote:subscription-refresh")
+          );
+          return;
+        }
+
+      } catch (error) {
+        console.error(
+          "Upgrade verification error:",
+          error
+        );
+      }
+
+      if (cancelled) return;
+
+      if (attempts < 15) {
+        timer = setTimeout(checkUpgrade, 2000);
+      } else {
+        setNotice(
+          "Stripe has not verified the upgrade payment yet. " +
+          "Your current plan remains active until payment is confirmed."
+        );
+      }
+    }
+
+    checkUpgrade();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+
+  }, [location.search, loadSubscriptionData]);
   // =====================================
   // VERIFY STRIPE PAYMENT
   // =====================================
@@ -337,33 +420,42 @@ export default function Subscription() {
     }
 
     let cancelled = false;
+    let timer;
+    let attempts = 0;
+
+    setNotice("Verifying payment...");
 
     async function verifyPayment() {
-      setNotice("Verifying payment...");
+      attempts += 1;
 
       try {
         const result = await apiRequest(
-          `/subscriptions/checkout/status?session_id=${encodeURIComponent(
-            sessionId
-          )}`
+          `/subscriptions/checkout/status?session_id=${encodeURIComponent(sessionId)}`
         );
 
         if (cancelled) return;
 
-        setNotice(
+        if (
           result?.payment_status === "paid" &&
-            result?.subscription_status === "active"
-            ? "Payment verified. Your plan is active."
-            : "Payment processing. Refresh to check the status."
-        );
-
-        await loadSubscriptionData();
-      } catch {
-        if (!cancelled) {
-          setNotice(
-            "Payment verification pending. Please check again later."
-          );
+          result?.subscription_status === "active"
+        ) {
+          setNotice("Payment verified. Your plan is active.");
+          await loadSubscriptionData();
+          if (!cancelled) {
+            window.dispatchEvent(new Event("advocanote:subscription-refresh"));
+          }
+          return;
         }
+      } catch (error) {
+        console.error("Checkout verification error:", error);
+      }
+
+      if (cancelled) return;
+
+      if (attempts < 15) {
+        timer = setTimeout(verifyPayment, 2000);
+      } else {
+        setNotice("Payment verification is pending. Refresh to check its status.");
       }
     }
 
@@ -371,6 +463,7 @@ export default function Subscription() {
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [
     location.pathname,
@@ -405,12 +498,9 @@ export default function Subscription() {
 
   const canSubscribe =
     !hasSubscription ||
+    subscriptionStatus === "trialing" ||
     subscriptionStatus === "canceled" ||
-    (
-      subscriptionStatus === "expired" &&
-      Boolean(subscription?.trial_ends_at)
-    );
-
+    subscriptionStatus === "expired";
 
   // =====================================
   // SEARCH PLANS AND PAYMENTS
@@ -548,17 +638,8 @@ export default function Subscription() {
       return;
     }
 
-    if (
-      getPlanInterval(currentPlan) !== "month" ||
-      getPlanInterval(plan) !== "month"
-    ) {
-      setError(
-        "Only monthly plan changes are supported."
-      );
-      return;
-    }
-
     setActionLoading(`preview-${plan.id}`);
+    setUpgradePreview(null);
     setError("");
     setNotice("");
 
@@ -573,6 +654,14 @@ export default function Subscription() {
         }
       );
 
+      if (result.already_current) {
+        setUpgradePreview(null);
+        await loadSubscriptionData();
+        setNotice(result.message);
+        window.dispatchEvent(new Event("advocanote:subscription-refresh"));
+        return;
+      }
+
       setNotice(
         `${result.current_plan} → ${result.new_plan}. Estimated charge: ` +
         `${formatMoney(
@@ -582,8 +671,8 @@ export default function Subscription() {
       );
 
       if (
-        Number(plan.price) >
-        Number(currentPlan.price)
+        getPlanInterval(plan) === "year" ||
+        Number(plan.price) > Number(currentPlan.price)
       ) {
         setUpgradePreview({
           planId: plan.id,
@@ -609,8 +698,9 @@ export default function Subscription() {
   // =====================================
 
   async function handleConfirmUpgrade() {
+    const planId = upgradePreview?.planId;
     if (
-      !upgradePreview ||
+      !planId ||
       !isActive ||
       actionLoading
     ) {
@@ -633,25 +723,30 @@ export default function Subscription() {
 
     try {
       const result = await apiRequest(
-        "/subscriptions/change-plan/upgrade",
+        "/subscriptions/select",
         {
           method: "POST",
           body: JSON.stringify({
-            plan_id: upgradePreview.planId,
-            confirm: true,
+            plan_id: planId,
           }),
         }
       );
 
+      if (!result?.redirect_url) {
+        throw new Error(
+          "Stripe upgrade confirmation URL was not returned."
+        );
+      }
+
+      if (
+        result.flow === "resume_before_upgrade" &&
+        !window.confirm(result.message)
+      ) {
+        return;
+      }
+
       setUpgradePreview(null);
-
-      setNotice(
-        result.payment_pending
-          ? "Upgrade payment pending. Your plan will update after confirmation."
-          : "Upgrade submitted. Refresh after payment verification."
-      );
-
-      await loadSubscriptionData();
+      window.location.assign(result.redirect_url);
     } catch (err) {
       setError(
         err.message ||
@@ -785,15 +880,15 @@ export default function Subscription() {
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_access_token"
       );
 
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_refresh_token"
       );
 
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_auth_toast"
       );
 
@@ -1314,9 +1409,7 @@ export default function Subscription() {
 
 
                         const selected =
-                          ["active", "trialing"].includes(
-                            subscriptionStatus
-                          ) &&
+                          subscriptionStatus === "active" &&
                           Number(subscription?.plan_id) ===
                           Number(plan.id);
 
@@ -1329,6 +1422,11 @@ export default function Subscription() {
 
                         const nextInterval =
                           getPlanInterval(plan);
+
+                        const isAnnualUpgrade =
+                          oldInterval === "month" &&
+                          nextInterval === "year" &&
+                          plan.daily_action_limit == null;
 
                         const canChangePlan =
                           isActive &&
@@ -1440,7 +1538,9 @@ export default function Subscription() {
                                   }
                                   onClick={() => {
 
-                                    if (
+                                    if (isAnnualUpgrade) {
+                                      handlePreviewPlanChange(plan);
+                                    } else if (
                                       oldInterval !== nextInterval ||
                                       Number(plan.price) <
                                       Number(currentPlan.price)
@@ -1460,9 +1560,12 @@ export default function Subscription() {
                                   {actionLoading ===
                                     `preview-${plan.id}` ||
                                     actionLoading ===
-                                    `downgrade-${plan.id}`
+                                    `downgrade-${plan.id}` ||
+                                    actionLoading === "upgrade"
                                     ? "Processing..."
-                                    : oldInterval !== nextInterval
+                                    : isAnnualUpgrade
+                                      ? "Upgrade Plan"
+                                      : oldInterval !== nextInterval
                                       ? "Schedule Billing Change"
                                       : Number(plan.price) <
                                         Number(currentPlan.price)

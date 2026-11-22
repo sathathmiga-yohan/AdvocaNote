@@ -15,8 +15,8 @@ export default function useAdminUnreadCount() {
 
     const fetchCount = async () => {
       const token =
-        sessionStorage.getItem("advocanote_access_token") ||
-        sessionStorage.getItem("access_token") ||
+        localStorage.getItem("advocanote_access_token") ||
+        localStorage.getItem("access_token") ||
         localStorage.getItem("advocanote_access_token") ||
         localStorage.getItem("access_token");
 

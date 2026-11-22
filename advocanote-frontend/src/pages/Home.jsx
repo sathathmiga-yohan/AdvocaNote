@@ -161,11 +161,11 @@ const plans = [
   {
     id: "trial",
     name: "Free Trial",
-    note: "Explore AdvocaNote for one month",
+    note: "Explore AdvocaNote for 7 days",
     price: "0",
     unit: "/ first month",
     points: [
-      "One-month free trial",
+      "7-day free trial",
       "Access to all available features",
       "Unlimited actions during trial",
       "No plan payment to start",
@@ -240,8 +240,8 @@ const faqs = [
     a: "AI Diary Scan is a planned feature that will help convert handwritten diary notes into structured digital entries for your review. Coming Soon.",
   },
   {
-    q: "What happens after the one-month free trial?",
-    a: "After your one-month free trial, you can select Basic at LKR 1,490/month, Premium at LKR 3,290/month, or Annual at LKR 14,900/year.",
+    q: "What happens after the 7-day free trial?",
+    a: "After your 7-day free trial, you can select Basic at LKR 1,490/month, Premium at LKR 3,290/month, or Annual at LKR 14,900/year.",
   },
 ];
 
@@ -784,7 +784,7 @@ export default function Home() {
           <SectionTitle
             kicker="FLEXIBLE PLANS FOR EVERY LEGAL PRACTICE"
             title="Simple & Transparent Pricing"
-            description="Start with one month free, then choose a plan that suits your practice."
+            description="Start with 7 days free, then choose a plan that suits your practice."
             light
           />
 

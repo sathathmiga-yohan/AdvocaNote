@@ -101,10 +101,10 @@ export default function AdminLayout() {
 
     const fetchUnreadCount = async () => {
       const token =
-        sessionStorage.getItem(
+        localStorage.getItem(
           "advocanote_access_token"
         ) ||
-        sessionStorage.getItem("access_token") ||
+        localStorage.getItem("access_token") ||
         localStorage.getItem(
           "advocanote_access_token"
         ) ||
@@ -215,7 +215,7 @@ export default function AdminLayout() {
 
     setLoggingOut(true);
 
-    const refreshToken = sessionStorage.getItem(
+    const refreshToken = localStorage.getItem(
       "advocanote_refresh_token"
     );
 
@@ -246,13 +246,13 @@ export default function AdminLayout() {
     } catch {
       // Clear session even if server is down.
     } finally {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_access_token"
       );
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_refresh_token"
       );
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_auth_toast"
       );
 

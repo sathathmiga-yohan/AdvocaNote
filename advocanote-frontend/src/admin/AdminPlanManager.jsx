@@ -116,7 +116,7 @@ function errorText(data, status) {
 }
 
 async function adminRequest(path, method, body) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

@@ -37,7 +37,7 @@ export async function loginUser(email, password) {
 
 // 2. CHECK LOGGED-IN USER
 export async function getCurrentUser() {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -298,7 +298,7 @@ export async function googleLogin(credential) {
 
 // 9. LOGOUT API
 export async function logoutUser() {
-  const refreshToken = sessionStorage.getItem(
+  const refreshToken = localStorage.getItem(
     "advocanote_refresh_token"
   );
 

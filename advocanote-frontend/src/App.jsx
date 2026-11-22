@@ -4,7 +4,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-
+import { useEffect } from "react";
 // =====================================
 // PUBLIC PAGES
 // =====================================
@@ -60,6 +60,27 @@ import AdminSettings from "./admin/AdminSettings";
 // =====================================
 
 function App() {
+
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key !== "advocanote_access_token") {
+        return;
+      }
+
+      if (!event.newValue) {
+        window.location.replace("/login");
+      } else {
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -216,7 +237,7 @@ function App() {
             path="notifications"
             element={<AdminNotifications />}
           />
-          
+
           <Route
             path="settings"
             element={<AdminSettings />}

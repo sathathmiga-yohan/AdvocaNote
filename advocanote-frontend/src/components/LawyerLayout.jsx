@@ -130,7 +130,7 @@ export default function LawyerLayout() {
 
         if (!active) return;
 
-        const token = sessionStorage.getItem(
+        const token = localStorage.getItem(
           "advocanote_access_token"
         );
 
@@ -168,12 +168,12 @@ export default function LawyerLayout() {
 
         setUser(value);
 
-        const notification = sessionStorage.getItem(
+        const notification = localStorage.getItem(
           "advocanote_auth_toast"
         );
 
         if (notification) {
-          sessionStorage.removeItem(
+          localStorage.removeItem(
             "advocanote_auth_toast"
           );
 
@@ -205,15 +205,15 @@ export default function LawyerLayout() {
           error
         );
 
-        sessionStorage.removeItem(
+        localStorage.removeItem(
           "advocanote_access_token"
         );
 
-        sessionStorage.removeItem(
+        localStorage.removeItem(
           "advocanote_refresh_token"
         );
 
-        sessionStorage.removeItem(
+        localStorage.removeItem(
           "advocanote_auth_toast"
         );
 
@@ -285,15 +285,15 @@ export default function LawyerLayout() {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_access_token"
       );
 
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_refresh_token"
       );
 
-      sessionStorage.removeItem(
+      localStorage.removeItem(
         "advocanote_auth_toast"
       );
 
@@ -451,7 +451,9 @@ export default function LawyerLayout() {
 
         <FirstLoginOnboarding user={user} />
 
-        <SubscriptionGate />
+        {!/^\/subscription(?:\/|$)/i.test(pathname) && (
+          <SubscriptionGate />
+        )}
       </div>
     </LawyerLayoutContext.Provider>
   );

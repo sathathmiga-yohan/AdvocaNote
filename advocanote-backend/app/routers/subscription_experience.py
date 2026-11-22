@@ -20,12 +20,16 @@ from app.models.subscription import Subscription
 from app.models.subscription_daily_usage import (
     SubscriptionDailyUsage,
 )
-
+from app.routers.stripe_webhooks import (
+    get_plan_from_stripe_subscription,
+    reconcile_paid_plan_upgrade,
+)
 from app.auth.security import get_current_user
 
 from app.services.subscription_trial import (
     PLAN_SETTINGS,
     PLAN_BY_ID,
+    get_display_plan_name,
     get_official_plan,
     start_free_trial_if_eligible,
 )
@@ -37,6 +41,7 @@ from app.services.subscription_usage import (
 from app.routers.lawyer_subscriptions import (
     CheckoutRequest,
     create_checkout,
+    synchronize_current_stripe_plan,
 )
 from admin_notifications_api import (
     create_admin_notification_once,
@@ -135,7 +140,7 @@ def plan_options(db: Session):
         result.append({
             "key": plan_key,
             "plan_id": plan.id,
-            "name": plan.name,
+            "name": get_display_plan_name(plan),
             "description": plan.description,
             "price": str(plan.price),
             "currency": plan.currency,
@@ -301,10 +306,7 @@ def subscription_access(
         display_plan = "Free Trial"
 
     else:
-        display_plan = (
-            current_plan.name
-            if current_plan else None
-        )
+        display_plan = get_display_plan_name(current_plan)
 
     # ==========================================
     # SUBSCRIPTION ACCESS RESPONSE
@@ -414,12 +416,6 @@ def create_plan_change_portal(
             detail="Current subscription plan not found",
         )
 
-    if current_plan.id == target_plan.id:
-        raise HTTPException(
-            status_code=409,
-            detail="You already have this plan",
-        )
-
     if not target_plan.is_active:
         raise HTTPException(
             status_code=409,
@@ -430,50 +426,6 @@ def create_plan_change_portal(
         raise HTTPException(
             status_code=409,
             detail="Selected plan is not connected to Stripe",
-        )
-
-    if current_plan.currency != target_plan.currency:
-        raise HTTPException(
-            status_code=409,
-            detail="Plan currencies do not match",
-        )
-
-    # ======================================
-    # CHECK SUPPORTED IMMEDIATE UPGRADES
-    # ======================================
-    #
-    # Works with ANY database plan.
-    #
-    # Monthly -> Higher-priced monthly
-    # Monthly -> Yearly
-    #
-    # Downgrades / Yearly -> Monthly require
-    # a separate scheduled change workflow.
-    # ======================================
-
-    monthly_upgrade = (
-        current_plan.billing_interval == "month"
-        and target_plan.billing_interval == "month"
-        and target_plan.price > current_plan.price
-    )
-
-    monthly_to_yearly = (
-        current_plan.billing_interval == "month"
-        and target_plan.billing_interval == "year"
-    )
-
-    if not (
-        monthly_upgrade
-        or monthly_to_yearly
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "This change cannot be applied "
-                "as an immediate upgrade. "
-                "Use a scheduled plan change "
-                "for downgrades or other changes."
-            ),
         )
 
     # ======================================
@@ -487,78 +439,99 @@ def create_plan_change_portal(
             ).to_dict()
         )
 
-        customer = stripe_sub.get("customer")
-
-        if isinstance(customer, dict):
-            customer = customer.get("id")
-
-        metadata = (
-            stripe_sub.get("metadata") or {}
+        base_url = settings.FRONTEND_URL.rstrip("/")
+        upgrade_return_url = (
+            f"{base_url}/subscription"
+            f"?upgrade_return=1&target_plan_id={target_plan.id}"
         )
+        current_plan, item, plan_changed = synchronize_current_stripe_plan(
+            stripe_sub, subscription, db
+        )
+        if plan_changed and current_plan.id == target_plan.id:
+            return {
+                "redirect_url": upgrade_return_url,
+                "flow": "upgrade_already_verified",
+                "message": "The paid upgrade has been verified and synchronized.",
+            }
 
-        if (
-            stripe_sub.get("status") != "active"
-            or customer != subscription.stripe_customer_id
-            or metadata.get("user_id") != str(user.id)
-            or metadata.get("plan_id")
-            != str(current_plan.id)
-            or stripe_sub.get("pending_update")
-            or stripe_sub.get("schedule")
-            or stripe_sub.get("cancel_at_period_end")
-        ):
+        if current_plan.id == target_plan.id:
+            raise HTTPException(
+                status_code=409,
+                detail="You already have this plan",
+            )
+
+        if current_plan.currency != target_plan.currency:
+            raise HTTPException(
+                status_code=409,
+                detail="Plan currencies do not match",
+            )
+
+        monthly_upgrade = (
+            current_plan.billing_interval == "month"
+            and target_plan.billing_interval == "month"
+            and target_plan.price > current_plan.price
+        )
+        monthly_to_yearly = (
+            current_plan.billing_interval == "month"
+            and target_plan.billing_interval == "year"
+        )
+        if not (monthly_upgrade or monthly_to_yearly):
             raise HTTPException(
                 status_code=409,
                 detail=(
-                    "Stripe subscription cannot "
-                    "be changed right now"
+                    "This change cannot be applied as an immediate upgrade. "
+                    "Use a scheduled plan change for downgrades or other changes."
                 ),
             )
 
-        # ==================================
-        # VERIFY CURRENT STRIPE PRICE
-        # ==================================
+        # A scheduled cancellation must be explicitly removed in Stripe
+        # before creating an upgrade flow.
+        if stripe_sub.get("cancel_at_period_end"):
+            portal = stripe.billing_portal.Session.create(
+                customer=subscription.stripe_customer_id,
+                return_url=f"{base_url}/subscription",
+            )
+            return {
+                "redirect_url": portal.url,
+                "flow": "resume_before_upgrade",
+                "message": (
+                    "Your subscription is scheduled to cancel. "
+                    "Review its renewal settings in Stripe, then "
+                    "return to choose the upgrade again."
+                ),
+            }
 
-        items = (
-            (stripe_sub.get("items") or {})
-            .get("data") or []
-        )
-
-        if len(items) != 1:
+        if stripe_sub.get("pending_update") or stripe_sub.get("schedule"):
             raise HTTPException(
                 status_code=409,
-                detail="Invalid Stripe subscription items",
+                detail="Stripe subscription has a pending change",
             )
 
-        item = items[0]
+        configuration_id = settings.STRIPE_UPGRADE_PORTAL_CONFIGURATION_ID
+        if not configuration_id:
+            raise HTTPException(
+                status_code=503, detail="Paid upgrades are not configured"
+            )
 
-        price = item.get("price")
-
-        current_price_id = (
-            price.get("id")
-            if isinstance(price, dict)
-            else price
-        )
-
+        configuration = stripe.billing_portal.Configuration.retrieve(
+            configuration_id
+        ).to_dict()
+        upgrade_settings = (configuration.get("features") or {}).get(
+            "subscription_update"
+        ) or {}
         if (
-            not item.get("id")
-            or current_price_id
-            != current_plan.stripe_price_id
-            or item.get("quantity") != 1
+            not configuration.get("active")
+            or not upgrade_settings.get("enabled")
+            or upgrade_settings.get("proration_behavior") != "always_invoice"
         ):
             raise HTTPException(
-                status_code=409,
-                detail="Stripe plan mismatch",
+                status_code=503, detail="Stripe paid upgrade configuration is invalid"
             )
-
-        # ==================================
-        # OPEN STRIPE CONFIRMATION PORTAL
-        # ==================================
-
-        base_url = settings.FRONTEND_URL.rstrip("/")
 
         portal = stripe.billing_portal.Session.create(
             customer=subscription.stripe_customer_id,
-            return_url=base_url,
+            configuration=configuration_id,
+            return_url=upgrade_return_url,
             flow_data={
                 "type": "subscription_update_confirm",
                 "subscription_update_confirm": {
@@ -576,7 +549,7 @@ def create_plan_change_portal(
                 "after_completion": {
                     "type": "redirect",
                     "redirect": {
-                        "return_url": base_url,
+                        "return_url": upgrade_return_url,
                     },
                 },
             },
@@ -592,6 +565,11 @@ def create_plan_change_portal(
         }
 
     except stripe.error.StripeError as exc:
+        logger.exception(
+            "STRIPE PLAN CHANGE FAILED: %s",
+            exc,
+        )
+
         raise HTTPException(
             status_code=502,
             detail=(
@@ -674,13 +652,23 @@ def select_subscription_plan(
     if active_access(subscription):
 
         if subscription.status == "trialing":
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "Your free trial is still active. "
-                    "Choose a paid plan when it ends."
-                ),
-            )
+
+            # Local Free Trial users can
+            # proceed to Stripe Checkout.
+            # Stripe-managed trials must not
+            # create a duplicate subscription.
+
+            if (
+                subscription.stripe_subscription_id
+                or subscription.stripe_customer_id
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Existing Stripe trial must "
+                        "be managed before changing plans"
+                    ),
+                )
 
         if subscription.status == "active":
 
@@ -727,7 +715,111 @@ def select_subscription_plan(
         "session_id": checkout["session_id"],
         "flow": "stripe_checkout",
     }
+# ==========================================
+# SYNC VERIFIED PAID PLAN UPGRADE
+# ==========================================
 
+@router.post("/sync-paid-upgrade")
+def sync_paid_upgrade(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_lawyer),
+):
+    subscription = get_subscription(db, user.id)
+
+    if (
+        subscription is None
+        or not subscription.stripe_subscription_id
+        or not subscription.stripe_customer_id
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="No Stripe subscription found",
+        )
+
+    try:
+        stripe_sub = stripe.Subscription.retrieve(
+            subscription.stripe_subscription_id
+        ).to_dict()
+
+        customer = stripe_sub.get("customer")
+
+        if isinstance(customer, dict):
+            customer = customer.get("id")
+
+        metadata = stripe_sub.get("metadata") or {}
+
+        if (
+            customer != subscription.stripe_customer_id
+            or metadata.get("user_id") not in (None, str(user.id))
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="Stripe subscription mismatch",
+            )
+
+        stripe_plan, _ = (
+            get_plan_from_stripe_subscription(
+                stripe_sub,
+                db,
+            )
+        )
+
+        if stripe_plan.id == subscription.plan_id:
+            return {
+                "updated": False,
+                "plan_id": subscription.plan_id,
+                "message": "Plans already match",
+            }
+
+        reconciled = reconcile_paid_plan_upgrade(
+            stripe_sub,
+            db,
+        )
+
+        db.refresh(subscription)
+        if subscription.plan_id != stripe_plan.id:
+            return {
+                "updated": False,
+                "plan_id": subscription.plan_id,
+                "message": "Upgrade payment has not been verified",
+            }
+
+        return {
+            "updated": reconciled,
+            "plan_id": subscription.plan_id,
+            "message": (
+                "Paid upgrade synced successfully"
+                if reconciled
+                else "Plans already match"
+            ),
+        }
+
+    except HTTPException:
+        raise
+
+    except stripe.error.StripeError:
+        db.rollback()
+        logger.exception(
+            "Stripe upgrade sync request failed"
+        )
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to verify Stripe upgrade",
+        )
+
+    except Exception:
+        db.rollback()
+        logger.exception(
+            "Paid upgrade sync failed for user_id=%s",
+            user.id,
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Paid upgrade could not be synced. "
+                "Check backend logs."
+            ),
+        )
 # ==========================================
 # ADMIN - AUTOMATIC TRIAL EXPIRY NOTIFICATIONS
 # ==========================================

@@ -252,10 +252,10 @@ export default function DiaryEntryDetails() {
         } catch (reason) {
             console.error("Logout failed", reason);
         } finally {
-            sessionStorage.removeItem(
+            localStorage.removeItem(
                 "advocanote_access_token"
             );
-            sessionStorage.removeItem(
+            localStorage.removeItem(
                 "advocanote_refresh_token"
             );
 

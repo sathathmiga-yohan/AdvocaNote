@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Crown,
@@ -58,7 +59,7 @@ function getPlanDetails(plan) {
 // ==========================================
 
 function getToken() {
-  return sessionStorage.getItem(
+  return localStorage.getItem(
     "advocanote_access_token"
   );
 }
@@ -172,6 +173,7 @@ function requiresSubscription(data) {
 // ==========================================
 
 export default function SubscriptionGate() {
+  const navigate = useNavigate();
   const [access, setAccess] = useState(null);
 
   const [plans, setPlans] = useState([]);
@@ -294,12 +296,20 @@ export default function SubscriptionGate() {
       "focus",
       loadSubscription
     );
+    window.addEventListener(
+      "advocanote:subscription-refresh",
+      loadSubscription
+    );
 
     return () => {
       mounted = false;
 
       window.removeEventListener(
         "focus",
+        loadSubscription
+      );
+      window.removeEventListener(
+        "advocanote:subscription-refresh",
         loadSubscription
       );
     };
@@ -448,6 +458,19 @@ export default function SubscriptionGate() {
           "Stripe payment link was not returned."
         );
       }
+      if (result.flow === "resume_before_upgrade") {
+        const approved = window.confirm(
+          "Your current subscription is scheduled to cancel.\n\n" +
+          "Stripe will open so you can confirm recurring billing renewal.\n\n" +
+          "After renewal, return to AdvocaNote and choose your upgrade again.\n\n" +
+          "Do you want to continue?"
+        );
+
+        if (!approved) {
+          setBusyPlan(null);
+          return;
+        }
+      }
 
       // New paid subscription:
       // Stripe Checkout.
@@ -514,39 +537,6 @@ export default function SubscriptionGate() {
 
   const isLimit = modal === "daily_limit";
 
-
-  const currentPlan = plans.find(
-    (plan) =>
-      Number(plan.plan_id) ===
-      Number(access?.plan_id)
-  );
-
-  const visiblePlans = isLimit
-    ? plans.filter((plan) => {
-      if (!plan.stripe_ready || !currentPlan) {
-        return false;
-      }
-
-      if (
-        Number(plan.plan_id) ===
-        Number(access?.plan_id)
-      ) {
-        return false;
-      }
-
-      const monthlyUpgrade =
-        currentPlan.billing_interval === "month" &&
-        plan.billing_interval === "month" &&
-        Number(plan.price) >
-        Number(currentPlan.price);
-
-      const yearlyUpgrade =
-        currentPlan.billing_interval === "month" &&
-        plan.billing_interval === "year";
-
-      return monthlyUpgrade || yearlyUpgrade;
-    })
-    : plans;
 
   // ======================================
   // SUBSCRIPTION MODAL
@@ -635,7 +625,7 @@ export default function SubscriptionGate() {
 
               {isLimit
                 ? (
-                  `You have reached your daily limit of ${access.daily_action_limit} diary entries. Choose an available upgrade plan, or continue tomorrow.`
+                  `You have reached your daily limit of ${access.daily_action_limit} diary entries. Upgrade your plan or continue tomorrow.`
                 )
                 : access.status === "not_subscribed"
                   ? (
@@ -669,7 +659,27 @@ export default function SubscriptionGate() {
           </button>
         </div>
 
-        {/* PLAN CARDS */}
+        {isLimit ? (
+          <button
+            type="button"
+            onClick={() => navigate("/subscription")}
+            style={{
+              marginTop: 24,
+              minHeight: 42,
+              padding: "0 20px",
+              borderRadius: 9,
+              border: "none",
+              background: COLORS.green,
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            Upgrade Plan
+          </button>
+        ) : (
+        <>
 
         <div
           style={{
@@ -681,7 +691,7 @@ export default function SubscriptionGate() {
           }}
 
         >
-          {visiblePlans.map((plan) => {
+          {plans.map((plan) => {
             const config = getPlanDetails(plan);
 
             const Icon = config.icon;
@@ -813,7 +823,7 @@ export default function SubscriptionGate() {
 
           {/* NO AVAILABLE UPGRADE PLANS */}
 
-          {visiblePlans.length === 0 && (
+          {plans.length === 0 && (
             <p
               style={{
                 color: COLORS.muted,
@@ -824,9 +834,7 @@ export default function SubscriptionGate() {
                 lineHeight: 1.6,
               }}
             >
-              {isLimit
-                ? "No immediate upgrade plans are available. Your daily allowance resets tomorrow."
-                : "No subscription plans are currently available. Please contact support."}
+              No subscription plans are currently available. Please contact support.
             </p>
           )}
         </div>
@@ -844,6 +852,9 @@ export default function SubscriptionGate() {
           >
             {error}
           </p>
+        )}
+
+        </>
         )}
 
         {/* FOOTER */}

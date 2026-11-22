@@ -2,7 +2,7 @@
 const API_URL = "http://127.0.0.1:8000";
 
 async function diaryRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

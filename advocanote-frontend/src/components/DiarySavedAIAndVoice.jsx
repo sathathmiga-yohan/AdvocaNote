@@ -44,7 +44,7 @@ export default function DiarySavedAIAndVoice({ entry }) {
       return () => controller.abort();
     }
 
-    const token = sessionStorage.getItem(
+    const token = localStorage.getItem(
       "advocanote_access_token"
     );
 
@@ -115,7 +115,7 @@ export default function DiarySavedAIAndVoice({ entry }) {
       return;
     }
 
-    const token = sessionStorage.getItem(
+    const token = localStorage.getItem(
       "advocanote_access_token"
     );
 

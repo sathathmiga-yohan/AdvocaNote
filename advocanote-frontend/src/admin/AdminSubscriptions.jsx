@@ -28,7 +28,7 @@ const ROWS_PER_PAGE = 10;
 const COLOMBO_TZ = "Asia/Colombo";
 
 function getAdminToken() {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

@@ -167,7 +167,7 @@ const CALENDAR_API_BASE = (
 // =====================================
 
 async function calendarApiRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -223,7 +223,7 @@ function calendarNormalizeList(response, key) {
 }
 
 async function calendarTaskRequest(path) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -1102,11 +1102,11 @@ export default function Calendar({
       // Continue clearing local session
     }
 
-    sessionStorage.removeItem(
+    localStorage.removeItem(
       "advocanote_access_token"
     );
 
-    sessionStorage.removeItem(
+    localStorage.removeItem(
       "advocanote_refresh_token"
     );
 

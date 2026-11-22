@@ -5,7 +5,7 @@ const API_BASE = (
 ).replace(/\/$/, "");
 
 async function profileRequest(path, options = {}) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -58,7 +58,7 @@ export function updateMyProfile(details) {
 
 // GET AUTHENTICATED USER PHOTO
 export async function getMyProfilePhoto() {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 
@@ -92,7 +92,7 @@ export async function getMyProfilePhoto() {
 
 // UPLOAD PHOTO
 export async function uploadMyProfilePhoto(file) {
-  const token = sessionStorage.getItem(
+  const token = localStorage.getItem(
     "advocanote_access_token"
   );
 

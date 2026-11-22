@@ -136,10 +136,10 @@ async function adminNotificationRequest(
   options = {}
 ) {
   const token =
-    sessionStorage.getItem(
+    localStorage.getItem(
       "advocanote_access_token"
     ) ||
-    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
     localStorage.getItem(
       "advocanote_access_token"
     ) ||

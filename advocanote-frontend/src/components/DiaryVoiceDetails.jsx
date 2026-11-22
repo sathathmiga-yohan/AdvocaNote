@@ -55,7 +55,7 @@ export default function DiaryVoiceDetails({
 
     async function load() {
       try {
-        const token = sessionStorage.getItem(
+        const token = localStorage.getItem(
           "advocanote_access_token"
         );
 

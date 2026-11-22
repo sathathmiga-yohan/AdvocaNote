@@ -76,15 +76,15 @@ export default function AdminSidebar({
     // Client-side fallback.
     // Production logout should also revoke sessions
     // through the backend where supported.
-    sessionStorage.removeItem(
+    localStorage.removeItem(
       "advocanote_access_token"
     );
 
-    sessionStorage.removeItem(
+    localStorage.removeItem(
       "advocanote_refresh_token"
     );
 
-    sessionStorage.removeItem(
+    localStorage.removeItem(
       "advocanote_auth_toast"
     );
 
