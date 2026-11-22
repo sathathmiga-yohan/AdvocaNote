@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from uuid import UUID
 from datetime import datetime, timezone, timedelta
 import stripe
 
@@ -17,11 +18,13 @@ from app.database import get_db, SessionLocal
 from app.models.subscription_plan import SubscriptionPlan
 from app.models.user import User
 from app.models.subscription import Subscription
+from app.models.payment import SubscriptionUpgrade
 from app.models.subscription_daily_usage import (
     SubscriptionDailyUsage,
 )
 from app.routers.stripe_webhooks import (
     get_plan_from_stripe_subscription,
+    process_checkout_upgrade,
     reconcile_paid_plan_upgrade,
 )
 from app.auth.security import get_current_user
@@ -40,7 +43,9 @@ from app.services.subscription_usage import (
 
 from app.routers.lawyer_subscriptions import (
     CheckoutRequest,
+    create_billing_management_session,
     create_checkout,
+    preview_full_price_upgrade,
     synchronize_current_stripe_plan,
 )
 from admin_notifications_api import (
@@ -372,25 +377,159 @@ class SelectPlanRequest(BaseModel):
         gt=0,
     )
 
+    upgrade_attempt_id: UUID | None = None
 
 
 # ==========================================
 # EXISTING PAID USER PLAN CHANGE
 # ==========================================
-# Uses Stripe's hosted confirmation.
-# Database plan is NOT changed here.
-# Verified Stripe payment/webhook updates it.
+# The plan changes only after Stripe confirms payment.
 
 # ==========================================
 # DYNAMIC PAID SUBSCRIPTION PLAN CHANGE
 # ==========================================
 
-def create_plan_change_portal(
+def open_upgrade_checkout(db, subscription, stripe_sub, item, target_plan, attempt_id):
+    active_upgrade = db.scalar(
+        select(SubscriptionUpgrade)
+        .where(
+            SubscriptionUpgrade.subscription_id == subscription.id,
+            SubscriptionUpgrade.status.in_(("checkout", "retiring")),
+        )
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if active_upgrade and active_upgrade.status == "retiring":
+        raise HTTPException(status_code=409, detail="The previous upgrade is still being finalized")
+
+    now = int(datetime.now(timezone.utc).timestamp())
+    if active_upgrade and active_upgrade.stripe_checkout_session_id:
+        checkout = stripe.checkout.Session.retrieve(active_upgrade.stripe_checkout_session_id)
+        if checkout.status == "open" and active_upgrade.target_plan_id == target_plan.id:
+            return {"redirect_url": checkout.url, "flow": "stripe_checkout"}
+        if checkout.status != "expired" or checkout.payment_status != "unpaid":
+            raise HTTPException(status_code=409, detail="Complete or let the previous upgrade Checkout expire")
+        active_upgrade.status = "expired"
+        db.flush()
+
+    if active_upgrade and active_upgrade.status == "checkout" and not active_upgrade.stripe_checkout_session_id:
+        if active_upgrade.target_plan_id != target_plan.id:
+            raise HTTPException(status_code=409, detail="Retry your previous upgrade plan first")
+        attempt = active_upgrade
+        if attempt.expires_at <= now:
+            # No link was returned. A timed-out Stripe request cannot be used
+            # to pay after the persisted session expiry.
+            attempt.status = "expired"
+            db.flush()
+            attempt = None
+    else:
+        attempt = None
+
+    if attempt is None:
+        expires_at = now + 45 * 60
+        period_end = item.get("current_period_end") or 0
+        # Leave time to retire the source after Checkout closes to new payments.
+        if period_end <= expires_at + 30 * 60:
+            raise HTTPException(status_code=409, detail="Try again after your current renewal finishes")
+        preview_full_price_upgrade(subscription, item, target_plan)
+        if stripe.Invoice.list(customer=subscription.stripe_customer_id, status="open", limit=1).data:
+            raise HTTPException(status_code=409, detail="Resolve your open Stripe invoice before upgrading")
+
+        other_subscriptions = stripe.Subscription.list(
+            customer=subscription.stripe_customer_id, status="all", limit=100
+        ).auto_paging_iter()
+        if any(
+            other.id != stripe_sub["id"] and other.status not in ("canceled", "incomplete_expired")
+            for other in other_subscriptions
+        ):
+            raise HTTPException(status_code=409, detail="Another Stripe subscription already exists for this customer")
+
+        attempt = db.scalar(
+            select(SubscriptionUpgrade).where(
+                SubscriptionUpgrade.source_stripe_subscription_id == stripe_sub["id"]
+            ).with_for_update()
+        )
+        if attempt is None:
+            attempt = SubscriptionUpgrade(
+                subscription_id=subscription.id,
+                source_stripe_subscription_id=stripe_sub["id"],
+            )
+            db.add(attempt)
+        elif attempt.status != "expired":
+            raise HTTPException(status_code=409, detail="An upgrade is already in progress")
+        elif attempt.attempt_key == str(attempt_id):
+            raise HTTPException(status_code=409, detail="Refresh the upgrade preview to open a new Checkout")
+
+        attempt.target_plan_id = target_plan.id
+        attempt.source_period_end = period_end
+        attempt.attempt_key = str(attempt_id)
+        attempt.stripe_checkout_session_id = None
+        attempt.expires_at = expires_at
+        attempt.status = "checkout"
+        # Persist the idempotency key and immutable request values before
+        # calling Stripe. Another attempt must reuse them after a timeout.
+        db.commit()
+        subscription = db.scalar(
+            select(Subscription)
+            .where(Subscription.id == subscription.id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        db.refresh(attempt)
+        if attempt.stripe_checkout_session_id:
+            checkout = stripe.checkout.Session.retrieve(attempt.stripe_checkout_session_id)
+            if checkout.status == "open":
+                return {"redirect_url": checkout.url, "flow": "stripe_checkout"}
+            raise HTTPException(status_code=409, detail="This upgrade Checkout is no longer open")
+
+    if (
+        subscription.stripe_subscription_id != attempt.source_stripe_subscription_id
+        or attempt.target_plan_id != target_plan.id
+        or attempt.status != "checkout"
+    ):
+        raise HTTPException(status_code=409, detail="Your subscription changed before Checkout opened")
+
+    metadata = {
+        "advocanote_upgrade": attempt.attempt_key,
+        "user_id": str(subscription.user_id),
+        "plan_id": str(target_plan.id),
+    }
+    base_url = settings.FRONTEND_URL.rstrip("/")
+    checkout = stripe.checkout.Session.create(
+        customer=subscription.stripe_customer_id,
+        mode="subscription",
+        allowed_payment_method_types=["card"],
+        client_reference_id=str(subscription.user_id),
+        line_items=[{"price": target_plan.stripe_price_id, "quantity": 1}],
+        metadata=metadata,
+        subscription_data={"metadata": metadata},
+        expires_at=attempt.expires_at,
+        success_url=f"{base_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{base_url}/subscription/cancel",
+        idempotency_key=f"advocanote-upgrade-checkout:{attempt.attempt_key}",
+    )
+    attempt.stripe_checkout_session_id = checkout.id
+    db.commit()
+    return {"redirect_url": checkout.url, "flow": "stripe_checkout"}
+
+
+def upgrade_paid_subscription(
     db: Session,
     user: User,
     subscription: Subscription,
     target_plan: SubscriptionPlan,
+    attempt_id: UUID,
 ):
+
+    # Serialize paid upgrades for the same subscription across requests.
+    subscription = db.scalar(
+        select(Subscription)
+        .where(Subscription.id == subscription.id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if not active_access(subscription) or subscription.status != "active":
+        raise HTTPException(status_code=409, detail="No eligible active paid subscription")
 
     # ======================================
     # VERIFY EXISTING STRIPE SUBSCRIPTION
@@ -454,6 +593,12 @@ def create_plan_change_portal(
                 "message": "The paid upgrade has been verified and synchronized.",
             }
 
+        if plan_changed:
+            raise HTTPException(
+                status_code=409,
+                detail="Your Stripe plan was synchronized. Refresh and review the upgrade again.",
+            )
+
         if current_plan.id == target_plan.id:
             raise HTTPException(
                 status_code=409,
@@ -487,8 +632,8 @@ def create_plan_change_portal(
         # A scheduled cancellation must be explicitly removed in Stripe
         # before creating an upgrade flow.
         if stripe_sub.get("cancel_at_period_end"):
-            portal = stripe.billing_portal.Session.create(
-                customer=subscription.stripe_customer_id,
+            portal = create_billing_management_session(
+                customer_id=subscription.stripe_customer_id,
                 return_url=f"{base_url}/subscription",
             )
             return {
@@ -507,62 +652,10 @@ def create_plan_change_portal(
                 detail="Stripe subscription has a pending change",
             )
 
-        configuration_id = settings.STRIPE_UPGRADE_PORTAL_CONFIGURATION_ID
-        if not configuration_id:
-            raise HTTPException(
-                status_code=503, detail="Paid upgrades are not configured"
-            )
+        if stripe_sub.get("collection_method") != "charge_automatically":
+            raise HTTPException(status_code=409, detail="Automatic payment collection is required")
 
-        configuration = stripe.billing_portal.Configuration.retrieve(
-            configuration_id
-        ).to_dict()
-        upgrade_settings = (configuration.get("features") or {}).get(
-            "subscription_update"
-        ) or {}
-        if (
-            not configuration.get("active")
-            or not upgrade_settings.get("enabled")
-            or upgrade_settings.get("proration_behavior") != "always_invoice"
-        ):
-            raise HTTPException(
-                status_code=503, detail="Stripe paid upgrade configuration is invalid"
-            )
-
-        portal = stripe.billing_portal.Session.create(
-            customer=subscription.stripe_customer_id,
-            configuration=configuration_id,
-            return_url=upgrade_return_url,
-            flow_data={
-                "type": "subscription_update_confirm",
-                "subscription_update_confirm": {
-                    "subscription": (
-                        subscription.stripe_subscription_id
-                    ),
-                    "items": [
-                        {
-                            "id": item["id"],
-                            "price": target_plan.stripe_price_id,
-                            "quantity": 1,
-                        }
-                    ],
-                },
-                "after_completion": {
-                    "type": "redirect",
-                    "redirect": {
-                        "return_url": upgrade_return_url,
-                    },
-                },
-            },
-        )
-
-        return {
-            "redirect_url": portal.url,
-            "flow": "stripe_plan_change",
-            "message": (
-                "Confirm the plan change "
-                "and payment in Stripe"
-            ),
-        }
+        return open_upgrade_checkout(db, subscription, stripe_sub, item, target_plan, attempt_id)
 
     except stripe.error.StripeError as exc:
         logger.exception(
@@ -573,8 +666,8 @@ def create_plan_change_portal(
         raise HTTPException(
             status_code=502,
             detail=(
-                "Unable to open Stripe plan change. "
-                "Check Billing Portal configuration."
+                "Unable to verify the Stripe upgrade. "
+                "Check your subscription before retrying."
             ),
         ) from exc
 
@@ -683,11 +776,15 @@ def select_subscription_plan(
             # Paid Basic -> Premium / Annual
             # Paid Premium -> Annual
 
-            return create_plan_change_portal(
+            if data.upgrade_attempt_id is None:
+                raise HTTPException(status_code=400, detail="Confirm the full-price upgrade first")
+
+            return upgrade_paid_subscription(
                 db=db,
                 user=user,
                 subscription=subscription,
                 target_plan=target_plan,
+                attempt_id=data.upgrade_attempt_id,
             )
 
     # ==================================
@@ -1047,7 +1144,45 @@ def check_paid_subscription_expiry_notifications():
 # AUTOMATIC NOTIFICATION SCHEDULER
 # ==========================================
 
+def reconcile_checkout_upgrades():
+    with SessionLocal() as db:
+        ids = db.scalars(
+            select(SubscriptionUpgrade.id).where(
+                SubscriptionUpgrade.status.in_(("checkout", "retiring")),
+                SubscriptionUpgrade.stripe_checkout_session_id.is_not(None),
+            )
+        ).all()
+
+    for upgrade_id in ids:
+        with SessionLocal() as db:
+            try:
+                process_checkout_upgrade(db.get(SubscriptionUpgrade, upgrade_id), db)
+            except Exception:
+                logger.exception("Could not reconcile Checkout upgrade %s", upgrade_id)
+
+
+async def checkout_upgrade_scheduler():
+    while True:
+        try:
+            await asyncio.to_thread(reconcile_checkout_upgrades)
+        except Exception:
+            logger.exception("Checkout upgrade reconciliation failed")
+        await asyncio.sleep(60)
+
+
 async def trial_notification_scheduler():
+    recovery = asyncio.create_task(checkout_upgrade_scheduler())
+    try:
+        await subscription_notification_loop()
+    finally:
+        recovery.cancel()
+        try:
+            await recovery
+        except asyncio.CancelledError:
+            pass
+
+
+async def subscription_notification_loop():
 
     while True:
 

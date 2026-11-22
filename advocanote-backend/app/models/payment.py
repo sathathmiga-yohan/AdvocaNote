@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     DateTime,
     ForeignKey,
     Integer,
@@ -102,3 +103,27 @@ class Payment(Base):
         DateTime,
         nullable=True
     )
+
+class SubscriptionUpgrade(Base):
+    __tablename__ = "subscription_upgrades"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    subscription_id: Mapped[int] = mapped_column(
+        ForeignKey("subscriptions.id"), nullable=False, index=True
+    )
+    target_plan_id: Mapped[int] = mapped_column(
+        ForeignKey("subscription_plans.id"), nullable=False
+    )
+    source_stripe_subscription_id: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False
+    )
+    source_period_end: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    attempt_key: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
+    stripe_checkout_session_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True
+    )
+    replacement_stripe_subscription_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True
+    )
+    expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)

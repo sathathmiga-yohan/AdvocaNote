@@ -663,7 +663,7 @@ export default function Subscription() {
       }
 
       setNotice(
-        `${result.current_plan} → ${result.new_plan}. Estimated charge: ` +
+        `${result.current_plan} → ${result.new_plan}. Full upgrade price: ` +
         `${formatMoney(
           result.estimated_invoice_total,
           result.currency
@@ -679,6 +679,7 @@ export default function Subscription() {
           planName: result.new_plan,
           amount: result.estimated_invoice_total,
           currency: result.currency,
+          attemptId: crypto.randomUUID(),
         });
       } else {
         setUpgradePreview(null);
@@ -709,11 +710,11 @@ export default function Subscription() {
 
     const approved = window.confirm(
       `Upgrade to ${upgradePreview.planName}?\n\n` +
-      `Estimated payment: ${formatMoney(
+      `Charge now: ${formatMoney(
         upgradePreview.amount,
         upgradePreview.currency
       )}\n\n` +
-      "The final amount may differ."
+      "Your new billing period starts after successful payment."
     );
 
     if (!approved) return;
@@ -728,6 +729,7 @@ export default function Subscription() {
           method: "POST",
           body: JSON.stringify({
             plan_id: planId,
+            upgrade_attempt_id: upgradePreview.attemptId,
           }),
         }
       );
@@ -1040,7 +1042,7 @@ export default function Subscription() {
                   </strong>
 
                   <p>
-                    Estimated payment:{" "}
+                    Charge now:{" "}
                     {formatMoney(
                       upgradePreview.amount,
                       upgradePreview.currency
@@ -1048,7 +1050,7 @@ export default function Subscription() {
                   </p>
 
                   <p>
-                    Final amount may differ.
+                    A new billing period starts after payment.
                   </p>
                 </div>
 

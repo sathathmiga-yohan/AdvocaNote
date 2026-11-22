@@ -10,7 +10,7 @@ from decimal import Decimal
 from app.models.user import User
 from app.config import settings
 from app.database import get_db
-from app.models.payment import Payment
+from app.models.payment import Payment, SubscriptionUpgrade
 from app.models.subscription import Subscription
 from app.models.subscription_plan import SubscriptionPlan
 from admin_notifications_api import (
@@ -50,9 +50,177 @@ def stripe_id(value):
 # CHECKOUT PAYMENT SUCCESS
 # =====================================================
 
+def lock_checkout_upgrade(db, upgrade):
+    # Use this lock order in checkout creation, webhook, and recovery.
+    subscription = db.scalar(
+        select(Subscription)
+        .where(Subscription.id == upgrade.subscription_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    upgrade = db.scalar(
+        select(SubscriptionUpgrade)
+        .where(SubscriptionUpgrade.id == upgrade.id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    return subscription, upgrade
+
+
+def retire_checkout_source(upgrade, db):
+    subscription, upgrade = lock_checkout_upgrade(db, upgrade)
+    if upgrade.status != "retiring":
+        return
+
+    if subscription.stripe_subscription_id != upgrade.replacement_stripe_subscription_id:
+        raise ValueError("Upgrade replacement does not match the active subscription")
+
+    source_id = upgrade.source_stripe_subscription_id
+    source = stripe.Subscription.retrieve(source_id).to_dict()
+    if stripe_id(source.get("customer")) != subscription.stripe_customer_id:
+        raise ValueError("Upgrade source customer mismatch")
+
+    if source.get("status") != "canceled":
+        if source.get("cancel_at_period_end") and not subscription.cancel_at_period_end:
+            # A cancellation scheduled through Manage Billing during Checkout
+            # still applies after the paid replacement.
+            replacement = stripe.Subscription.modify(
+                upgrade.replacement_stripe_subscription_id, cancel_at_period_end=True
+            )
+            if not replacement.cancel_at_period_end:
+                raise ValueError("Stripe did not preserve scheduled cancellation")
+            subscription.cancel_at_period_end = True
+
+        # No final invoice, unpaid time credit, or refund on the superseded plan.
+        if stripe.Subscription.cancel(source_id, invoice_now=False, prorate=False).status != "canceled":
+            raise ValueError("Stripe did not retire the old subscription")
+
+    upgrade.status = "complete"
+    db.commit()
+
+
+def process_checkout_upgrade(upgrade, db):
+    subscription, upgrade = lock_checkout_upgrade(db, upgrade)
+    if upgrade.status in ("complete", "expired"):
+        return upgrade.status
+
+    if upgrade.status == "checkout":
+        if not upgrade.stripe_checkout_session_id:
+            return upgrade.status
+        session_id = upgrade.stripe_checkout_session_id
+        checkout = stripe.checkout.Session.retrieve(session_id).to_dict()
+        expected_metadata = {
+            "advocanote_upgrade": upgrade.attempt_key,
+            "user_id": str(subscription.user_id),
+            "plan_id": str(upgrade.target_plan_id),
+        }
+        if (
+            checkout.get("mode") != "subscription"
+            or stripe_id(checkout.get("customer")) != subscription.stripe_customer_id
+            or checkout.get("client_reference_id") != str(subscription.user_id)
+            or checkout.get("metadata") != expected_metadata
+        ):
+            raise ValueError("Upgrade Checkout ownership mismatch")
+
+        if checkout.get("status") == "expired" and checkout.get("payment_status") == "unpaid":
+            upgrade.status = "expired"
+            db.commit()
+            return upgrade.status
+
+        if checkout.get("status") != "complete" or checkout.get("payment_status") != "paid":
+            return upgrade.status
+
+        source_id = upgrade.source_stripe_subscription_id
+        if subscription.stripe_subscription_id != source_id:
+            raise ValueError("Subscription changed during upgrade Checkout")
+
+        replacement_id = stripe_id(checkout.get("subscription"))
+        invoice_id = stripe_id(checkout.get("invoice"))
+        if not replacement_id or replacement_id == source_id or not invoice_id:
+            raise ValueError("Upgrade Checkout did not return a replacement and invoice")
+
+        replacement = stripe.Subscription.retrieve(replacement_id).to_dict()
+        plan = db.get(SubscriptionPlan, upgrade.target_plan_id)
+        stripe_plan, item = get_plan_from_stripe_subscription(replacement, db)
+        invoice = stripe.Invoice.retrieve(invoice_id).to_dict()
+        paid_at = (invoice.get("status_transitions") or {}).get("paid_at")
+        period_start = item.get("current_period_start")
+        period_end = item.get("current_period_end")
+        invoice_lines = (invoice.get("lines") or {}).get("data") or []
+        invoice_period = (invoice_lines[0].get("period") or {}) if invoice_lines else {}
+        if (
+            stripe_plan.id != plan.id
+            or replacement.get("status") != "active"
+            or replacement.get("collection_method") != "charge_automatically"
+            or stripe_id(replacement.get("customer")) != subscription.stripe_customer_id
+            or replacement.get("metadata") != expected_metadata
+            or get_invoice_subscription_id(invoice) != replacement_id
+            or stripe_id(invoice.get("customer")) != subscription.stripe_customer_id
+            or invoice.get("billing_reason") != "subscription_create"
+            or invoice.get("status") != "paid"
+            or invoice.get("paid_out_of_band")
+            or not is_full_price_upgrade_invoice(invoice, plan)
+            or invoice.get("amount_paid") != invoice.get("amount_due")
+            or checkout.get("amount_total") != invoice.get("amount_paid")
+            or checkout.get("currency", "").upper() != plan.currency.upper()
+            or item.get("quantity") != 1
+            or not paid_at
+            or not period_start
+            or period_start != replacement.get("billing_cycle_anchor")
+            or not period_end
+            or not period_start < period_end
+            or invoice_period.get("start") != period_start
+            or invoice_period.get("end") != period_end
+            or abs(paid_at - period_start) > 5
+        ):
+            raise ValueError("Upgrade Checkout invoice or billing period did not verify")
+
+        if paid_at >= upgrade.source_period_end:
+            logger.error("Upgrade %s settled after the previous renewal boundary", upgrade.id)
+
+        db.add(Payment(
+            user_id=subscription.user_id,
+            subscription_id=subscription.id,
+            plan_id=plan.id,
+            amount=Decimal(invoice["amount_paid"]) / Decimal("100"),
+            currency=plan.currency.upper(),
+            provider="stripe",
+            status="paid",
+            stripe_checkout_session_id=session_id,
+            stripe_invoice_id=invoice_id,
+            paid_at=utc_datetime(paid_at),
+        ))
+        subscription.plan_id = plan.id
+        subscription.status = "active"
+        subscription.stripe_subscription_id = replacement_id
+        subscription.current_period_start = utc_datetime(period_start)
+        subscription.current_period_end = utc_datetime(period_end)
+        subscription.cancel_at_period_end = bool(replacement.get("cancel_at_period_end"))
+        upgrade.replacement_stripe_subscription_id = replacement_id
+        upgrade.status = "retiring"
+        # Local access and the recovery marker are committed together. A lost
+        # cancellation response can be retried using the recorded source ID.
+        db.commit()
+
+    retire_checkout_source(upgrade, db)
+    return upgrade.status
+
+
 def handle_checkout_completed(checkout, db: Session):
 
     session_id = checkout.get("id")
+    attempt_key = (checkout.get("metadata") or {}).get("advocanote_upgrade")
+    if attempt_key:
+        upgrade = db.scalar(
+            select(SubscriptionUpgrade).where(
+                SubscriptionUpgrade.attempt_key == attempt_key,
+                SubscriptionUpgrade.stripe_checkout_session_id == session_id,
+            )
+        )
+        if upgrade is None:
+            raise ValueError("Upgrade Checkout has no matching attempt")
+        process_checkout_upgrade(upgrade, db)
+        return
 
     if checkout.get("mode") != "subscription":
         return
@@ -404,6 +572,27 @@ def invoice_line_matches_subscription_price(
 # VERIFY SUCCESSFUL UPGRADE PAYMENT
 # ==========================================
 
+def is_full_price_upgrade_invoice(invoice, plan):
+    expected = int(plan.price * 100)
+    lines = (invoice.get("lines") or {}).get("data") or []
+    if len(lines) != 1:
+        return False
+
+    line = lines[0]
+    details = (line.get("parent") or {}).get("subscription_item_details") or {}
+    pricing = (line.get("pricing") or {}).get("price_details") or {}
+    return (
+        expected > 0
+        and invoice.get("total") == expected
+        and invoice.get("amount_due") == expected
+        and (invoice.get("currency") or "").upper() == plan.currency.upper()
+        and line.get("amount") == expected
+        and not line.get("proration")
+        and not details.get("proration")
+        and (stripe_id(line.get("price")) or stripe_id(pricing.get("price"))) == plan.stripe_price_id
+    )
+
+
 def verify_paid_upgrade_invoice(invoice_id, db: Session):
 
     # 1. Get invoice directly from Stripe
@@ -514,31 +703,25 @@ def verify_paid_upgrade_invoice(invoice_id, db: Session):
             "Upgrade not fully applied in Stripe"
         )
 
-    # 10. Verify currency
-    if (
-        new_plan.currency.upper()
-        != (invoice.get("currency") or "").upper()
-    ):
-        raise ValueError(
-            "Currency mismatch"
-        )
+    if not is_full_price_upgrade_invoice(invoice, new_plan) or amount_paid != amount_due:
+        raise ValueError("Upgrade invoice does not show a full-price payment")
 
-    # 11. Validate paid amount
-    invoice_lines = (
-        (invoice.get("lines") or {}).get("data") or []
-    )
-    if not any(
-        invoice_line_matches_subscription_price(
-            line,
-            stripe_sub_id,
-            stripe_id(item.get("id")),
-            new_plan.stripe_price_id,
+    line = invoice["lines"]["data"][0]
+    period = line.get("period") or {}
+    period_start = period.get("start")
+    period_end = period.get("end")
+    if (
+        not invoice_line_matches_subscription_price(
+            line, stripe_sub_id, stripe_id(item.get("id")), new_plan.stripe_price_id
         )
-        for line in invoice_lines
+        or not period_start
+        or period_start != stripe_sub.get("billing_cycle_anchor")
+        or not period_end
+        or period_end <= period_start
+        or not item.get("current_period_end")
+        or period_end > item["current_period_end"]
     ):
-        raise ValueError(
-            "Paid invoice does not include the upgraded plan"
-        )
+        raise ValueError("Paid upgrade invoice does not match the new billing cycle")
 
     # Return verified information
     return {
@@ -1318,6 +1501,14 @@ def handle_upgrade_payment_failed(invoice, db: Session):
         logger.info("Unknown failed upgrade invoice: %s", invoice_id)
         return
 
+    recorded_payment = db.scalar(
+        select(Payment).where(Payment.stripe_invoice_id == invoice_id)
+    )
+    if recorded_payment is not None and recorded_payment.status == "paid":
+        if recorded_payment.subscription_id != subscription.id:
+            raise ValueError("Failed upgrade payment ownership mismatch")
+        return
+
     stripe_sub = stripe.Subscription.retrieve(sub_id).to_dict()
     customer_id = stripe_id(stripe_sub.get("customer"))
     if (
@@ -1732,6 +1923,16 @@ def handle_initial_checkout_invoice_paid(invoice, db: Session):
 
     stripe_sub = stripe.Subscription.retrieve(sub_id).to_dict()
     metadata = stripe_sub.get("metadata") or {}
+    attempt_key = metadata.get("advocanote_upgrade")
+    if attempt_key:
+        upgrade = db.scalar(
+            select(SubscriptionUpgrade).where(SubscriptionUpgrade.attempt_key == attempt_key)
+        )
+        if upgrade is None:
+            raise ValueError("Upgrade invoice has no matching attempt")
+        process_checkout_upgrade(upgrade, db)
+        return
+
     user_id = metadata.get("user_id")
     plan_id = metadata.get("plan_id")
     if (
@@ -1839,6 +2040,7 @@ async def stripe_webhook(
     if event_type in (
         "checkout.session.completed",
         "checkout.session.async_payment_succeeded",
+        "checkout.session.expired",
     ):
 
         try:

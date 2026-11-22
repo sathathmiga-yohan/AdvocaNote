@@ -1,5 +1,6 @@
 import stripe
 import os
+from uuid import UUID
 
 from datetime import datetime, timedelta, timezone
 
@@ -30,7 +31,7 @@ from app.services.subscription_trial import (
 )
 
 from app.config import settings
-from app.models.payment import Payment
+from app.models.payment import Payment, SubscriptionUpgrade
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -798,6 +799,48 @@ def get_my_payments(
 # LAWYER - MANAGE SUBSCRIPTION
 # =====================================
 
+def create_billing_management_session(customer_id: str, return_url: str):
+    configuration_id = settings.STRIPE_MANAGEMENT_PORTAL_CONFIGURATION_ID
+    if configuration_id:
+        configuration = stripe.billing_portal.Configuration.retrieve(
+            configuration_id
+        ).to_dict()
+    else:
+        matches = []
+        for portal_configuration in stripe.billing_portal.Configuration.list(
+            active=True, is_default=False, limit=100
+        ).auto_paging_iter():
+            candidate = portal_configuration.to_dict()
+            if candidate.get("name") == "AdvocaNote billing management":
+                matches.append(candidate)
+                if len(matches) == 2:
+                    break
+
+        if len(matches) != 1:
+            raise HTTPException(
+                status_code=503,
+                detail="Stripe billing management requires one dedicated portal configuration",
+            )
+
+        configuration = matches[0]
+        configuration_id = configuration["id"]
+
+    update_settings = (configuration.get("features") or {}).get(
+        "subscription_update"
+    ) or {}
+    if not configuration.get("active") or update_settings.get("enabled") is not False:
+        raise HTTPException(
+            status_code=503,
+            detail="Stripe billing management must have plan changes disabled",
+        )
+
+    return stripe.billing_portal.Session.create(
+        customer=customer_id,
+        configuration=configuration_id,
+        return_url=return_url,
+    )
+
+
 @router.post("/manage")
 def manage_subscription(
     db: Session = Depends(get_db),
@@ -821,8 +864,8 @@ def manage_subscription(
         )
 
     try:
-        portal = stripe.billing_portal.Session.create(
-            customer=subscription.stripe_customer_id,
+        portal = create_billing_management_session(
+            customer_id=subscription.stripe_customer_id,
             return_url=settings.FRONTEND_URL.rstrip("/"),
         )
 
@@ -857,10 +900,29 @@ def get_checkout_payment_status(
     )
 
     if payment is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Checkout payment not found",
+        upgrade = db.scalar(
+            select(SubscriptionUpgrade)
+            .join(Subscription, Subscription.id == SubscriptionUpgrade.subscription_id)
+            .where(
+                SubscriptionUpgrade.stripe_checkout_session_id == session_id,
+                Subscription.user_id == user.id,
+            )
         )
+        if upgrade is None:
+            raise HTTPException(status_code=404, detail="Checkout payment not found")
+
+        from app.routers.stripe_webhooks import process_checkout_upgrade
+
+        try:
+            outcome = process_checkout_upgrade(upgrade, db)
+        except (ValueError, stripe.error.StripeError):
+            db.rollback()
+            raise HTTPException(status_code=503, detail="Upgrade payment verification is pending")
+
+        return {
+            "payment_status": "paid" if outcome in ("retiring", "complete") else outcome,
+            "subscription_status": "active" if outcome in ("retiring", "complete") else "pending",
+        }
 
     # Existing completed payment
     if payment.status == "paid":
@@ -1222,6 +1284,32 @@ def synchronize_current_stripe_plan(stripe_sub, subscription, db):
     return stripe_plan, item, True
 
 
+def full_price_upgrade_details(item, plan):
+    return {
+        "items": [{"id": item["id"], "price": plan.stripe_price_id, "quantity": 1}],
+        "billing_cycle_anchor": {"type": "now"},
+        "proration_behavior": "none",
+    }
+
+
+def preview_full_price_upgrade(subscription, item, plan):
+    preview = stripe.Invoice.create_preview(
+        customer=subscription.stripe_customer_id,
+        subscription=subscription.stripe_subscription_id,
+        subscription_details=full_price_upgrade_details(item, plan),
+    ).to_dict()
+
+    from app.routers.stripe_webhooks import is_full_price_upgrade_invoice
+
+    if not is_full_price_upgrade_invoice(preview, plan):
+        raise HTTPException(
+            status_code=409,
+            detail="Stripe could not quote the full plan price without credits or additional charges.",
+        )
+
+    return preview
+
+
 @router.post("/change-plan/preview")
 def preview_plan_change(
     data: CheckoutRequest,
@@ -1268,22 +1356,8 @@ def preview_plan_change(
                 status_code=409, detail="Subscription has a pending change"
             )
 
-        preview = stripe.Invoice.create_preview(
-            customer=subscription.stripe_customer_id,
-            subscription=subscription.stripe_subscription_id,
-            subscription_details={
-                "items": [
-                    {
-                        "id": item["id"],
-                        "price": new_plan.stripe_price_id,
-                        "quantity": 1,
-                    }
-                ],
-                "proration_behavior": "always_invoice",
-            },
-        ).to_dict()
+        preview = preview_full_price_upgrade(subscription, item, new_plan)
 
-    
     except stripe.error.StripeError as exc:
 
         print(
@@ -1325,36 +1399,17 @@ def preview_plan_change(
             Decimal(minor_units) / Decimal("100")
         )
 
-    # Estimated net proration before considering
-    # other invoice items and applicable taxes.
-    proration_minor = 0
-
-    for line in (
-        (preview.get("lines") or {}).get("data") or []
-    ):
-        parent = line.get("parent") or {}
-        details = parent.get(
-            "subscription_item_details"
-        ) or {}
-
-        if details.get("proration") or line.get("proration"):
-            proration_minor += line.get("amount") or 0
-
     return {
         "can_change": True,
         "current_plan": current_plan.name,
         "new_plan": new_plan.name,
         "currency": currency,
-        "estimated_net_proration": to_lkr(
-            proration_minor
-        ),
+        "estimated_net_proration": "0",
         "estimated_invoice_total": to_lkr(
             preview.get("total") or 0
         ),
         "message": (
-            "Preview only. Invoice total may include "
-            "other charges or renewal amounts. "
-            "No payment or plan change has occurred."
+            "Full price for a new billing period. No payment has been made."
         ),
     }
 
@@ -1368,6 +1423,7 @@ class UpgradePlanRequest(BaseModel):
 
     plan_id: int = Field(gt=0)
     confirm: bool = False
+    upgrade_attempt_id: UUID
 
 
 @router.post("/change-plan/upgrade")
@@ -1391,154 +1447,18 @@ def upgrade_subscription(
             detail="Upgrade testing requires Stripe Test Mode",
         )
 
-    # Reuse our existing plan eligibility check
-    check_plan_change(
-        CheckoutRequest(plan_id=data.plan_id),
+    from app.routers.subscription_experience import (
+        SelectPlanRequest,
+        select_subscription_plan,
+    )
+
+    return select_subscription_plan(
+        SelectPlanRequest(plan_id=data.plan_id, upgrade_attempt_id=data.upgrade_attempt_id),
         db,
         user,
     )
 
-    subscription = db.scalar(
-        select(Subscription).where(
-            Subscription.user_id == user.id
-        )
-    )
 
-    old_plan = db.get(
-        SubscriptionPlan,
-        subscription.plan_id,
-    )
-
-    new_plan = db.get(
-        SubscriptionPlan,
-        data.plan_id,
-    )
-
-    # Support higher-priced monthly upgrades only
-    if (
-        old_plan.billing_interval != "month"
-        or new_plan.billing_interval != "month"
-        or new_plan.price <= old_plan.price
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Only monthly upgrades are supported",
-        )
-
-    try:
-        stripe_sub = stripe.Subscription.retrieve(
-            subscription.stripe_subscription_id
-        ).to_dict()
-
-        customer = stripe_sub.get("customer")
-        if isinstance(customer, dict):
-            customer = customer.get("id")
-
-        metadata = stripe_sub.get("metadata") or {}
-
-        if (
-            customer != subscription.stripe_customer_id
-            or metadata.get("user_id") != str(user.id)
-            or metadata.get("plan_id") != str(old_plan.id)
-            or stripe_sub.get("status") != "active"
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Stripe subscription mismatch",
-            )
-
-        if (
-            stripe_sub.get("pending_update")
-            or stripe_sub.get("schedule")
-            or stripe_sub.get("cancel_at_period_end")
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Another subscription change is pending",
-            )
-
-        if stripe_sub.get("collection_method") != "charge_automatically":
-            raise HTTPException(
-                status_code=409,
-                detail="Automatic payment collection is required",
-            )
-
-        items = (
-            (stripe_sub.get("items") or {})
-            .get("data") or []
-        )
-
-        if len(items) != 1:
-            raise HTTPException(
-                status_code=409,
-                detail="Invalid Stripe subscription items",
-            )
-
-        item = items[0]
-
-        price = item.get("price") or {}
-        price_id = (
-            price.get("id")
-            if isinstance(price, dict)
-            else price
-        )
-
-        if (
-            not item.get("id")
-            or price_id != old_plan.stripe_price_id
-            or item.get("quantity") != 1
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Current Stripe plan mismatch",
-            )
-
-        # This creates an upgrade invoice and
-        # attempts collection in Stripe Test Mode.
-        # If payment fails, keep the plan change pending.
-        updated = stripe.Subscription.modify(
-            subscription.stripe_subscription_id,
-            items=[
-                {
-                    "id": item["id"],
-                    "price": new_plan.stripe_price_id,
-                    "quantity": 1,
-                }
-            ],
-            payment_behavior="pending_if_incomplete",
-            proration_behavior="always_invoice",
-        ).to_dict()
-
-    except stripe.error.StripeError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="Stripe upgrade request failed",
-        ) from exc
-
-    invoice = updated.get("latest_invoice")
-    invoice_id = (
-        invoice.get("id")
-        if isinstance(invoice, dict)
-        else invoice
-    )
-
-    return {
-        "message": "Stripe upgrade request submitted",
-        "old_plan": old_plan.name,
-        "requested_plan": new_plan.name,
-        "stripe_status": updated.get("status"),
-        "payment_pending": bool(
-            updated.get("pending_update")
-        ),
-        "invoice_id": invoice_id,
-        "note": (
-            "Refresh subscription and payment history "
-            "after webhook processing. Do not assume "
-            "the upgrade is active yet."
-        ),
-    }
-    
-    
 # ==========================================
 # SCHEDULE MONTHLY PLAN DOWNGRADE
 # ==========================================
