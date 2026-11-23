@@ -1,4 +1,5 @@
 
+import logging
 from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
 
@@ -33,7 +34,7 @@ from app.routers.subscription_experience import (
 )
 
 from app.routers.admin_settings import router as admin_settings_router
-from app.models.diary import DiaryAIAnalysis
+from app.models.diary import DiaryAIAnalysis, DiaryEntry
 import asyncio
 
 def upgrade_reminders_table():
@@ -79,11 +80,15 @@ async def lifespan(app: FastAPI):
 
     upgrade_reminders_table()
 
-    # Create AI Analysis table if it does not exist.
-    DiaryAIAnalysis.__table__.create(
-        bind=engine,
-        checkfirst=True,
-    )
+    # The parent table is created by the Alembic diary migration.
+    with engine.begin() as connection:
+        if inspect(connection).has_table(DiaryEntry.__tablename__):
+            DiaryAIAnalysis.__table__.create(bind=connection, checkfirst=True)
+        else:
+            logging.getLogger(__name__).warning(
+                "Skipping diary_ai_analyses initialization: diary_entries is missing. "
+                "Apply the existing Alembic migrations before using diary features."
+            )
 
     # Start automatic trial notification checks
     trial_task = asyncio.create_task(
