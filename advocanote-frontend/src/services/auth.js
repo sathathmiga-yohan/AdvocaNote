@@ -1,5 +1,12 @@
 
-const API_URL = "http://127.0.0.1:8000";
+
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://advocanote-production.up.railway.app"
+    : "http://127.0.0.1:8000")
+).replace(/\/$/, "");
+
 
 // 1. LOGIN API
 export async function loginUser(email, password) {
@@ -64,8 +71,7 @@ export async function getCurrentUser() {
 
 // 3. REGISTER API
 export async function registerUser(fullName, email, password) {
-  const url = "http://127.0.0.1:8000/auth/register";
-
+  const url = `${API_URL}/auth/register`;
   let response;
 
   try {
