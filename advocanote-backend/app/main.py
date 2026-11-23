@@ -1,10 +1,12 @@
 
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 
+from app.config import settings
 from app.database import engine
 from app.auth.security import get_current_user
 
@@ -107,11 +109,26 @@ app = FastAPI(
 )
 
 
+frontend_url = urlsplit(settings.FRONTEND_URL.strip())
+if (
+    frontend_url.scheme not in ("http", "https")
+    or not frontend_url.hostname
+    or frontend_url.username is not None
+    or "*" in frontend_url.netloc
+):
+    raise ValueError("FRONTEND_URL must be an absolute HTTP(S) URL with a specific host")
+
+frontend_host = frontend_url.netloc.lower()
+if frontend_url.port == (443 if frontend_url.scheme == "https" else 80):
+    frontend_host = frontend_host.rsplit(":", 1)[0]
+frontend_origin = f"{frontend_url.scheme}://{frontend_host}"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        frontend_origin,
     ],
     allow_credentials=True,
     allow_methods=["*"],
