@@ -4,11 +4,14 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 
+
 from app.schemas.onboarding import (
+    OnboardingCompleteRequest,
     OnboardingProfile,
     OnboardingResponse,
     NotificationPreferences,
 )
+
 
 
 def get_onboarding_state(
