@@ -310,9 +310,20 @@ def close_my_account(
             stripe_subscription.get("status") or ""
         ).lower()
 
-        cancellation_scheduled = (
-            stripe_subscription.get("cancel_at_period_end")
-            is True
+        cancel_at_period_end = stripe_subscription.get("cancel_at_period_end") is True
+        cancel_at = stripe_subscription.get("cancel_at")
+        items = stripe_subscription.get("items") or {}
+        period_end = stripe_subscription.get("current_period_end")
+        period_ends = [
+            item.get("current_period_end", period_end)
+            for item in items.get("data", [])
+        ] or [period_end]
+        # A later cancellation date can still allow an intervening renewal.
+        cancellation_scheduled = cancel_at_period_end or (
+            type(cancel_at) is int
+            and cancel_at > int(datetime.now(timezone.utc).timestamp())
+            and not items.get("has_more")
+            and all(type(end) is int and cancel_at <= end for end in period_ends)
         )
 
         if (
@@ -331,9 +342,7 @@ def close_my_account(
         # Stripe has confirmed cancellation
         # or cancellation at the end of this period.
         subscription.status = stripe_status
-        subscription.cancel_at_period_end = (
-            cancellation_scheduled
-        )
+        subscription.cancel_at_period_end = cancel_at_period_end
 
     # --------------------------------------
     # RECORD ACCOUNT CLOSURE
