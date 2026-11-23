@@ -189,9 +189,9 @@ function Icon({ name, size = 24 }) {
 const benefits = [
   {
     icon: "trial",
-    title: "7-Day Free Trial",
+    title: "30-Day Free Trial",
     description:
-      "Try all AI and voice features free for 7 days.",
+      "Try all AI and voice features free for 30 days.",
   },
   {
     icon: "book",

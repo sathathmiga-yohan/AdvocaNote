@@ -1,6 +1,7 @@
 
 import logging
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -13,6 +14,7 @@ from app.database import get_db
 from app.models.payment import Payment, SubscriptionUpgrade
 from app.models.subscription import Subscription
 from app.models.subscription_plan import SubscriptionPlan
+from app.services.subscription_trial import LEGACY_STRIPE_PLAN_PRICES, stripe_price_matches_plan
 from admin_notifications_api import (
     create_admin_notification,
     create_admin_notification_once,
@@ -159,7 +161,7 @@ def process_checkout_upgrade(upgrade, db):
             or invoice.get("billing_reason") != "subscription_create"
             or invoice.get("status") != "paid"
             or invoice.get("paid_out_of_band")
-            or not is_full_price_upgrade_invoice(invoice, plan)
+            or not is_full_price_upgrade_invoice(invoice, stripe_plan)
             or invoice.get("amount_paid") != invoice.get("amount_due")
             or checkout.get("amount_total") != invoice.get("amount_paid")
             or checkout.get("currency", "").upper() != plan.currency.upper()
@@ -206,7 +208,7 @@ def process_checkout_upgrade(upgrade, db):
     return upgrade.status
 
 
-def handle_checkout_completed(checkout, db: Session):
+def handle_checkout_completed(checkout, db: Session, *, paid_invoice=None):
 
     session_id = checkout.get("id")
     attempt_key = (checkout.get("metadata") or {}).get("advocanote_upgrade")
@@ -331,9 +333,7 @@ def handle_checkout_completed(checkout, db: Session):
     matching_items = [
         item
         for item in items
-        if stripe_id(
-            item.get("price", {}).get("id")
-        ) == plan.stripe_price_id
+        if stripe_price_matches_plan(stripe_id(item.get("price")), plan)
     ]
 
     if len(matching_items) != 1:
@@ -368,6 +368,22 @@ def handle_checkout_completed(checkout, db: Session):
             "Stripe billing period has ended"
         )
         return
+
+    invoice_id = stripe_id(checkout.get("invoice"))
+    if not invoice_id:
+        raise ValueError("Missing initial Checkout invoice")
+
+    if paid_invoice is None:
+        paid_invoice = stripe.Invoice.retrieve(invoice_id).to_dict()
+    if (
+        stripe_id(paid_invoice.get("id")) != invoice_id
+        or paid_invoice.get("billing_reason") != "subscription_create"
+        or paid_invoice.get("status") != "paid"
+        or paid_invoice.get("paid_out_of_band")
+        or get_invoice_subscription_id(paid_invoice) != stripe_subscription_id
+        or stripe_id(paid_invoice.get("customer")) != customer_id
+    ):
+        raise ValueError("Initial Checkout invoice did not verify")
 
     # Existing Lawyer Subscription
     subscription = db.scalar(
@@ -433,9 +449,7 @@ def handle_checkout_completed(checkout, db: Session):
 
     payment.paid_at = datetime.utcnow()
 
-    payment.stripe_invoice_id = stripe_id(
-        stripe_subscription.get("latest_invoice")
-    )
+    payment.stripe_invoice_id = invoice_id
 
 
     db.commit()
@@ -1561,11 +1575,7 @@ def handle_upgrade_payment_failed(invoice, db: Session):
         )
         if not price_id:
             continue
-        plan = db.scalar(
-            select(SubscriptionPlan).where(
-                SubscriptionPlan.stripe_price_id == price_id
-            )
-        )
+        plan = get_plan_by_stripe_price(price_id, db)
         if plan is not None and plan.id != subscription.plan_id:
             candidate_plans[plan.id] = plan
 
@@ -1812,7 +1822,8 @@ def handle_initial_checkout_payment_failed(
 
     payment = None
 
-    for session in sessions.data:
+    for stripe_session in sessions.data:
+        session = stripe_session.to_dict()
         session_id = session.get("id")
         session_metadata = session.get("metadata") or {}
 
@@ -1948,7 +1959,8 @@ def handle_initial_checkout_invoice_paid(invoice, db: Session):
         subscription=sub_id,
         limit=20,
     )
-    for session in sessions.data:
+    for stripe_session in sessions.data:
+        session = stripe_session.to_dict()
         session_id = stripe_id(session.get("id"))
         session_metadata = session.get("metadata") or {}
         if (
@@ -1957,6 +1969,7 @@ def handle_initial_checkout_invoice_paid(invoice, db: Session):
             or session_metadata.get("user_id") != user_id
             or session_metadata.get("plan_id") != plan_id
             or stripe_id(session.get("subscription")) != sub_id
+            or stripe_id(session.get("invoice")) != invoice_id
         ):
             continue
 
@@ -1973,7 +1986,7 @@ def handle_initial_checkout_invoice_paid(invoice, db: Session):
         completed_session = stripe.checkout.Session.retrieve(
             session_id
         ).to_dict()
-        handle_checkout_completed(completed_session, db)
+        handle_checkout_completed(completed_session, db, paid_invoice=paid_invoice)
         return
 
     logger.info(
@@ -2182,6 +2195,33 @@ async def stripe_webhook(
 # FIND PLAN FROM STRIPE SUBSCRIPTION PRICE
 # ==========================================
 
+def get_plan_by_stripe_price(price_id, db: Session):
+    plan = db.scalar(
+        select(SubscriptionPlan).where(SubscriptionPlan.stripe_price_id == price_id)
+    )
+    if plan is not None:
+        return plan
+
+    legacy = LEGACY_STRIPE_PLAN_PRICES.get(price_id)
+    if legacy is None:
+        return None
+
+    plan_id, amount = legacy
+    plan = db.get(SubscriptionPlan, plan_id)
+    if plan is None:
+        return None
+
+    # Pair historical invoices with the rate actually paid in Stripe.
+    return SimpleNamespace(
+        id=plan.id,
+        name=plan.name,
+        price=amount,
+        currency=plan.currency,
+        billing_interval=plan.billing_interval,
+        stripe_price_id=price_id,
+    )
+
+
 def get_plan_from_stripe_subscription(
     stripe_sub,
     db: Session,
@@ -2208,11 +2248,7 @@ def get_plan_from_stripe_subscription(
             "Missing Stripe Price ID"
         )
 
-    plan = db.scalar(
-        select(SubscriptionPlan).where(
-            SubscriptionPlan.stripe_price_id == price_id
-        )
-    )
+    plan = get_plan_by_stripe_price(price_id, db)
 
     if plan is None:
         raise ValueError(

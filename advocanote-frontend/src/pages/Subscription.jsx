@@ -154,30 +154,21 @@ function formatStatus(value) {
     );
 }
 
-function getPlanFeatures(plan) {
-  const features = plan?.features;
+const PLAN_CARD_NAMES = {
+  3: "Annual",
+  4: "Monthly",
+  5: "Premium Monthly",
+};
 
-  if (Array.isArray(features)) {
-    return features
-      .map((item) =>
-        typeof item === "string"
-          ? item
-          : item?.name ||
-          item?.label ||
-          item?.feature_name ||
-          ""
-      )
-      .filter(Boolean);
-  }
+const PLAN_CARD_CORE_FEATURES = [
+  "Case management & hearings",
+  "Tasks & calendar",
+];
 
-  if (features && typeof features === "object") {
-    return Object.entries(features)
-      .filter(([, enabled]) => enabled === true)
-      .map(([name]) => formatStatus(name));
-  }
-
-  return [];
-}
+const PLAN_CARD_AI_FEATURES = [
+  "AI analysis & task suggestions",
+  "Voice-to-text",
+];
 
 function getPlanInterval(plan) {
   const interval =
@@ -495,6 +486,9 @@ export default function Subscription() {
   const isActive =
     subscriptionStatus === "active";
 
+
+  const isPaymentRecovery =
+    ["past_due", "unpaid"].includes(subscriptionStatus);
 
   const canSubscribe =
     !hasSubscription ||
@@ -1031,6 +1025,15 @@ export default function Subscription() {
               </div>
             )}
 
+            {isPaymentRecovery && (
+              <div className="ans-message ans-message-info" role="status">
+                <CreditCard size={18} />
+                <span>
+                  Your renewal payment is still unpaid. Use Manage Billing to update your payment method or pay the outstanding invoice.
+                </span>
+              </div>
+            )}
+
             {/* UPGRADE CONFIRMATION */}
 
             {upgradePreview && (
@@ -1404,9 +1407,11 @@ export default function Subscription() {
                               ? `${plan.daily_action_limit} diary entries per day`
                               : null;
 
+                        const planId = Number(plan.id);
                         const features = [
                           ...(entryLimitText ? [entryLimitText] : []),
-                          ...getPlanFeatures(plan),
+                          ...PLAN_CARD_CORE_FEATURES,
+                          ...(planId === 5 || planId === 3 ? PLAN_CARD_AI_FEATURES : []),
                         ];
 
 
@@ -1478,12 +1483,12 @@ export default function Subscription() {
                             {/* PLAN NAME */}
 
                             <h3>
-                              {plan.name}
+                              {PLAN_CARD_NAMES[planId] || plan.name}
                             </h3>
 
                             {plan.description && (
                               <p className="ans-plan-description">
-                                {plan.description}
+                                {planId === 5 && plan.description === "Premium" ? "\u00a0" : plan.description}
                               </p>
                             )}
 

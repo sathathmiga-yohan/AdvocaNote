@@ -28,22 +28,22 @@ logger = logging.getLogger(__name__)
 PLAN_SETTINGS = {
     "basic": {
         "id": 4,
-        "name": "Basic",
-        "price": Decimal("1490.00"),
+        "name": "Monthly Subscription",
+        "price": Decimal("2490.00"),
         "interval": "month",
         "daily_limit": 3,
     },
     "premium": {
         "id": 5,
-        "name": "Premium",
-        "price": Decimal("3290.00"),
+        "name": "Premium Monthly Subscription",
+        "price": Decimal("5100.00"),
         "interval": "month",
         "daily_limit": None,
     },
     "annual": {
         "id": 3,
-        "name": "Annual",
-        "price": Decimal("14900.00"),
+        "name": "Annual Subscription",
+        "price": Decimal("24900.00"),
         "interval": "year",
         "daily_limit": None,
     },
@@ -55,14 +55,24 @@ PLAN_BY_ID = {
 }
 
 
+# Original Test Mode prices still used by existing subscriptions and
+# Checkout sessions opened before the catalog price change.
+LEGACY_STRIPE_PLAN_PRICES = {
+    "price_1UaTQURot5yvtQUpTkvQylUV": (PLAN_SETTINGS["basic"]["id"], Decimal("1490.00")),
+    "price_1UabdZRot5yvtQUpjSkAW6fP": (PLAN_SETTINGS["premium"]["id"], Decimal("3290.00")),
+    "price_1UaKFsRot5yvtQUpFcM1GPWO": (PLAN_SETTINGS["annual"]["id"], Decimal("14900.00")),
+}
+
+
+def stripe_price_matches_plan(price_id, plan):
+    legacy = LEGACY_STRIPE_PLAN_PRICES.get(price_id)
+    return bool(price_id) and (
+        price_id == plan.stripe_price_id or (legacy is not None and legacy[0] == plan.id)
+    )
+
+
 def get_display_plan_name(plan: SubscriptionPlan | None):
-    if plan is None:
-        return None
-
-    if plan.id == PLAN_SETTINGS["premium"]["id"]:
-        return "Pro"
-
-    return plan.name
+    return plan.name if plan is not None else None
 
 
 # ==========================================
@@ -86,13 +96,12 @@ def get_official_plan(
         config["id"],
     )
 
+    # Paid price and usage limit changes do not affect free trial eligibility.
     if (
         plan is None
         or not plan.is_active
         or plan.currency.upper() != "LKR"
-        or plan.price != config["price"]
         or plan.billing_interval != config["interval"]
-        or plan.daily_action_limit != config["daily_limit"]
     ):
         raise RuntimeError(
             f"{config['name']} plan is not "
@@ -159,7 +168,7 @@ def start_free_trial_if_eligible(
                 timezone.utc
             ).replace(tzinfo=None)
 
-            trial_end = now + timedelta(days=7)
+            trial_end = now + timedelta(days=30)
 
             subscription = Subscription(
                 user_id=user.id,

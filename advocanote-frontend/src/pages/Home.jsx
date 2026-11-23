@@ -28,9 +28,9 @@ const site = {
   name: "AdvocaNote",
   login: "/login",
   register: "/register",
-  monthly: "1,490",
-  yearly: "14,900",
-  saving: "2,980",
+  monthly: "2,490",
+  yearly: "24,900",
+  saving: "4,980",
   contactEmail: "",
 };
 
@@ -161,11 +161,11 @@ const plans = [
   {
     id: "trial",
     name: "Free Trial",
-    note: "Explore AdvocaNote for 7 days",
+    note: "Explore AdvocaNote for 30 days",
     price: "0",
     unit: "/ first month",
     points: [
-      "7-day free trial",
+      "30-day free trial",
       "Access to all available features",
       "Unlimited actions during trial",
       "No plan payment to start",
@@ -174,9 +174,9 @@ const plans = [
   },
   {
     id: "basic",
-    name: "Basic",
+    name: "Monthly Subscription",
     note: "Essential tools for daily legal work",
-    price: "1,490",
+    price: "2,490",
     unit: "/ month",
     points: [
       "Smart Legal Diary",
@@ -184,13 +184,13 @@ const plans = [
       "Calendar, tasks and deadlines",
       "3 actions per day",
     ],
-    action: "Choose Basic",
+    action: "Choose Monthly",
   },
   {
     id: "premium",
-    name: "Premium",
+    name: "Premium Monthly Subscription",
     note: "More freedom for your legal practice",
-    price: "3,290",
+    price: "5,100",
     unit: "/ month",
     points: [
       "All available features",
@@ -198,15 +198,15 @@ const plans = [
       "Voice to Text support",
       "Case, hearing and task management",
     ],
-    action: "Choose Premium",
+    action: "Choose Premium Monthly",
     featured: true,
     badge: "Recommended",
   },
   {
     id: "annual",
-    name: "Annual",
+    name: "Annual Subscription",
     note: "Yearly access for legal professionals",
-    price: "14,900",
+    price: "24,900",
     unit: "/ year",
     points: [
       "All available features",
@@ -240,8 +240,8 @@ const faqs = [
     a: "AI Diary Scan is a planned feature that will help convert handwritten diary notes into structured digital entries for your review. Coming Soon.",
   },
   {
-    q: "What happens after the 7-day free trial?",
-    a: "After your 7-day free trial, you can select Basic at LKR 1,490/month, Premium at LKR 3,290/month, or Annual at LKR 14,900/year.",
+    q: "What happens after the 30-day free trial?",
+    a: "After your 30-day free trial, you can select Monthly Subscription at LKR 2,490/month, Premium Monthly Subscription at LKR 5,100/month, or Annual Subscription at LKR 24,900/year.",
   },
 ];
 
@@ -784,7 +784,7 @@ export default function Home() {
           <SectionTitle
             kicker="FLEXIBLE PLANS FOR EVERY LEGAL PRACTICE"
             title="Simple & Transparent Pricing"
-            description="Start with 7 days free, then choose a plan that suits your practice."
+            description="Start with 30 days free, then choose a plan that suits your practice."
             light
           />
 

@@ -645,6 +645,7 @@ main.anp-page:has(.ans-page) .anp-header-icon {
     repeat(auto-fit, minmax(min(100%, 245px), 1fr));
 
   gap: 12px;
+  grid-auto-rows: 1fr;
   align-items: stretch;
 }
 
@@ -652,6 +653,7 @@ main.anp-page:has(.ans-page) .anp-header-icon {
   display: flex;
   flex-direction: column;
 
+  container-type: inline-size;
   position: relative;
   min-width: 0;
   height: 100%;
@@ -750,6 +752,11 @@ main.anp-page:has(.ans-page) .anp-header-icon {
   color: #718078;
   font-size: 11px;
   line-height: 1.65;
+}
+
+/* Keep a one-line description slot even when the plan has no description. */
+.ans-plan > h3 + .ans-plan-price {
+  margin-top: calc(15px + 7px + 11px * 1.65);
 }
 
 /* PRICE */
@@ -1940,5 +1947,28 @@ main.anp-page:has(.ans-page) .anp-page-header p {
     padding: 8px 5px;
     font-size: 10px;
     white-space: normal;
+  }
+}
+
+@container (max-width: 170px) {
+  .ans-plan-top {
+    min-height: 42px;
+  }
+
+  .ans-plan h3 {
+    min-height: 2lh;
+  }
+}
+
+@container (max-width: 215px) {
+  .ans-plan-price {
+    align-content: start;
+    min-height: 72px;
+  }
+}
+
+@container (max-width: 190px) {
+  .ans-plan-bottom .ans-button {
+    min-height: calc(2lh + 20px);
   }
 }

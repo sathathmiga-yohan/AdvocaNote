@@ -164,6 +164,8 @@ function requiresSubscription(data) {
       "expired",
       "not_subscribed",
       "canceled",
+      "past_due",
+      "unpaid",
     ].includes(data.status)
   );
 }
@@ -487,6 +489,24 @@ export default function SubscriptionGate() {
     }
   }
 
+  async function manageBilling() {
+    if (busyPlan !== null) return;
+
+    setBusyPlan("manage-billing");
+    setError("");
+
+    try {
+      const result = await apiRequest("/subscriptions/manage", "POST");
+      if (!result?.portal_url) {
+        throw new Error("Billing Portal URL was not returned.");
+      }
+      window.location.assign(result.portal_url);
+    } catch (err) {
+      setError(err.message);
+      setBusyPlan(null);
+    }
+  }
+
   // ======================================
   // NEVER DISPLAY UNVERIFIED POPUP
   // ======================================
@@ -536,6 +556,8 @@ export default function SubscriptionGate() {
   // ======================================
 
   const isLimit = modal === "daily_limit";
+  const isPaymentRecovery = modal === "expired" &&
+    ["past_due", "unpaid"].includes(access.status);
 
 
   // ======================================
@@ -611,7 +633,9 @@ export default function SubscriptionGate() {
             >
               {isLimit
                 ? "Daily Limit Reached"
-                : "Choose Your Subscription"}
+                : isPaymentRecovery
+                  ? "Renewal Payment Needed"
+                  : "Choose Your Subscription"}
             </h2>
 
             <p
@@ -627,7 +651,9 @@ export default function SubscriptionGate() {
                 ? (
                   `You have reached your daily limit of ${access.daily_action_limit} diary entries. Upgrade your plan or continue tomorrow.`
                 )
-                : access.status === "not_subscribed"
+                : isPaymentRecovery
+                  ? "Your renewal payment is still unpaid. Open Manage Billing to update your payment method or pay the outstanding invoice."
+                  : access.status === "not_subscribed"
                   ? (
                     "Choose a subscription " +
                     "to continue using " +
@@ -659,10 +685,11 @@ export default function SubscriptionGate() {
           </button>
         </div>
 
-        {isLimit ? (
+        {isLimit || isPaymentRecovery ? (
           <button
             type="button"
-            onClick={() => navigate("/subscription")}
+            disabled={isPaymentRecovery && busyPlan !== null}
+            onClick={isPaymentRecovery ? manageBilling : () => navigate("/subscription")}
             style={{
               marginTop: 24,
               minHeight: 42,
@@ -676,7 +703,9 @@ export default function SubscriptionGate() {
               cursor: "pointer",
             }}
           >
-            Upgrade Plan
+            {isPaymentRecovery
+              ? busyPlan === "manage-billing" ? "Opening..." : "Manage Billing"
+              : "Upgrade Plan"}
           </button>
         ) : (
         <>
@@ -839,6 +868,9 @@ export default function SubscriptionGate() {
           )}
         </div>
 
+        </>
+        )}
+
         {/* ERROR MESSAGE */}
 
         {error && (
@@ -852,9 +884,6 @@ export default function SubscriptionGate() {
           >
             {error}
           </p>
-        )}
-
-        </>
         )}
 
         {/* FOOTER */}

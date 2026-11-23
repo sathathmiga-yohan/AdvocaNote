@@ -13,7 +13,7 @@ from fastapi import (
 
 from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -25,9 +25,12 @@ from app.schemas.subscription import PlanResponse
 
 
 from app.services.subscription_trial import (
+    LEGACY_STRIPE_PLAN_PRICES,
+    PLAN_BY_ID,
     PLAN_SETTINGS,
     get_display_plan_name,
     start_free_trial_if_eligible,
+    stripe_price_matches_plan,
 )
 
 from app.config import settings
@@ -267,7 +270,10 @@ def get_available_plans(
 
     plans = db.scalars(
         select(SubscriptionPlan)
-        .where(SubscriptionPlan.is_active.is_(True))
+        .where(
+            SubscriptionPlan.is_active.is_(True),
+            SubscriptionPlan.id.in_(PLAN_BY_ID),
+        )
         .order_by(SubscriptionPlan.price.asc())
     ).all()
 
@@ -362,12 +368,53 @@ class CheckoutRequest(BaseModel):
     plan_id: int = Field(gt=0)
 
 
+def require_official_plan_id(plan_id: int):
+    if plan_id not in PLAN_BY_ID:
+        raise HTTPException(status_code=404, detail="Plan not available")
+
+
 @router.post("/checkout")
 def create_checkout(
     data: CheckoutRequest,
     db: Session = Depends(get_db),
     user: User = Depends(require_lawyer)
 ):
+    require_official_plan_id(data.plan_id)
+    user_id = user.id
+
+    try:
+        # Authentication may have opened a MySQL repeatable-read snapshot.
+        # Start a fresh transaction before serializing this lawyer's requests.
+        db.rollback()
+        while True:
+            locked_user_id = db.scalar(
+                select(User.id).where(User.id == user_id).with_for_update()
+            )
+            if locked_user_id is None:
+                raise HTTPException(status_code=403, detail="Lawyer account required")
+
+            checkout = prepare_new_subscription_checkout(data, db, user)
+            if checkout is not None:
+                return checkout
+            # The payment reservation was committed. Reacquire the lock and
+            # read it again before calling Stripe.
+
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Checkout record could not be saved",
+        ) from exc
+    finally:
+        db.rollback()
+
+
+# An unlinked reservation can be retried with the same Stripe key until
+# shortly before its fixed expiry. It expires before Stripe can prune the key.
+CHECKOUT_ATTEMPT_LIFETIME = timedelta(hours=23, minutes=59)
+MINIMUM_CHECKOUT_LIFETIME = timedelta(minutes=31)
+
+
+def prepare_new_subscription_checkout(data: CheckoutRequest, db: Session, user: User):
 
     # =====================================
     # 1. FIND SELECTED PLAN
@@ -481,11 +528,12 @@ def create_checkout(
                     if isinstance(previous_price, dict)
                     else previous_price
                 )
-            previous_plan = db.scalar(
-                select(SubscriptionPlan).where(
-                    SubscriptionPlan.stripe_price_id == previous_price_id
-                )
-            ) if previous_price_id else None
+            from app.routers.stripe_webhooks import get_plan_by_stripe_price
+
+            previous_plan = (
+                get_plan_by_stripe_price(previous_price_id, db)
+                if previous_price_id else None
+            )
 
             if (
                 old_stripe_sub.get("status")
@@ -506,7 +554,6 @@ def create_checkout(
             if expired_subscription:
                 existing.status = "canceled"
                 existing.cancel_at_period_end = False
-                db.commit()
 
         # Payment must be verified before
         # activating the selected paid plan.
@@ -519,56 +566,78 @@ def create_checkout(
         select(Payment)
         .where(
             Payment.user_id == user.id,
-            Payment.status == "pending",
-            Payment.stripe_checkout_session_id.is_not(None)
+            Payment.provider == "stripe",
+            Payment.status.in_(("pending", "failed")),
         )
         .order_by(Payment.id.desc())
     ).all()
 
+    reservation = None
+    reusable_session = None
     try:
-
         for payment in pending:
+            if payment.stripe_checkout_session_id is None:
+                if payment.status == "pending" and payment.stripe_invoice_id is None:
+                    if payment.created_at + CHECKOUT_ATTEMPT_LIFETIME <= utc_now():
+                        payment.status = "expired"
+                    else:
+                        reservation = payment
+                continue
 
-            old_session = (
-                stripe.checkout.Session.retrieve(
-                    payment.stripe_checkout_session_id
-                )
-            )
+            old_session = stripe.checkout.Session.retrieve(
+                payment.stripe_checkout_session_id
+            ).to_dict()
+            metadata = old_session.get("metadata") or {}
+            if (
+                old_session.get("mode") != "subscription"
+                or old_session.get("client_reference_id") != str(user.id)
+                or metadata.get("user_id") != str(user.id)
+                or metadata.get("plan_id") != str(payment.plan_id)
+            ):
+                raise HTTPException(status_code=403, detail="Checkout ownership mismatch")
 
-            if old_session.status == "complete":
+            if old_session["status"] == "expired":
+                continue
+
+            if old_session["status"] == "complete":
+                # An unpaid completed Checkout may still settle. Only a
+                # terminal Stripe subscription lets us offer another session.
+                if old_session.get("payment_status") == "unpaid" and old_session.get("subscription"):
+                    old_subscription = stripe.Subscription.retrieve(
+                        old_session["subscription"]
+                    )
+                    if old_subscription.status in ("canceled", "incomplete_expired"):
+                        continue
                 raise HTTPException(
                     status_code=409,
-                    detail=(
-                        "Previous checkout completed. "
-                        "Payment verification is pending."
-                    )
+                    detail="Previous checkout completed. Payment verification is pending.",
                 )
 
-            if old_session.status == "open":
+            if old_session["status"] != "open":
+                raise HTTPException(status_code=409, detail="Unable to verify previous Checkout")
 
-                # Verify checkout ownership.
+            if payment.plan_id == plan.id and old_session.get("url") and reusable_session is None:
+                reusable_session = old_session
+                continue
 
-                if (
-                    old_session.client_reference_id
-                    != str(user.id)
-                ):
-                    raise HTTPException(
-                        status_code=403,
-                        detail="Checkout ownership mismatch"
-                    )
+            # Stripe must confirm expiry before a different session is offered.
+            expired_session = stripe.checkout.Session.expire(old_session["id"])
+            if expired_session.status != "expired":
+                raise HTTPException(status_code=409, detail="Previous Checkout is still open")
 
-                # Reuse Checkout for the same plan.
+        if reusable_session is not None:
+            db.commit()
+            return {
+                "checkout_url": reusable_session["url"],
+                "session_id": reusable_session["id"],
+            }
 
-                if payment.plan_id == plan.id:
-                    return {
-                        "checkout_url": old_session.url,
-                        "session_id": old_session.id
-                    }
-
-                # Expire Checkout for a different plan.
-
-                stripe.checkout.Session.expire(
-                    old_session.id
+        if reservation is not None:
+            expires_at = reservation.created_at + CHECKOUT_ATTEMPT_LIFETIME
+            if reservation.plan_id != plan.id or expires_at <= utc_now() + MINIMUM_CHECKOUT_LIFETIME:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Previous Checkout is being prepared. Retry the original plan or try again later.",
                 )
 
         # =====================================
@@ -674,13 +743,44 @@ def create_checkout(
         # 6. CREATE STRIPE CHECKOUT
         # =====================================
 
+        if reservation is None:
+            db.add(Payment(
+                user_id=user.id,
+                subscription_id=existing.id if existing else None,
+                plan_id=plan.id,
+                amount=plan.price,
+                currency=plan.currency,
+                provider="stripe",
+                status="pending",
+                created_at=utc_now(),
+            ))
+            db.commit()
+            return None
+
+        price_id = plan.stripe_price_id
+        if reservation.amount != plan.price:
+            # Keep Stripe idempotency parameters for attempts created before
+            # the catalog price change.
+            price_id = next(
+                (
+                    legacy_id
+                    for legacy_id, legacy in LEGACY_STRIPE_PLAN_PRICES.items()
+                    if legacy == (plan.id, reservation.amount)
+                ),
+                None,
+            )
+            if price_id is None:
+                raise HTTPException(status_code=409, detail="Unrecognized Checkout reservation price")
+
         base_url = settings.FRONTEND_URL.rstrip("/")
 
         session = stripe.checkout.Session.create(
             mode="subscription",
+            idempotency_key=f"advocanote-new-checkout:{reservation.id}",
+            expires_at=int(expires_at.replace(tzinfo=timezone.utc).timestamp()),
             line_items=[
                 {
-                    "price": plan.stripe_price_id,
+                    "price": price_id,
                     "quantity": 1
                 }
             ],
@@ -714,49 +814,10 @@ def create_checkout(
             detail="Unable to create Stripe Checkout"
         ) from exc
 
-    # =====================================
-    # 7. SAVE PENDING PAYMENT
-    # =====================================
-
-    payment = Payment(
-        user_id=user.id,
-        subscription_id=(
-            existing.id if existing else None
-        ),
-        plan_id=plan.id,
-        amount=plan.price,
-        currency=plan.currency,
-        provider="stripe",
-        status="pending",
-        stripe_checkout_session_id=session.id
-    )
-
-    db.add(payment)
-
-    try:
-        db.commit()
-
-    except Exception:
-        db.rollback()
-
-        try:
-            stripe.checkout.Session.expire(
-                session.id
-            )
-
-        except stripe.error.StripeError:
-            pass
-
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Checkout record could not be saved"
-            )
-        )
-
-    # =====================================
-    # 8. RETURN CHECKOUT DETAILS
-    # =====================================
+    # Never expose the Checkout URL until the payment row references it.
+    # If saving fails, retry the same reservation and Stripe idempotency key.
+    reservation.stripe_checkout_session_id = session.id
+    db.commit()
 
     return {
         "checkout_url": session.url,
@@ -1138,6 +1199,8 @@ def check_plan_change(
     user: User = Depends(require_lawyer),
 ):
 
+    require_official_plan_id(data.plan_id)
+
     # 1. Current subscription
     subscription = db.scalar(
         select(Subscription).where(
@@ -1316,6 +1379,7 @@ def preview_plan_change(
     db: Session = Depends(get_db),
     user: User = Depends(require_lawyer),
 ):
+    require_official_plan_id(data.plan_id)
     subscription = db.scalar(
         select(Subscription).where(Subscription.user_id == user.id)
     )
@@ -1594,7 +1658,7 @@ def schedule_plan_downgrade(
         period_end = item.get("current_period_end")
 
         if (
-            current_price_id != old_plan.stripe_price_id
+            not stripe_price_matches_plan(current_price_id, old_plan)
             or item.get("quantity") != 1
             or not period_end
             or period_end <= int(
@@ -1631,7 +1695,7 @@ def schedule_plan_downgrade(
                     "end_date": period_end,
                     "items": [
                         {
-                            "price": old_plan.stripe_price_id,
+                            "price": current_price_id,
                             "quantity": 1,
                         }
                     ],

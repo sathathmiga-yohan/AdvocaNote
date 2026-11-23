@@ -46,6 +46,7 @@ from app.routers.lawyer_subscriptions import (
     create_billing_management_session,
     create_checkout,
     preview_full_price_upgrade,
+    require_official_plan_id,
     synchronize_current_stripe_plan,
 )
 from admin_notifications_api import (
@@ -122,7 +123,8 @@ def plan_options(db: Session):
     plans = db.scalars(
         select(SubscriptionPlan)
         .where(
-            SubscriptionPlan.is_active.is_(True)
+            SubscriptionPlan.is_active.is_(True),
+            SubscriptionPlan.id.in_(PLAN_BY_ID),
         )
         .order_by(
             SubscriptionPlan.price.asc(),
@@ -134,16 +136,8 @@ def plan_options(db: Session):
 
     for plan in plans:
 
-        # Keep old keys for existing frontend.
-        # New plans get their own unique key.
-
-        plan_key = PLAN_BY_ID.get(
-            plan.id,
-            f"plan_{plan.id}",
-        )
-
         result.append({
-            "key": plan_key,
+            "key": PLAN_BY_ID[plan.id],
             "plan_id": plan.id,
             "name": get_display_plan_name(plan),
             "description": plan.description,
@@ -709,6 +703,7 @@ def select_subscription_plan(
             detail="Invalid subscription plan",
         )
 
+    require_official_plan_id(selected_plan_id)
     target_plan = db.get(
         SubscriptionPlan,
         selected_plan_id,
