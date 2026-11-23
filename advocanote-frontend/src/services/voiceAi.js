@@ -1,7 +1,11 @@
 
-const API_URL =
+const API_URL = (
   import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:8000";
+  (import.meta.env.PROD
+    ? "https://advocanote-production.up.railway.app"
+    : "http://127.0.0.1:8000")
+).replace(/\/$/, "");
+
 
 export async function analyzeVoiceFile(file) {
   if (!file) {
