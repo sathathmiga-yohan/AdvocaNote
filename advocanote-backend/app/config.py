@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     REGISTRATION_EMAIL_OTP_ENABLED: bool = False
     
     JWT_SECRET_KEY: str
-    JWT_ACCESS_MINUTES: int = 30
+    JWT_ACCESS_MINUTES: int = 15
     JWT_REFRESH_DAYS: int = 7
     
     GOOGLE_CLIENT_ID: str
