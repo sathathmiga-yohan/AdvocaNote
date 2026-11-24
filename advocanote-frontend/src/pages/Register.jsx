@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/auth";
 import "./Register.css";
 
@@ -218,6 +218,7 @@ const benefits = [
 // =====================================
 
 export default function Register() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -228,7 +229,6 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   // =====================================
@@ -244,7 +244,6 @@ export default function Register() {
     }));
 
     setError("");
-    setSuccess("");
   };
 
   // =====================================
@@ -257,7 +256,6 @@ export default function Register() {
     if (loading) return;
 
     setError("");
-    setSuccess("");
 
     const fullName = form.fullName.trim();
     const email = form.email.trim().toLowerCase();
@@ -303,16 +301,22 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await registerUser(fullName, email, password);
+      const session = await registerUser(fullName, email, password);
+
+      if (session?.role !== "lawyer" || !session.access_token || !session.refresh_token) {
+        throw new Error("Registration returned an invalid session. Please sign in.");
+      }
+
+      localStorage.setItem("advocanote_access_token", session.access_token);
+      localStorage.setItem("advocanote_refresh_token", session.refresh_token);
+      localStorage.setItem("advocanote_auth_toast", "email");
 
       localStorage.setItem(
         `advocanote:onboarding:pending:${email}`,
         "1"
       );
 
-      setSuccess(
-        "Registration request completed successfully."
-      );
+      navigate("/my-legal-diary", { replace: true });
 
     } catch (err) {
       const errorMessage =
@@ -599,17 +603,6 @@ export default function Register() {
                 role="alert"
               >
                 {error}
-              </p>
-            )}
-
-            {/* SUCCESS MESSAGE */}
-
-            {success && (
-              <p
-                className="anr-message anr-success"
-                role="status"
-              >
-                {success}
               </p>
             )}
 
