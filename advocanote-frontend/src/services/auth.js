@@ -117,18 +117,24 @@ export async function registerUser(fullName, email, password) {
 }
 
 // 4. VERIFY EMAIL
-export async function verifyEmail(token) {
+export function verifyEmail(token) {
+  return submitEmailVerification("/auth/verify-email", { token });
+}
+
+export function verifyRegistrationOtp(email, password, code) {
+  return submitEmailVerification("/auth/verify-registration", { email, password, code });
+}
+
+async function submitEmailVerification(path, payload) {
   let response;
 
   try {
-    response = await fetch(`${API_URL}/auth/verify-email`, {
+    response = await fetch(`${API_URL}${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        token: token,
-      }),
+      body: JSON.stringify(payload),
     });
   } catch {
     throw new Error(

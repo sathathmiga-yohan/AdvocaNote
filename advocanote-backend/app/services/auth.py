@@ -20,6 +20,16 @@ from datetime import datetime, timedelta, timezone
 
 from app.config import settings
 from app.models.session import LoginSession
+
+
+REGISTRATION_OTP_PENDING = "email_otp_pending"
+
+
+def require_registration_verified(user: User):
+    if user.role == "lawyer" and user.onboarding_status == REGISTRATION_OTP_PENDING:
+        raise HTTPException(status_code=403, detail="Verify your registration email before signing in.")
+
+
 def register_user(db: Session, data: Register):
 
     existing_user = db.scalar(
@@ -29,6 +39,14 @@ def register_user(db: Session, data: Register):
     )
 
     if existing_user:
+        if (
+            existing_user.role == "lawyer"
+            and existing_user.onboarding_status == REGISTRATION_OTP_PENDING
+            and existing_user.is_active
+            and existing_user.password_hash
+            and verify_password(data.password, existing_user.password_hash)
+        ):
+            return existing_user
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Email already registered"
@@ -40,7 +58,8 @@ def register_user(db: Session, data: Register):
         password_hash=hash_password(data.password),
         role="lawyer",
         is_email_verified=False,
-        is_active=True
+        is_active=True,
+        onboarding_status=(REGISTRATION_OTP_PENDING if settings.REGISTRATION_EMAIL_OTP_ENABLED else "pending"),
     )
 
     try:
@@ -113,10 +132,6 @@ def login_user(db: Session, data: Login):
             detail="Account is disabled"
         )
 
-    # Email verification pending irundhaalum
-    # correct password use panni login pannalaam.
-    # is_email_verified status unchanged.
-
     return create_login_session(db, user)
 
 
@@ -131,7 +146,8 @@ def hash_token(token: str):
 
 
 def create_login_session(db: Session, user: User):
-  # Prevent suspended users from creating sessions
+    require_registration_verified(user)
+    # Prevent suspended users from creating sessions
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

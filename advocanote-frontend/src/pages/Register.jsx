@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../services/auth";
+import { registerUser, verifyRegistrationOtp } from "../services/auth";
 import "./Register.css";
 
 // =====================================
@@ -229,7 +229,47 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [code, setCode] = useState("");
+
+  function finishRegistration(session, email) {
+    if (session?.role !== "lawyer" || !session.access_token || !session.refresh_token) {
+      throw new Error("Registration returned an invalid session. Please sign in.");
+    }
+
+    localStorage.setItem("advocanote_access_token", session.access_token);
+    localStorage.setItem("advocanote_refresh_token", session.refresh_token);
+    localStorage.setItem("advocanote_auth_toast", "email");
+    localStorage.setItem(`advocanote:onboarding:pending:${email}`, "1");
+    navigate("/my-legal-diary", { replace: true });
+  }
+
+  function showCodeDelivery(result) {
+    setVerificationRequired(result.verification_pending === true);
+    if (result.code_sent) {
+      setCode("");
+      setSuccess(result.message);
+    } else {
+      setError(result.message);
+    }
+  }
+
+  async function resendCode() {
+    if (loading) return;
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      const result = await registerUser(form.fullName, form.email, form.password);
+      showCodeDelivery(result);
+    } catch (err) {
+      setError(err.message || "Could not request a new code.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // =====================================
   // INPUT CHANGE
@@ -244,6 +284,7 @@ export default function Register() {
     }));
 
     setError("");
+    setSuccess("");
   };
 
   // =====================================
@@ -256,10 +297,28 @@ export default function Register() {
     if (loading) return;
 
     setError("");
+    setSuccess("");
 
     const fullName = form.fullName.trim();
     const email = form.email.trim().toLowerCase();
     const password = form.password;
+
+    if (verificationRequired) {
+      if (!/^[0-9]{6}$/.test(code)) {
+        setError("Enter the six-digit code from your email.");
+        return;
+      }
+      setLoading(true);
+      try {
+        const session = await verifyRegistrationOtp(email, password, code);
+        finishRegistration(session, email);
+      } catch (err) {
+        setError(err.message || "Verification failed.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (
       !fullName ||
@@ -301,22 +360,14 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const session = await registerUser(fullName, email, password);
+      const result = await registerUser(fullName, email, password);
 
-      if (session?.role !== "lawyer" || !session.access_token || !session.refresh_token) {
-        throw new Error("Registration returned an invalid session. Please sign in.");
+      if (result?.verification_required) {
+        showCodeDelivery(result);
+        return;
       }
 
-      localStorage.setItem("advocanote_access_token", session.access_token);
-      localStorage.setItem("advocanote_refresh_token", session.refresh_token);
-      localStorage.setItem("advocanote_auth_toast", "email");
-
-      localStorage.setItem(
-        `advocanote:onboarding:pending:${email}`,
-        "1"
-      );
-
-      navigate("/my-legal-diary", { replace: true });
+      finishRegistration(result, email);
 
     } catch (err) {
       const errorMessage =
@@ -440,11 +491,12 @@ export default function Register() {
           {/* CARD HEADER */}
 
           <div className="anr-card-header">
-            <h2>Create Your Account</h2>
+            <h2>{verificationRequired ? "Verify Your Email" : "Create Your Account"}</h2>
 
             <p>
-              Join AdvocaNote and start managing
-              your legal practice with confidence.
+              {verificationRequired
+                ? `Enter the verification code for ${form.email.trim()}.`
+                : "Join AdvocaNote and start managing your legal practice with confidence."}
             </p>
           </div>
 
@@ -456,6 +508,25 @@ export default function Register() {
             noValidate
           >
 
+            {verificationRequired ? (
+              <div className="anr-field">
+                <label htmlFor="anr-code">Verification Code</label>
+                <div className="anr-input-wrap">
+                  <Icon name="lock" />
+                  <input
+                    id="anr-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            ) : (
+            <>
             {/* FULL NAME */}
 
             <div className="anr-field">
@@ -595,6 +666,9 @@ export default function Register() {
               </div>
             </div>
 
+            </>
+            )}
+
             {/* ERROR MESSAGE */}
 
             {error && (
@@ -606,6 +680,17 @@ export default function Register() {
               </p>
             )}
 
+            {/* SUCCESS MESSAGE */}
+
+            {success && (
+              <p
+                className="anr-message anr-success"
+                role="status"
+              >
+                {success}
+              </p>
+            )}
+
             {/* REGISTER BUTTON */}
 
             <button
@@ -614,9 +699,9 @@ export default function Register() {
               disabled={loading}
             >
               <span>
-                {loading
-                  ? "Creating Account..."
-                  : "Register Account"}
+                {verificationRequired
+                  ? "Verify Email"
+                  : loading ? "Creating Account..." : "Register Account"}
               </span>
 
               {!loading && (
@@ -624,6 +709,11 @@ export default function Register() {
               )}
             </button>
 
+            {verificationRequired && (
+              <button className="anr-submit" type="button" disabled={loading} onClick={resendCode}>
+                Resend Code
+              </button>
+            )}
           </form>
 
           {/* RESTORE OR START FRESH ACCOUNT */}

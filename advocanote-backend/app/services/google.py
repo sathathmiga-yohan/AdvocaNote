@@ -13,7 +13,7 @@ from google.auth.exceptions import GoogleAuthError, TransportError
 
 from app.config import settings
 from app.models.user import User
-from app.services.auth import create_login_session
+from app.services.auth import create_login_session, require_registration_verified
 
 
 # Reuse and cache Google's public verification certificates
@@ -117,6 +117,8 @@ def google_login(db: Session, credential: str):
                 status_code=403,
                 detail="Account disabled"
             )
+
+        require_registration_verified(existing_user)
 
         # Do not replace another linked Google account
         if existing_user.google_sub is not None:

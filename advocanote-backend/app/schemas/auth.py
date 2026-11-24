@@ -57,6 +57,19 @@ class VerifyEmail(BaseModel):
     )
 
 
+class RegistrationPendingResponse(BaseModel):
+    verification_required: bool = True
+    verification_pending: bool
+    code_sent: bool
+    message: str
+
+
+class VerifyRegistrationOTP(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=12, max_length=128)
+    code: str = Field(pattern=r"^[0-9]{6}$")
+
+
 class ResendVerification(BaseModel):
     email: EmailStr
 

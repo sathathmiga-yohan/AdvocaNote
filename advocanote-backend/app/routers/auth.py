@@ -10,6 +10,8 @@ from app.schemas.auth import (
     Register,
     UserResponse,
     VerifyEmail,
+    VerifyRegistrationOTP,
+    RegistrationPendingResponse,
     ResendVerification,
     Login, 
     LoginResponse,
@@ -25,7 +27,8 @@ from app.services.auth import (
     login_user,
     refresh_user_session,
     logout_user,
-    create_login_session
+    create_login_session,
+    REGISTRATION_OTP_PENDING,
 )
 from app.services.google import google_login
 from app.services.reset import (
@@ -35,7 +38,9 @@ from app.services.reset import (
 
 from app.services.verification import (
     send_verification_email,
-    verify_email_token
+    verify_email_token,
+    send_registration_otp,
+    verify_registration_otp,
 )
 
 from app.auth.security import get_current_user
@@ -48,7 +53,7 @@ router = APIRouter(
 
 @router.post(
     "/register",
-    response_model=LoginResponse,
+    response_model=LoginResponse | RegistrationPendingResponse,
     status_code=status.HTTP_201_CREATED
 )
 def register(
@@ -58,8 +63,17 @@ def register(
 
     user = register_user(db, data)
 
-    
-    # Automatically log in after registration
+    if user.onboarding_status == REGISTRATION_OTP_PENDING:
+        return send_registration_otp(db, user.id)
+    return create_login_session(db, user)
+
+
+@router.post("/verify-registration", response_model=LoginResponse)
+def verify_registration(
+    data: VerifyRegistrationOTP,
+    db: Session = Depends(get_db),
+):
+    user = verify_registration_otp(db, data)
     return create_login_session(db, user)
 
 
@@ -84,7 +98,10 @@ def resend_verification(
         )
     )
 
-    if user and user.is_active and not user.is_email_verified:
+    if (
+        user and user.is_active and not user.is_email_verified
+        and user.onboarding_status != REGISTRATION_OTP_PENDING
+    ):
         try:
             send_verification_email(db, user)
         except HTTPException:

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str | None = None
     MAIL_FROM: str
     FRONTEND_URL: str
+    REGISTRATION_EMAIL_OTP_ENABLED: bool = False
     
     JWT_SECRET_KEY: str
     JWT_ACCESS_MINUTES: int = 15
