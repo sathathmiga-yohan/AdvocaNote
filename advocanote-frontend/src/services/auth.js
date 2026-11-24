@@ -90,24 +90,18 @@ export async function registerUser(fullName, email, password) {
     console.error("REGISTER NETWORK ERROR:", error);
 
     throw new Error(
-      "Cannot connect to backend. Check FastAPI server or CORS."
+      "Cannot connect to backend. Check FastAPI server or CORS.",
+      { cause: error }
     );
   }
 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    console.error("REGISTER API ERROR:", {
-      status: response.status,
-      detail: data.detail,
-    });
-
     throw new Error(
       typeof data.detail === "string"
         ? data.detail
-        : data.detail
-          ? JSON.stringify(data.detail)
-          : "Registration failed."
+        : "Registration failed. Check your name, email, and password."
     );
   }
 

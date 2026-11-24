@@ -17,6 +17,7 @@ DATABASE_URL = URL.create(
 
 engine = create_engine(
     DATABASE_URL,
+    # Old or disconnect connection find
     pool_pre_ping=True
 )
 

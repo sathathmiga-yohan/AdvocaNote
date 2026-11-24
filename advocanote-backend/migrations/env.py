@@ -4,6 +4,13 @@ from logging.config import fileConfig
 from alembic import context
 
 from app.database import Base, engine
+from app.models import (
+    account_deletion,
+    account_recovery_token,
+    calendar_custom_event,
+    subscription_daily_usage,
+    voice_attachment,
+)
 from app.models.user import User
 from app.models.verification import Verification
 from app.models.session import LoginSession
