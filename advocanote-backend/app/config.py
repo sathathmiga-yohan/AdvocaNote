@@ -1,5 +1,7 @@
 
 from pathlib import Path
+
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,10 +18,11 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
 
     # Email Settings
-    SMTP_HOST: str
-    SMTP_PORT: int
-    SMTP_USER: str
-    SMTP_PASSWORD: str
+    BREVO_API_KEY: SecretStr | None = None
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int | None = None
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
     MAIL_FROM: str
     FRONTEND_URL: str
     
